@@ -685,7 +685,7 @@ in existing Swift app, add MyFUITableViewDataSource|MyFUIArray.h/m accepting que
 AppDelegate: FIRDatabase.database().persistenceEnabled = true //writes the data locally to the device while network interruptions
 FirebaseDatabase.getInstance().setPersistenceEnabled(true); //Android
 
-add View Controller from ([]) to MainStory (title={display on top bar} custom class={xxx.swift}), add navigation item to VC (title={display on top bar}), CTRL-Click an item on source VC and drag to dest VC, release mouse and select the type of relationship from the prompt up (segue {show/modal}, click header VC to drag it 
+add View Controller from ([]) to MainStory (title={display on top bar} custom class={xxx.swift}), add navigation item to VC (title={display on top bar}), CTRL-Click an item or left top btn on source VC and drag to dest VC, release mouse and select the type of relationship from the prompt up (segue {show/modal}, click header VC to drag it 
 
 internal var postType : Int!|?= 0|nil (must init prop)
 expression inspect + DatabaseReference.url, click i btn to print value in output window
