@@ -306,16 +306,14 @@ sudo cp com.bost.expirePostDaily.plist /Library/LaunchDaemons/
     <array>
         <string>/bin/bash</string>
         <string>/Users/hollykaldrovics/bin/expirePostDaily.sh</string> 
-	//wget https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily
+	//wget | curl https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily
 	//date >> /tmp/expirePostDaily.out
     </array>
     //<key>StartInterval</key>
     //<integer>60</integer> seconds
     <key>StartCalendarInterval</key>
     <dict>
-        <key>Day</key>
-        <integer>1</integer>
-        <key>Hour</key>
+        <key>Hour</key> //0:00 daily
         <integer>0</integer>
         <key>Minute</key>
         <integer>0</integer>
