@@ -473,8 +473,12 @@ Latitudes [-90,90]. Longitudes [-180,180]  http://andrew.hedges.name/experiments
 [-90,90] +90 to [0,180], [-180,180]  +180 to [0,360], 
  (38.898556 -77.037852) > (128.8985, 103.0378) > 11/20/83/80/93/87/58
  [0-1][0-3]=8 / [0-8][0-6]=54  / [0-9][0-9]=100 /...
- world=8*region(5000km)=60*area(1000km)=100*town(100km)=100*zone(10km)=100*around(1km)=100*near(100m)=100*close(radius:10m)
+ world=8*region(7000km 7x7appro.60)=60*area(1000km)=100*town(100km)=100*zone(10km)=100*around(1km)=100*near(100m)=100*close(radius:10m)
 distance btw 128.8985-4 (same lgt) 11/20/83/80/93/87/58-48 = 10m,  103.037-6 (same lat) 11/20/83/80/93/87-86 = 100m ...
+
+corner case 
+NYC(40.,-73.) Clifton(40,-74) Avon(40,-74) //Clifton in same town with Avon but not NYC
+NYC(40.,-73.) > (130, 107) 2/30/7   FL(26,-81) > (116,099) 1/19/69 //in diff regions
 
 user-post for mycast to listen, order by date for clean up (path to copy on loactions) on regular basis by cloud function by wildcards matches
 ref("user-post/{uId}/<postid>")   /posts/1/xxx or /posts/2/xxx, invocation ret event.params.1|2
