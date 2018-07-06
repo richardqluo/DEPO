@@ -256,7 +256,16 @@ exports.expirePostDaily = functions.https.onRequest((request, response) => {
     } else {
         monthStr = month.toString();
     }
-    let exp = dt.getUTCFullYear().toString() + monthStr + dt.getUTCDate().toString()
+    let day = dt.getUTCDay()+1;
+    var dayStr;
+    if (day < 10) {
+        dayStr = '0' + day.toString();
+    } else {
+        dayStr = day.toString();
+    }
+    let exp = dt.getUTCFullYear().toString() + monthStr + dayStr;
+    //let exp = "20180627";
+    console.log("current expiry: " + exp);
     const ref = admin.database().ref("/hist");
     ref.orderByKey().endAt(exp).once('value').then(topSnap => {
         topSnap.forEach(function(midSnap) {
@@ -269,28 +278,28 @@ exports.expirePostDaily = functions.https.onRequest((request, response) => {
                     bucket.file(path).delete().then(function() {
                         //console.log("succeed deleting " + path);
                       }).catch(function(error) {
-                        console.log("failed deleting " + path + " : " + error);
+                        console.error("failed deleting " + path + " : " + error);
                       });
                 } else {
                     var subRef = admin.database().ref(path);
                     subRef.remove().then(function() {
                         //console.log("succeed deleting " + path);
                       }).catch(function(error) {
-                        console.log("failed deleting " + path + " : " + error);
+                        console.error("failed deleting " + path + " : " + error);
                       });
                 }
                 subSnap.ref.remove().then(function() {// not ref()
                     //console.log("succeed deleting hist/" + path);
                   }).catch(function(error) {
-                    console.log("failed deleting hist/" + path + " : " + error);
+                    console.error("failed deleting hist/" + path + " : " + error);
                   });
             });
         });
-    }).catch(e => console.log(e));
+    }).catch(e => console.error(e));
     response.send("expirePostDaily is executed!");
 });
 
-functions>gcloud beta functions deploy expirePostDaily --trigger-http //deploy as http, 
+functions>gcloud beta functions deploy expirePostDaily --trigger-http //deploy or update (auto version++) as http, gcloud beta functions delete expirePostDaily
 return url: https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily exe by browser (curl/webget not in windows), and listed on firebase console [...]function and log, gcloud beta functions delete expirePostDaily
 Mac 
 vim com.bost.expirePostDaily.plist
