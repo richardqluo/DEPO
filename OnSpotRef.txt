@@ -256,7 +256,7 @@ exports.expirePostDaily = functions.https.onRequest((request, response) => {
     } else {
         monthStr = month.toString();
     }
-    let day = dt.getUTCDay()+1;
+    let day = dt.getUTCDate()+1;
     var dayStr;
     if (day < 10) {
         dayStr = '0' + day.toString();
