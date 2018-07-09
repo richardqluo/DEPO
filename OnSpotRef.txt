@@ -322,8 +322,8 @@ sudo cp com.bost.expirePostDaily.plist /Library/LaunchDaemons/
     //<integer>60</integer> seconds
     <key>StartCalendarInterval</key>
     <dict>
-        <key>Hour</key> //0:00 daily
-        <integer>0</integer>
+        <key>Hour</key> //1:00AM daily
+        <integer>1</integer>
         <key>Minute</key>
         <integer>0</integer>
     </dict>
