@@ -9,8 +9,11 @@ https://stripe.com/docs/api
 compile 'com.stripe:stripe-android:3|4.1.0' //with compileSdkVersion 25, 5.1.0 with 26
 compile 'com.stripe:stripe-java:4.1.0' //import com.stripe.model.Charge
 https://stripe.com/docs/testing //test card
-https://dashboard.stripe.com Hanger99!
+https://dashboard.stripe.com Hanger99! coat-gqqe-vgbg-rgmt-rjov
 https://www.raywenderlich.com/179260/accept-credit-cards-ios-apps-using-stripe //ios
+
+https://github.com/stripe/example-ios-backend/tree/v13.2.0
+https://dashboard.heroku.com/apps/bost Hanger99!
 
 https://developers.facebook.com/docs/facebook-login/android/  richcluo@gmail.com  if advance: One account per email address: same eamil can not be used for other auth acct, otherwise email/name left empty for the user in database  
 facebook login> get start SDK choose platform > android >[download Facebook SDK] > project structure | new project  : Select API 15/Android 4.0.3
