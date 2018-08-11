@@ -11,6 +11,7 @@ compile 'com.stripe:stripe-java:4.1.0' //import com.stripe.model.Charge
 https://stripe.com/docs/testing //test card
 https://dashboard.stripe.com Hanger99! coat-gqqe-vgbg-rgmt-rjov
 https://www.raywenderlich.com/179260/accept-credit-cards-ios-apps-using-stripe //ios
+https://www.appcoda.com/ios-stripe-payment-integration/
 
 https://github.com/stripe/example-ios-backend/tree/v13.2.0
 https://dashboard.heroku.com/apps/bost Hanger99!
