@@ -873,3 +873,7 @@ photoshop : image > mode > RGB
 
 Caused by java.lang.NullPointerException: Attempt to invoke virtual method 'boolean com.boropost.app.models.User.isType()' on a null object reference
 com.boropost.app.ProfileActivity.onCreate (ProfileActivity.java:179)
+
+Caused by java.lang.NullPointerException: Attempt to get length of null array
+java.util.Arrays.copyOfRange (Arrays.java:2873)
+com.boropost.app.FindActivity.onCreate (FindActivity.java:55)
