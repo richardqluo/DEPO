@@ -229,7 +229,7 @@ Install and initialize the Cloud SDK. https://cloud.google.com/sdk/docs/
 Program Files X86 Google\Cloud SDK> gcloud init > pick boropost project > create config
 https://cloud.google.com/sdk/docs/components //Program Files X86 Google\Cloud SDK> gcloud components install | update app-engine-go and other comp
 [https://console.cloud.google.com/home/dashboard?project=boropost-ea8ed&pli=1  // cloud online console] 
-Install Node.js [and the selected Google Cloud Client Library for Node.js ??]  download https://nodejs.org/en/ install include npm package mgr,free node.js editor https://code.visualstudio.com/docs/?dv=win (search node.js for tutor, ctrl-s before run node index.js)
+Install Node.js download https://nodejs.org/en/ install include npm package mgr,free node.js editor https://code.visualstudio.com/docs/?dv=win (search node.js for tutor, ctrl-s before run node index.js)
  env var >system (install for all users)> PATH C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\nodejs\ 
          >user (install for cur user)> PATH C:\Program Files\Microsoft VS Code\bin;C:\Users\holly\AppData\Roaming\npm
 
@@ -237,9 +237,13 @@ https://firebase.google.com/docs/admin/setup //npm install firebase-admin --save
 firebase console > boropost settings > service account tab > admin sdk > gen new privatw key > boropost-ea8ed.json file
 https://firebase.google.com/docs/database/admin/start
 
+//npm install --save @google-cloud/storage
+https://www.techotopia.com/index.php/A_Cloud_Functions_and_Firebase_Cloud_Storage_Example
+
 https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init functions, pick boropost project : install all lib \functions\node_modules\ and   
 functions\index.js:
 const functions = require('firebase-functions'); //$ npm install -g firebase-tools
+const {Storage} = require('@google-cloud/storage'); //npm install --save @google-cloud/storage
 const admin = require('firebase-admin'); //$ npm install firebase-admin --save //to access the Firebase Realtime Database
 //ignore Warning, FIREBASE_CONFIG environment variable is missing, which is used for admin.initializeApp() by GOOGLE_APPLICATION_CREDENTIALS 
 // store boropost-ea8ed.json at same dir as index.js
@@ -249,8 +253,11 @@ const serviceAccount = require("./boropost-ea8ed-firebase-adminsdk-140ib-682f0b6
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://boropost-ea8ed.firebaseio.com"
+  storageBucket: "boropost-ea8ed.appspot.com", //exclude gs://
+  projectId: "boropost-ea8ed"
 });
-
+//var bucket = admin.storage().bucket(); defaultbucket in defaultStorage is an object defined in the @google-cloud/storage library.
+//do not have to authenticate Google Cloud Storage libraries when bucket references returned by the Admin SDK are already authenticated 
 exports.expirePostDaily = functions.https.onRequest((request, response) => {
     let dt = new Date();
     //getUTCMonth() return 0-11
