@@ -259,55 +259,61 @@ admin.initializeApp({
 //var bucket = admin.storage().bucket(); defaultbucket in defaultStorage is an object defined in the @google-cloud/storage library.
 //do not have to authenticate Google Cloud Storage libraries when bucket references returned by the Admin SDK are already authenticated 
 exports.expirePostDaily = functions.https.onRequest((request, response) => {
-    let dt = new Date();
-    //getUTCMonth() return 0-11
-    let month = dt.getUTCMonth()+1;
-    var monthStr;
-    if (month < 10) {
-        monthStr = '0' + month.toString();
-    } else {
-        monthStr = month.toString();
-    }
-    let day = dt.getUTCDate()+1;
-    var dayStr;
-    if (day < 10) {
-        dayStr = '0' + day.toString();
-    } else {
-        dayStr = day.toString();
-    }
-    let exp = dt.getUTCFullYear().toString() + monthStr + dayStr;
-    //let exp = "20180627";
-    console.log("current expiry: " + exp);
-    const ref = admin.database().ref("/hist");
-    ref.orderByKey().endAt(exp).once('value').then(topSnap => {
-        topSnap.forEach(function(midSnap) {
-            console.log("start deleting hist/" + midSnap.key);
-            midSnap.forEach(function(subSnap) {
-                let path = subSnap.val();
-                let i = path.indexOf("post-img");
-                if(i >= 0){//storage
-                    const bucket = admin.storage().bucket("boropost-ea8ed.appspot.com");
-                    bucket.file(path).delete().then(function() {
-                        //console.log("succeed deleting " + path);
-                      }).catch(function(error) {
-                        console.error("failed deleting " + path + " : " + error);
-                      });
-                } else {
-                    var subRef = admin.database().ref(path);
-                    subRef.remove().then(function() {
-                        //console.log("succeed deleting " + path);
-                      }).catch(function(error) {
-                        console.error("failed deleting " + path + " : " + error);
-                      });
-                }
-                subSnap.ref.remove().then(function() {// not ref()
-                    //console.log("succeed deleting hist/" + path);
+let dt = new Date();
+//getUTCMonth() return 0-11
+let month = dt.getUTCMonth()+1;
+var monthStr;
+if (month < 10) {
+    monthStr = '0' + month.toString();
+} else {
+    monthStr = month.toString();
+}
+let day = dt.getUTCDate();
+var dayStr;
+if (day < 10) {
+    dayStr = '0' + day.toString();
+} else {
+    dayStr = day.toString();
+}
+//let exp = dt.getUTCFullYear().toString() + monthStr + dayStr;
+let exp = "20180810";
+console.log("current expiry: " + exp);
+const ref = admin.database().ref("/hist");
+ref.orderByKey().endAt(exp).once('value').then(topSnap => {
+    topSnap.forEach(function(midSnap) {
+        console.log("start deleting hist/" + midSnap.key);
+        midSnap.forEach(function(subSnap) {
+            let path = subSnap.val();
+            let i = path.indexOf("post-img");
+            if(i >= 0){//storage
+                const bucket = admin.storage().bucket("boropost-ea8ed.appspot.com");
+                bucket.file(path).delete().then(function() {
+                    //console.log("succeed deleting " + path);
+                    subSnap.ref.remove()
                   }).catch(function(error) {
-                    console.error("failed deleting hist/" + path + " : " + error);
+                    console.error("failed deleting " + path + " : " + error);
                   });
-            });
+            } else {
+                var subRef = admin.database().ref(path);
+                subRef.remove().then(function() {
+                    //console.log("succeed deleting " + path);
+                    //remove hist/<date>/<guid> only after posts/<guid> is successfully removed, 
+                    //hist/<date> auto deleted after all <guid> are removed
+                    subSnap.ref.remove()
+                  }).catch(function(error) {
+                    console.error("failed deleting " + path + " : " + error);
+                  });
+            }
+            /*
+            subSnap.ref.remove().then(function() {// not ref()
+                console.log("succeed deleting hist/" + path);
+              }).catch(function(error) {
+                console.error("failed deleting hist/" + path + " : " + error);
+              });
+              */
         });
-    }).catch(e => console.error(e));
+    });
+}).catch(e => console.error(e));
     response.send("expirePostDaily is executed!");
 });
 
