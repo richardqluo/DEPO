@@ -760,6 +760,9 @@ Circular UIImageView in UITableView
 
 floating button https://stackoverflow.com/questions/37073935/how-to-add-floating-button-on-top-of-the-uitableview
 
+https://andreygordeev.com/2017/02/20/uitableview-prefetching/
+Recyclerview Prefetch + Glide preload 
+
 REFACTOR
 https://stackoverflow.com/questions/12276027/how-can-i-return-to-a-parent-activity-correctly
 
