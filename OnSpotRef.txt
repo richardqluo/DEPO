@@ -76,6 +76,7 @@ TwitterConfig config = new TwitterConfig.Builder(this)
         setContentView(R.layout.activity_sign_in);
 com.twitter.sdk.android.core.TwitterCore.getInstance().getSessionManager().getActiveSession().getAuthToken().token|secret; 
 
+add callback url  For iOS: twitterkit-CONSUMERKEY:// For Android: twittersdk:// besides https://boropost-ea8ed.firebaseapp.com/__/auth/handler
 IOS
 URL Types (array)> URL Schemas (array)> item = twitterkit-M9M7U5fWz96A1Ws831ay2Sdbw //twitter_consumer_key
 LSApplicationQueriesSchemes (array)> item = twitter item = twitterauth
