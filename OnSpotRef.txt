@@ -321,6 +321,10 @@ ref.orderByKey().endAt(exp).once('value').then(topSnap => {
 functions>gcloud beta functions deploy expirePostDaily --trigger-http //deploy or update (auto version++) as http, gcloud beta functions delete expirePostDaily
 return url: https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily exe by browser (curl/webget not in windows), and listed on firebase console [...]function and log, gcloud beta functions delete expirePostDaily
 Mac 
+sudo cp /Users/hollykaldrovics/bin/expirePostDaily.sh /Library/Scripts/   // 1 root  wheel
+curl https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily
+date >> /tmp/expirePostDaily.out
+
 vim com.bost.expirePostDaily.plist
 sudo cp com.bost.expirePostDaily.plist /Library/LaunchDaemons/
 
@@ -333,7 +337,7 @@ sudo cp com.bost.expirePostDaily.plist /Library/LaunchDaemons/
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/hollykaldrovics/bin/expirePostDaily.sh</string> 
+        <string>/Library/LaunchDaemons/expirePostDaily.sh</string> 
 	//wget | curl https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily
 	//date >> /tmp/expirePostDaily.out
     </array>
