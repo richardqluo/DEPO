@@ -642,6 +642,7 @@ IOS
 Command-Option-Esc > force close app
 Finder > applications > utilities > terminal : cd Desktop/RichBost/Depo/ios/boropost
 install cocoapods.org by sudo gem install cocoapods (dep mgmt) > pod init (if no create Podfile > add pod 'Firebase/Core' pod 'FirebaseUI[/Database Auth Facebook Phone]' > pod install (all deps spec in Podfile) > if error compatible versions on [fabric] > pod repo update | pod update Fabric > XCODE open other project > .xcworkspace > product \ clean {group:DatabaseExample|Pods.xcodeproj}
+to enable crashlytics: build phrase > run script > check run script only when it is installing
 source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '8.0'
 use_frameworks!
