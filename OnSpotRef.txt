@@ -641,8 +641,10 @@ https://developers.google.com/maps/documentation/android-api/
 IOS
 Command-Option-Esc > force close app
 Finder > applications > utilities > terminal : cd Desktop/RichBost/Depo/ios/boropost
+right click  > hold option btn > context menu > Copy "File" as Pathname
 install cocoapods.org by sudo gem install cocoapods (dep mgmt) > pod init (if no create Podfile > add pod 'Firebase/Core' pod 'FirebaseUI[/Database Auth Facebook Phone]' > pod install (all deps spec in Podfile) > if error compatible versions on [fabric] > pod repo update | pod update Fabric > XCODE open other project > .xcworkspace > product \ clean {group:DatabaseExample|Pods.xcodeproj}
 to enable crashlytics: build phrase > run script > check run script only when it is installing
+xcode > preference > locations > deriv data > click btn to open in finder > /Users/hollykaldrovics/Library/Developer/Xcode/DerivedData/boropost-cizxubzlcujmbxftksoizceeglct/Build/Products/Debug-iphoneos/boropost.app.dSYM, also version for simulator and release build, copy to desktop > right click > compress > firebase crashlytics upload .dSYM zip
 source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '8.0'
 use_frameworks!
