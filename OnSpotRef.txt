@@ -508,6 +508,16 @@ Latitudes [-90,90]. Longitudes [-180,180]  http://andrew.hedges.name/experiments
  world=8*region(8000|4000km 8x8appro.63)=63*area(1000|500km)=100*town(100|50km)=100*zone(10|5km)=100*around(1km|500m)=100*near(100|50m)=100*close(rect:10m|radius:5m)
 distance btw 128.8985-4 (same lgt) 11/20/83/80/93/87/58-48 = 10m,  103.037-6 (same lat) 11/20/83/80/93/87-86 = 100m ...
 
+Center of 38.8986, 74.0371 is 
+Rect(38.8980-9,74.0370-9) 100x100 cover by p(38.898,74.037)
+C(38.8985,74.0375) r =50m
+C(38.895,74.035) r=500m
+C(38.85,74.05) r=5,000m
+C(38.5,74.5) r=50,000m
+C(35,75) r=500,000m
+-180 -90 0 90 180 X -90 0 90 = 8 rect
+P(38,74) in rect (0-90, 0-90) C(45,45) r=4000,000m
+
 corner case 
 NYC(40.,-73.) Clifton(40,-74) Avon(40,-74) //Clifton in same town with Avon but not NYC
 NYC(40.,-73.) > (130, 107) 2/30/7   FL(26,-81) > (116,099) 1/19/69 //in diff regions
@@ -578,6 +588,8 @@ down load OEM USB driver.exe from sumsong ny model from settings
 win7 >device mgr> sumsung Android ADB intf> Update Driver Software >Browse Google USB Driver in C:\Users\holly\AppData\Local\Android\sdk\extras\google\usb_driver\. after install google USB driver from SDL mgr
 
 emulator bottom ...>location :GPS point
+
+Xcode 9 error: “iPhone has denied the launch request” scheme->edit scheme->info->Executable= "Ask on Launch" or debug executable uncheck > fix but debug disable
 
 string mem = chars X 2 + 38 pad to 8s
 3|4|5 X 2 + 38 = 44|46|48 pad 4|2|0 to 48
