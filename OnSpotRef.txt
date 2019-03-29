@@ -589,7 +589,7 @@ win7 >device mgr> sumsung Android ADB intf> Update Driver Software >Browse Googl
 
 emulator bottom ...>location :GPS point
 
-Xcode 9 error: “iPhone has denied the launch request” scheme->edit scheme->info->Executable= "Ask on Launch" or debug executable uncheck > fix but debug disable
+Xcode 9 error: “iPhone has denied the launch request” >  iphone settings > incompleted setup > continue and cancel or (scheme->edit scheme->info->Executable= "Ask on Launch" or debug executable uncheck > fix but debug disable)
 
 string mem = chars X 2 + 38 pad to 8s
 3|4|5 X 2 + 38 = 44|46|48 pad 4|2|0 to 48
