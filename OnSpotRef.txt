@@ -241,6 +241,12 @@ https://firebase.google.com/docs/database/admin/start
 //npm install --save @google-cloud/storage
 https://www.techotopia.com/index.php/A_Cloud_Functions_and_Firebase_Cloud_Storage_Example
 
+web hosting https://medium.com/@aleemuddin13/how-to-host-static-website-on-firebase-hosting-for-free-9de8917bebf2
+after Install Node.js, cd a dir> npm install -g firebase-tools //update latest > firebase login [--reauth] > firebase init (set up web dir) > is out of home dir : y > arrow up/down select hosting > sel firebase boropost project > single page app : y > <public> : y to create /public/index.html and firebase.json (config)
+firebase serve > start local server http://localhost:5000 (output incoming request) > ctrl-c stop
+firebase boropost project > hosting > get start - finish > 
+firebase deploy > https://boropost-ea8ed.firebaseapp.com
+firebase boropost project > hosting > conn domain > copy TXT val to GODADDY DNS mgr add TXT record > after 1 hour > firebase verify > show 2 IP copy to GODADDY DNS mgr add A record, click existing A record in GODADDY and trash can icon to del it for new to take effect
 https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init functions, pick boropost project : install all lib \functions\node_modules\ and   
 functions\index.js:
 const functions = require('firebase-functions'); //$ npm install -g firebase-tools
