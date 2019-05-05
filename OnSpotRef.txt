@@ -247,6 +247,7 @@ firebase serve > start local server http://localhost:5000 (output incoming reque
 firebase boropost project > hosting > get start - finish > 
 firebase deploy > https://boropost-ea8ed.firebaseapp.com
 firebase boropost project > hosting > conn domain > copy TXT val to GODADDY DNS mgr add TXT record > after 1 hour > firebase verify > show 2 IP copy to GODADDY DNS mgr add A record, click existing A record in GODADDY and trash can icon to del it for new to take effect
+https://codebeautify.org/htmlviewer
 https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init functions, pick boropost project : install all lib \functions\node_modules\ and   
 functions\index.js:
 const functions = require('firebase-functions'); //$ npm install -g firebase-tools
