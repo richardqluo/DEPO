@@ -677,7 +677,7 @@ Firebase > proj > add app  > ios > drag download .plist to XCODE proj root > do
 click top bar proj > device = iphone | new / edit schema > regen with new proj name | build / run = debug/release  
 
 proj | src | symbol (type) | find (search) | issue (error) | test | debug | breakpoint |report (activity) navigator
-click proj (switch sub proj up down btn) > general {bundle (package) ID =com.boropost.app | signing team > add account = Apple ID (if cert expired: acct dropdown > add account | xcode > pref > accounts > mgr cert > + cert for ios dev > mach pwd: Vkaldho123!) if err expire before cert exp and get 'already have a current iOS Development certificate' on adding cert, login developer.apple.com with appleid richcluo@gmail.com and rerun | app icon launchImage | linked framework lib}                               
+click proj (switch sub proj up down btn) > general {bundle (package) ID =com.boropost.app | signing team > add account = Apple ID (if cert expired: acct dropdown > add account | xcode > pref > accounts > mgr cert > + cert for ios dev (may need take a day to effect, turn off auto sign for both project & target and turn them on again) > mach pwd  access key chain: Vkaldho123! / Hanger99) if err expire before cert exp and get 'already have a current iOS Development certificate' on adding cert, login developer.apple.com with appleid richcluo@gmail.com and rerun | app icon launchImage | linked framework lib}                               
 					> info = info.plist 
                                          > build settings  { deployment | linking | info.plist | signing| version| compiler: Bridging-Header file |...}
 rightclick proj folder > addfiles (auto update project.pbxproj) 
