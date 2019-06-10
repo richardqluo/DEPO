@@ -673,7 +673,7 @@ use_frameworks!
 target 'MyApp' do
 end
 import FirebaseStorage //after pod 'Firebase/Storage'
-Firebase > proj > add app  > ios > drag download .plist to XCODE proj root > do 
+Firebase > proj > add app  > ios > drag download GoogleService-Info.plist to XCODE proj root (readme) > do 
 click top bar proj > device = iphone | new / edit schema > regen with new proj name | build / run = debug/release  
 
 proj | src | symbol (type) | find (search) | issue (error) | test | debug | breakpoint |report (activity) navigator
