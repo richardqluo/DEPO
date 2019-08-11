@@ -672,6 +672,7 @@ use_frameworks!
   pod 'SDWebImage', '~> 4.0'
 target 'MyApp' do
 end
+xcode > window > device & simulator > device log > crash
 import FirebaseStorage //after pod 'Firebase/Storage'
 Firebase > proj > add app  > ios > drag download GoogleService-Info.plist to XCODE proj root (readme) (xcode select the file in left panel, in right panel click on folder icon under related to group drop down in file inspector , go to the file location, choose it = set as relative path, rename proj folder open, open xcodeproj to sync to srcroot, open xcworkspace, delete old proj, drag new xcodeproj into xcworkspace) > do 
 click top bar proj > device = iphone | new / edit schema > regen with new proj name | build / run = debug/release  
