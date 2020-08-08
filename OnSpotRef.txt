@@ -248,7 +248,9 @@ firebase boropost project > hosting > get start - finish >
 firebase deploy > https://boropost-ea8ed.firebaseapp.com
 firebase boropost project > hosting > conn domain > copy TXT val to GODADDY (richcluo Hanger7139 https://sso.godaddy.com/login?app=o365&realm=pass&username=admin@boropost.com Hanger7139!) DNS mgr add TXT record > after 1 hour > firebase verify > show 2 IP copy to GODADDY DNS mgr add A record, click existing A record in GODADDY and trash can icon to del it for new to take effect
 https://codebeautify.org/htmlviewer
-https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init functions, pick boropost project : install all lib \functions\node_modules\ and   
+
+Cloud functions
+https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init, selcet functions, pick boropost project : install all lib \functions\node_modules\ and  firebase.json  
 functions\index.js:
 const functions = require('firebase-functions'); //$ npm install -g firebase-tools
 const {Storage} = require('@google-cloud/storage'); //npm install --save @google-cloud/storage
@@ -327,6 +329,14 @@ ref.orderByKey().endAt(exp).once('value').then(topSnap => {
 
 functions>gcloud beta functions deploy expirePostDaily --trigger-http //deploy or update (auto version++) as http, gcloud beta functions delete expirePostDaily
 return url: https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily exe by browser (curl/webget not in windows), and listed on firebase console [...]function and log, gcloud beta functions delete expirePostDaily
+
+upgrade from beta to v1.0 or keep use gcloud beta to avoid fee
+update node.js from https://nodejs.org/en/
+\functions>npm install firebase-functions@latest --save
+\functions>npm install firebase-admin@latest --save-exact
+\functions>npm install @firebase/app --save //TypeError: instance.INTERNAL.registerComponent is not a function
+functions.https.onRequest(async (req, res) => {
+
 Mac 
 sudo cp /Users/hollykaldrovics/bin/expirePostDaily.sh /Library/Scripts/   // 1 root  wheel
 curl https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily
