@@ -20,9 +20,7 @@ https://developers.facebook.com/docs/facebook-login/android/  richqluo@gmail.com
 facebook login> get start SDK choose platform > android >[download Facebook SDK] > project structure | new project  : Select API 15/Android 4.0.3
 proj build.gradle : repositories {    mavenCentral() //search mavenLocal() on machine  %USER_HOME% or %M2_HOME%\conf\settings.xml then mavenCentral() http://repo1.maven.org/maven2/
 app  build.gradle : dependencies {   compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-Package:com.google.firebase.quickstart.database
-Default Activity:com.boropost.app.SignInActivity
-[Enable Single Sign On]
+
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 layout.xml <com.facebook.login.widget.LoginButton //auto update status 
@@ -42,7 +40,11 @@ privacy / deletion instruction url (user terms url) //required for release
 App purpose / Data protect contact info
 [add platform>web >url :https://boropost-ea8ed.firebaseapp.com //match above]
 
-add prod : facebook login > settings Valid OAuth redirect URIs = https://boropost-ea8ed.firebaseapp.com/__/auth/handler  (from  firebase/auth/facebook) 
+add prod : facebook login > can only be saved at first time
+Package:com.boropost.application
+Default Activity:com.boropost.application.SignInActivity
+[Enable Single Sign On] 
+settings Valid OAuth redirect URIs = https://boropost-ea8ed.firebaseapp.com/__/auth/handler  (from  firebase/auth/facebook) 
 
 //cd ~/.android : password: android, wont prompt pwd if not at ~/.android, pwd gen diff key
 keytool -exportcert -alias androiddebugkey -keystore debug.keystore | openssl sha1 -binary | openssl base64
