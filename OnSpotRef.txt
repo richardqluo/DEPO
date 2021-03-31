@@ -16,7 +16,7 @@ https://www.appcoda.com/ios-stripe-payment-integration/
 https://github.com/stripe/example-ios-backend/tree/v13.2.0
 https://dashboard.heroku.com/apps/bost Hanger99!
 
-https://developers.facebook.com/docs/facebook-login/android/  richcluo@gmail.com  if advance: One account per email address: same eamil can not be used for other auth acct, otherwise email/name left empty for the user in database  
+https://developers.facebook.com/docs/facebook-login/android/  richqluo@gmail.com Hanger99! if advance: One account per email address: same eamil can not be used for other auth acct, otherwise email/name left empty for the user in database  
 facebook login> get start SDK choose platform > android >[download Facebook SDK] > project structure | new project  : Select API 15/Android 4.0.3
 proj build.gradle : repositories {    mavenCentral() //search mavenLocal() on machine  %USER_HOME% or %M2_HOME%\conf\settings.xml then mavenCentral() http://repo1.maven.org/maven2/
 app  build.gradle : dependencies {   compile 'com.facebook.android:facebook-android-sdk:[4,5)'
@@ -35,13 +35,24 @@ misssing .ApplicationId java.lang.NullPointerException at java.util.concurrent.C
  at com.facebook.internal.Utility.queryAppSettings(Utility.java:822)  
  at com.facebook.login.widget.LoginButton$1.run(LoginButton.java:489)
 
-Facebook settings basic AppId 2048300435186962/Secret 9da141129b37d740ce14e21780003fa0, set to  firebase/auth/facebook
-add prod : login, Valid OAuth redirect URIs = https://boropost-ea8ed.firebaseapp.com/__/auth/handler  (from  firebase/auth/facebook) 
+create a new app > do not add product first, otherwais won't be able to save below > 
+settings basic AppId 2048300435186962/Secret 9da141129b37d740ce14e21780003fa0, set to  firebase/auth/facebook
 app domain : boropost-ea8ed.firebaseapp.com (from  firebase)//facebook err:Given URL is not allowed by the App config
-add platform>web >url :https://boropost-ea8ed.firebaseapp.com //match above
-keyhash: +/FJAETJ76lTOXIlN1408IxftdM=
-//cd ~/.android : keytool -exportcert -alias androiddebugkey -keystore debug.keystore | openssl sha1 -binary | openssl base64
-password: android, wont prompt pwd if not at ~/.android, pwd gen diff key
+privacy / deletion instruction url (user terms url) //required for release
+App purpose / Data protect contact info
+[add platform>web >url :https://boropost-ea8ed.firebaseapp.com //match above]
+
+add prod : facebook login > settings Valid OAuth redirect URIs = https://boropost-ea8ed.firebaseapp.com/__/auth/handler  (from  firebase/auth/facebook) 
+
+//cd ~/.android : password: android, wont prompt pwd if not at ~/.android, pwd gen diff key
+keytool -exportcert -alias androiddebugkey -keystore debug.keystore | openssl sha1 -binary | openssl base64
+keyhash: +/FJAETJ76lTOXIlN1408IxftdM= 
+   
+keytool -list -v -keystore ~/.android/release.keystore
+keytool -exportcert -alias  boropostreleasekey sendhubreleasekey -keystore ~/.android/release.keystore  | openssl sha1 -binary | openssl base64
+/N7ixvjP2S9KoG0sliOZzhLb/YI=  n8+13Av7Ep/CCdFtr1Cj3lAXgvc=
+
+
 App review : make public, Privacy Policy URL= https://github.com/boropost/app/blob/master/PrivacyPolicy
 
 IOS
