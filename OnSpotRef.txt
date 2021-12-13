@@ -339,7 +339,7 @@ ref.orderByKey().endAt(exp).once('value').then(topSnap => {
 }).catch(e => console.error(e));
     response.send("expirePostDaily is executed!");
 });
-run from local: uncomment local version instead of expirePostDaily def, debug > start without debug 
+run from local: uncomment local version instead of expirePostDaily def, debug > start without debug, click stop button
 functions>gcloud beta functions deploy expirePostDaily --trigger-http //deploy or update (auto version++) as http, gcloud beta functions delete expirePostDaily
 return url: https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily exe by browser (curl/webget not in windows), and listed on firebase console [...]function and log, gcloud beta functions delete expirePostDaily
 
