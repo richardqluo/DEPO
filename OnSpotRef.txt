@@ -263,7 +263,10 @@ firebase boropost project > hosting > conn domain > copy TXT val to GODADDY (ric
 https://codebeautify.org/htmlviewer
 
 Cloud functions
-https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init, selcet functions, pick boropost project : install all lib \functions\node_modules\ and  firebase.json  
+https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init, selcet functions, pick boropost project : install all lib \functions\node_modules\ and  firebase.json 
+run below under functions> to upgreade after install the newer node.js v12
+npm install firebase-functions@latest firebase-admin@latest --save
+npm install -g firebase-tools
 functions\index.js:
 const functions = require('firebase-functions'); //$ npm install -g firebase-tools
 const {Storage} = require('@google-cloud/storage'); //npm install --save @google-cloud/storage
