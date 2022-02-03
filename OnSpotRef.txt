@@ -264,7 +264,7 @@ https://codebeautify.org/htmlviewer
 
 Cloud functions
 https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init, selcet functions, pick boropost project : install all lib \functions\node_modules\ and  firebase.json 
-run below under functions> to upgreade after install the newer node.js v12
+run below under functions> to upgreade after install the newer node.js v12, update package.json "node":"12"
 npm install firebase-functions@latest firebase-admin@latest --save
 npm install -g firebase-tools
 functions\index.js:
@@ -343,15 +343,10 @@ ref.orderByKey().endAt(exp).once('value').then(topSnap => {
     response.send("expirePostDaily is executed!");
 });
 run from local: uncomment local version instead of expirePostDaily def, debug > start without debug, click stop button
-functions>gcloud beta functions deploy expirePostDaily --trigger-http //deploy or update (auto version++) as http, gcloud beta functions delete expirePostDaily
+functions>firebase login --reauth
+functions>firebase deploy --only functions //deploy or update (auto version++) 
 return url: https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily exe by browser (curl/webget not in windows), and listed on firebase console [...]function and log, gcloud beta functions delete expirePostDaily
 
-upgrade from beta to v1.0 or keep use gcloud beta to avoid fee
-update node.js from https://nodejs.org/en/
-\functions>npm install firebase-functions@latest --save
-\functions>npm install firebase-admin@latest --save-exact
-\functions>npm install @firebase/app --save //TypeError: instance.INTERNAL.registerComponent is not a function
-functions.https.onRequest(async (req, res) => {
 
 Mac 
 sudo cp /Users/hollykaldrovics/bin/expirePostDaily.sh /Library/Scripts/   // 1 root  wheel
