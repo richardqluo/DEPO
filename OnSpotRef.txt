@@ -33,7 +33,7 @@ misssing .ApplicationId java.lang.NullPointerException at java.util.concurrent.C
  at com.facebook.internal.Utility.queryAppSettings(Utility.java:822)  
  at com.facebook.login.widget.LoginButton$1.run(LoginButton.java:489)
 
-create a new app > do not add product first, otherwise won't be able to save below (try add priv poly and data del url > save then app domain > save) 
+create a new app > do not add product first, otherwise won't be able to save below (try add priv poly and data del url > save then app domain > return to save) 
 settings basic AppId 2048300435186962/Secret 9da141129b37d740ce14e21780003fa0, set to  firebase/auth/facebook
 app domain : boropost-ea8ed.firebaseapp.com (from  firebase)//facebook err:Given URL is not allowed by the App config
 privacy / deletion instruction url (user terms url) //required for release
