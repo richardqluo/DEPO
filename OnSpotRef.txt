@@ -39,6 +39,7 @@ app domain : boropost-ea8ed.firebaseapp.com (from  firebase)//facebook err:Given
 privacy / deletion instruction url (user terms url) //required for release
 App purpose / Data protect contact info
 [add platform>web >url :https://boropost-ea8ed.firebaseapp.com //match above]
+advanced > security > client token (autogen)
 
 add prod : facebook login > can only be saved at first time
 Package:com.boropost.application
