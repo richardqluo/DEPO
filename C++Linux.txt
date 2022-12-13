@@ -952,6 +952,14 @@ void main( )
  shared_ptr<int> sptr2( p );
 }//sptr1 out scope, p is destroyed as use_count( )=0, when sptr2 out scope try to release the p mem has been destroyed > crash
 
+    vector<shared_ptr <MyClass> > v;
+    shared_ptr<MyClass> m(new MyClass);
+    //The vector will add one reference to each added object
+    v.push_back(m);
+    //Every object now has 2 references
+    m.reset(); //Object has 1 reference left
+    v.erase(v.begin()); //Object has no reference left
+
 template < typename T > class SP
 {
 private:
