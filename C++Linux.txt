@@ -752,6 +752,13 @@ void f(int&& i);//rvalue reference binds to a temporary object which typically w
     f(99);   // f(getrValue());rvalue ref called
     f(std::move(i));  // rvalue ref called
 The main usage of rvalue references is to create a move constructor and move assignment operator to avoid unnecessary copies the temporary which will go away.
+the compiler chooses between the copy constructor and the move constructor based on whether the argument to the assignment operator is an lvalue or an rvalue.
+a = b, the copy constructor will initialize that (because the expression b is an lvalue), and the assignment operator swaps the contents with a deep copy. then get rid of the copy by leaving the scope.
+a = x + y, the move constructor will initialize that (because the expression x + y is an rvalue), so there is no deep copy involved, only an efficient move. that is still an independent object from the argument.
+
+the copy constructor makes a deep copy, because the source must remain untouched. 
+The move constructor, can just copy the pointer and then set the pointer in the source to null. It is okay to "nullify" the source object because it won't be acessed again.
+
 class MyClass {
    unique_ptr<int> buffer;//int* buffer = nullptr;
    string data;
