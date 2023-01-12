@@ -1,0 +1,468 @@
+#HFT
+http://www.opensourcewallstreet.com/index.php?option=com_content&view=article&id=55:high-frequency-trading-strategy-overview&catid=30:stratnews&Itemid=2
+bid/ask spread : buy $10 @ $10.00 | $11.00 and show $9.50 | $10.75, sell $10.75 
+exchange rebates : buy sell @ the same price to get exchange rebate $0.001 per share for adding liquidity.
+show the worse bids and offers $4.95|$5.15 instead of the best $5.00|$5.10, and buy @$5.00
+ticking a penny : if exist big order to buy @ $2.00 |$2.10, bid $2.01 to rally the price, if fail cut loss by sell @ $2.00 to the big order 
+detect a big hiden order if price doesn't move after a small order is filled, keep lifting price by IOC order to encourage big inv to improve/join the bid, sell @ bid when profitable. 
+market maker of the underlying security act faster against the option market maker who hedge by selling the underlying security to be delta neutral: If the market was $7.00 at $7.10, underlying security Market maker immediately sells at $7.00 and bids $6.75 and buys back from the option market maker.
+
+"Delta Neutral" strategy: sum of your deltas = zero. ( buy 10 call options, each having a delta of 0.60, and buy 20 put options, each having a delta of -0.30) make profit as long as the market is moving (no matter up or down).
+(http://www.thepitmaster.com/tricks/optionsoverview.htm)	
+	und	put	delta
+	108 	2.14 	-0.73
+  	109 	1.43 	-0.58
+  	110 	0.91 	-0.42
+  	111 	0.53 	-0.28
+  	112 	0.28 	-0.16
+	(option price move faster than und, math decide num of und and opt to reach delta 0 ux1.0 + ox(-0.42) = 0)	
+
+        Buy 2 und at 110
+        Buy 5 put options (110 strike price) at 0.91 each
+  	Delta of und 	2 x 1.00 	= -2.00
+  	Delta of put options 	5 x -0.42 	= -2.10
+  	Total position delta 	2.00 + -2.10 	= -0.10 ->0
+
+	If Tbond futures increase from 110 up to 112:
+	Profit on Tbonds = 2 x 2.00 = 4.00
+	The put options will decrease from 0.91 down to 0.28 (each)
+	Loss on put options = 5 x (0.91 - 0.28) = 5 x 0.63 = 3.15
+	Net profit = 4.00 - 3.15 = 0.85
+ 
+	If Tbond futures decrease from 110 down to 108:
+	Loss on Tbonds = 2 x 2.00 = 4.00
+	The put options will increase from 0.91 up to 2.14 (each)
+	Profit on put options = 5 x (2.14 - 0.91) = 5 x 1.23 = 6.15
+	Net profit = 6.15 - 4.00 = 2.15
+
+Delta One derivative have no optionality (delta=1) for a given percentage move in the price of the underlying asset there will be a near identical move in the price of the derivative (swaps,ETF..).
+
+An alpha of 1% means the return off an investment over a selected period is 1% better than the general market during that same period (outperform)
+
+order flow: measure of net buying pressure = net buy-seller initiated turnover
+Arrival Time: The time difference between current order and preceding order, Size: Side: Price (limit orders).
+market conditions will be determined by the existing orders and by the market-maker�s actions.
+(diff btw bid/ask size/price,Return of transaction price)
+Input/Output Hidden Markov Models:At each time step,the different order will be generated based on current market state (hidden) and the current market condition
+num of states,init state dist,state transition probabilities,output probabilities
+
+http://evolutiq.com/wp-content/uploads/2014/03/Algo-Trading-Intro-2013-Steinki-Session-8.pdf
+execute ordres to Primary exchange and Multilateral Trading Facility
+price Algorithms for trade executions that improve upon some price benchmark, �closing price�, the �decision price�, (price when trade decision is made) or the �arrival price� (price when order is initiated).
+
+TWAP is done on an even basis during the chosen period, to makes the schedule less predictable for other market participants to spot by comparing the actual progress to the planned schedule (% of the order left to be completed after given time) to vary trade frequency and size 
+VWAP Minimize slippage relative to the market Volume-Weighted Average Price [(voli * pricei)/vol thru i transactions over a period, trying to anticipate the volume curve of the period as VWAP by use  historical volume profiles of the asset  
+Constructing VWAP Curves (usually smile curve high at begin and close) to match the intra-day seasonality over one-month window
+group on stock market cap (largest 100, 500), sector and exchange (European/Asian ADR, NYSE/NASDAQ), in advance to be special event 
+guaranteed|target VWAP execution. The broker guarantee execution of an order at the VWAP| best effort way and answer to the client the realized price. 
+Percentage of volume (Participate/volume inline/STEP) continues sending partial orders, at the defined percentage solely based on market volume, in/decrease participation ratio (passive in line with liquidity low 5%, aggressive high 30%) when the stock price reaches user-defined levels
+apply firm price limits to avoid potential risk to drive up or down prices if many traders have POV orders on
+all set optional para : % Volume (max participation rate, required for POV): to avoid suffering a sudden temporary market variation, Price Limit executions are suspended as long as the limit is not met, would price : aim to complete the order if the stock trades at the Would price or better. The use of the Would  may significantly deviate the execution price from the benchmark price
+minimal market impact algorithms is  to route orders to dark pools no visibility
+
+cost driven algorithm to minimize overall transaction costs: besides commissions and  bid-ask spread, Trading too aggressively may result in considerable market impact cost, while trading too passively incurs timing Delay Costs 
+Implementation shortfall algorithms is to minimize implementation shortfall (slippage relative to arrival price):the difference between average achieved price and decision price client want by increase the targeted participation rate when the stock price moves favorably and decrease it when the stock price moves adversely. 
+Adaptive shortfall algorithms (derived from IS) behave more opportunistic reaction to the market price. An aggressive adaptive algorithm trades more aggressively with favorable prices and less when they become adverse
+Market on Close price capture the last price traded at the end of  day (as a benchmark) against the last price reported by the market.
+SoftStop is a Stop Loss/Limit strategy to minimize marketimpact when entering into or exiting out of a position t by using allavailable venues as oppose to single avenue.  
+
+Opportunistic algorithms strive to take best advantage of favorable market conditions
+Price inline: proportionally buy more shares when the market price is below the benchmark price, para: Max|Min % Volume
+Statistical arbitrage is based on the spread between two relative asset prices, trade is triggered when the spread exceeds a certain threshold, on the assumption that the spread will revert to its mean,  para: Max Spread : protect your order from execution during unexpected economic events
+Pair trading involves buying one asset while simultaneously selling another one. As a market neutral strategy, the risks from each asset should hedge or offset each other and hence the strategy less affected by market wide moves.
+Liquidity based on the available order book depth: GUERRILLA, SNIPER
+Dark Algo searches for dark liquidity (non-displayed liquidity) in available dark pools, para: Minimum Acceptable Quantity to prevent unwanted fills and information leakage to detective small order  
+
+trigger: benchmark price(call cancel)|market price(execute call suspense cancel) @ limited price, can be notification to cancel or suspend or execute part of the order when the level is reached
+Fill or Kill order to find hidden volume in the market. iteratively submits to execute as much as possible ( aggressive ).
+PEG:stock @ 10.15 : 10.85.  willing to pay 10.50 but to get the lowest price possible By pegging the order to the best Bid with a limit price of 10.50, your order will display at 10.15 in the Market Depth window. As Bid prices move, your Bid will move with the best Bid, with an upper limit of 10.50 or until filled. 
+
+Pre-Trade Analysis
+Price:current market bid / ask, last traded price,daily high and lowLiquidity: average daily volume (ADV) over  14, 30, 90 days
+given an order size of 50k , an ADV of 1m, and a trading participation rate of 10%, horizon=50k/1m10%=0.5days, small 1% medium 10% large of ADV
+Risk: Volatility e standard deviation of price returns  for the last 1, 3, 6 month
+a high volatility > high timing risk > choose more aggressive trading strategy, larger market impact > a more passive strategy.
+beta A positive value means that the asset price moves in the same direction as the market, 1 means same scale 
+Transaction Cost
+
+Post-Trade Analysis
+relative performance measure ratio of the volume traded at a less favorable price than execution to the total market volume
+transaction costs measured by implementation shortfall = X(Pn-Pd)-(XPn-[XiPi-fixed)=[XiPi-XPd+fixed Pn|d|i final|decision|achieved price=, Xi size
+if factor in an opportunity cost for unexecuted orders (X -[Xi), IS=[XiPi-[XiPd+(X -[Xi)(Pn-Pd)+fixed(commision+fee)
+Execution cost: [XiPi-[XiPd = (10k * 91.15 + 20k * 92.5 +15k* 93.8) � (45k * 90) = 118,500
+Opportunity cost: (X -[Xi)(Pn-Pd) = (50k � 45k) * (93 � 90) = 15k
+Order Value: 50k * 90 = 4.5m
+Transaction Cost Analysis > Performance Benchmarks (by basis point bps= 0.01%)
+Price Improvement, Arrival Price, vs Trade +1|10 min, vs Close |VWAP|Daily Range ( Daily High|low - Execution Price) / (Daily High - Daily Low) 
+Basis points that your orders were filled better (worse) than National Best Bid or Offer |mid price|1 or 10 min later 
+
+High-Frequency Strategies:
+0.arbitrage strategies : buying a security from market where the price is lower and selling it on different markets where the price is higher.
+1.Pairs trading: correlated securities move the same way if Coke move up and Pepsi will too 
+2.volatility trading: trading on relative price movement rather than absolute price movement.
+3.short-term statistical arbitrage: a complex form of pairs trading that involves trading a broad range of securities that are correlated
+4.liquidity detection, sending out small orders if it is filled quickly, there is likely to be a large order potentially 
+
+front office(trade capture- order entered OMS, order  matching convert to trade, execution- broker- exchange  (NYSE), OTC  Market Maker (Nasdaq), ECN (limit order), internal inventory) middle office (validation, book, confirmation )  back office (settlement, clearing)
+-Recording / Ticketing: UniqueId|ticket is assigned to each  trade for tracking,
+-Figuration: cash value of trade, parties involved  
+-comparison: Report Trade information to Order  Comparison System (NYSE Floor trades are reported to OCS  within 20/30 minutes), Trades must match with street side  report before process, Unmatched trades are reported back to  be fixed manually
+-Clearing: National Securities Clearing Corporation, issues  Contract to both parties
+-Confirmations: details of the trade sent to client at end  of the trading day
+-Booking: All processed orders are entered into firms books,  updates Client positions
+-settlement: Depository Trust & Clearing Corporation
+
+Smart Order Routing: trading engine to systematically choose the execution destination based on factors like price(best-possible),cost,speed (Liquidity).
+smart order router to connect to exchanges, ECNs and dark pools, sliced big block order and routed to liquidity pools to search for hidden liquidity and find opportunities in dark pools, achieve best execution without moving the market.
+compare prices across roughly 40 lit and unlit trading venues, STREAMbase,Fidessa, GS:Sigma,ML:Instinct2
+
+Crossings order: same broker have buying and selling clients who wish to trade at the same price, 
+or to trade at the same price as the broker wishes to trade.
+special crossings: may take place off-market at any time at any agreed price without reference to 
+the current market price, only visible after they occur 
+on-market crossings: The broker places an order at the crossing price > create a crossing market 
+> places a crossing order, visible to the market before they occur, Better-priced orders must be 
+filled before an on-market crossing can take place.crossing takes precedence over other orders at 
+the same price.
+
+Exchanges Connectivity(http://www.quanthouse.com/exchanges+connectivity) BATS CME DIRECTEDGE 
+NYSE(Open|ArcaBook|Trades) NASDAQ(TotalView ITCH4.1 UTP OPRA)
+ Level I best bid|ask|last price|size National Best-Bid-Offer(NBBO)
+ Level II MBL (Market By Limit) Top of order book: current highest|lowest bid|ask prices (usually 5 or 10)       
+          MBO (Market By Order) Exhaustive list of all orders in the market
+
+ECN (LIT market, or light pool market, where the order book is made public for all who subscribe.)
+ISLAND-NASDAQ MAIN ECN (�Q�)
+ARCHIPELAGO ECN�NYSE ARCA (P)
+DIRECT EDGE DUAL EXCHANGES�EDGA (J) AND EDGX (K)
+BATS TRADING DUAL EXCHANGES�BZX (Z) AND BYX (Y)
+CBOE STOCK EXCHANGE�CBSX
+NASDAQ OMX BX (NQBX)�FORMERLY BOSTON STOCK EXCHANGE
+NASDAQ OMX PSX (NQPX)�FORMERLY PHILADELPHIA STOCK EXCHANGE
+
+dark pool: hidden liquidity, order are not publicly displayed prior to execution
+NYFix MILLENNIUM ATS
+CREDIT SUISSE CROSS FINDER
+GETCO EXECUTION SERVICES ATS
+KNIGHT CAPITAL GROUP'S DARK POOL ROUTES
+LEVEL ATS
+GOLDMAN SACHS SIGMA X
+
+dark liquidity pool:orders must remain in the pool for a required minimum resting time.
+liquidity in any stock that is not transparent to the public. 
+information-seeking orders:
+ImmediateOrCancel: partially fill VS AllOrNone|FillOrKill, to test (with small amount) the market for interest at a particular price, quickly if have a fill.
+IndicationOfInterest: query the liquidity without visible order
+
+A futures owner has the obligation to buy or sell a specified quantity of an asset at a specified price on a specified date.Futures (standaed contract) are traded on an exchange whereas forwards (customerized contract) are traded over-the-counter.
+An option is a contract that gives the buyer, who pays a fee (premium), the right�but not the obligation�to buy (call) or sell(put) a specified amount of an underlying asset at an agreed upon price (strike price) on or until the expiration.  
+options (vs futures ) risk is limited to initial investment because no obligation to exercise. 
+Traders use options to speculate, while hedgers use options to reduce the risk:If purchases a stock, buying a put option can protect against a loss in share value; if shorted shares, buying a call option can hedge against a gain in share price. 
+GE is trading at $34.80 and the one-month to expiration GE 30 (strike price) call option is trading at $5 (option price), the intrinsic value is $4.80, the time value of the option is $0.20, As expiration nears, the rate of time-value decay (theta) increases.As the price of a stock rises, the more likely the price of a call option will rise and the price of a put option will fall. current market price >|= strike price: put in money(loss)/call out money (gain)|at money put/call
+
+the factors that determine the value of an option ( Black-Scholes pricing: the change in the value of the option is purely a function of expiration time, the underlying asset price, ,the risk-free rate and  volatility) model: 
+c=70: current stock price, 
+s=65: strike price (intrinsic value = s-c : put|call 0 if negative, time/extrinsic value=Option Price�Intrinsic Value), 
+t=0.5: time for expiry/maturity (by year), 
+v=0.3: implied volatility (the volatility implied by the market price fluctuatation of the option, beta><1 the security will be more/less volatile than the market), 
+r=0.08: risk-free rate (annual interest rate),
+cash dividends paid
+Black-Scholes model for pricing options on non-dividend-paying stocks
+d1|2={ln(c/s)+(r+|-v^2/2)t}/{sqrt(t)v}=0.6440|0.4319 also d2=d1-sqrt(t)v
+Call|Put=+|-c*N(+|-d1)-|+s*exp(-rt)N(+|-d2)=10.155 
+N(d1|d2)=0.7402|0.6671: probability that a variable, randomly drawn from a standardized normal distribution (mean 0, standard deviation 1), N(d2)=probability that the option will be exercised
+Factor� � � � � � � � � Call Value Put Value
+Increase in Stock Price Increases Decreases
+Increase in Strike Price Decreases Increases
+Increase in variance of underlying asset Increases Increases
+Increase in time to expiration Increases Increases
+Increase in interest rates Increases Decreases
+Increase in dividends paid Decreases Increases
+
+underlying price (c) =5 stike price (s)= 8 intrinsic value (i) =c-s=3
+option premium/price (p) = i+time value (t) =3+1=4//i equivalated by interest yield during expiration, t decreases to zero at expiration (time decay)
+long|short expect c>|<s put|call to protect if c<|>s by sell|buy at s
+continuously compounded return Ui = ln(Ci/Ci-1) variance O^2=1/(T-1)[i=1->T (Ui-U)^2 (O:standard deviation/ historical daily volatility)
+
+volatility mean reversion: when stock prices are temporarily more erratic|stable than normal, they eventually tend to revert to their long-term averages (mean)
+Implied volatility  marketplace is �implying� the volatility of the stock will be in the future, based on price changes in an option.
+compare the historical volatility of the underlying security to the implied volatility (put|call|avg|MovingAvg(smooth))of the options on that security, to help gauge whether an option's price is currently above or below "normal" levels.
+long|short options when implied volatilities on options are lower|higher than normal to gain value if volatility increases|decrease as anticipated (hv 20% iv 40% option overpriced, iv increase option price increase  VaR increase)
+implied volatility depends on time to expiration and strike : iv surface 3D plot iv vs time to expiration vs strike (iv vs strike 2D plot smile curve: volatility increases as the strike price getting toward in-the-money or out-of-the-money, the lowest volatility occur at the strike price at-the-money 
+
+Black model for pricing options on futures contracts
+f:forward/future price=c*exp(rt) => c= f*exp(-rt), replace c with it in above formula 
+Call|Put=+|-f*exp(-rt)N(+|-d1)-|+s*exp(-rt)N(+|-d2) simply replace c with f in d1|d2
+
+Black-Scholes model is valid only for pricing Eurpean-style option (non-dividend-paying stocks), where value is purely a function of the final possible distribution of asset prices 
+not for american-style (path dependent) options where payoff is a function of values reached by asset during the period of the option, possible payoffs are evaluated based on thousands possible path of future prices for an asset generated randomly by Monte Carlo simulation, then get an average value.    
+american call option can be exercised earlier than expiry, but if it is on non-dividend-paying stocks, then there is no reason for earlier exercise, so it can be valued as european call option by Black-Scholes model 
+
+American|Bermudan|European allow  buyer to exercise at  any point|multiple predefined dates|only expiration over the  option's lifetime. an American demand a greater premium than  a European because it gives the buyer greater flexibility.
+
+american put option, even on non-dividend-paying stocks, early exercise is possible depend on difference between the amount maybe earned thru reinvesting the sales and current value of holding the put, so it is path dependent not suitable for Black-Scholes model, can  be priced using the Bjerksund-Stensland American Option  Approximation model. In the real world, though,  Black-Scholes is commonly used to price both European and  American options as most American options are not exercised  early and therefore behave similar to European options. 
+
+Vanilla Option is normal option (standard expiry and strike price) with no special features. Exotic Option (barrier options, Asian options, basket or spread options) differs from common American or European options in terms of the underlying asset or the calculation of how or when the investor receives a certain payoff. These options are more complex than options that trade on an exchange, and generally trade over the counter.
+Listed options are traded in US at Chicago Board Options Exchange cboe.com Boston Options Exchang  bostonoptions.com
+
+Greeks are rates to measure option's senstivity: the rate of change between the option's price vs above factors (c,t,v,r).
+Delta: / underlying asset's price, delta = 0.7: stock increases $1, call|put will in|decrease by $0.70. delta of Call|Put on non-dividend-paying stocks, dividend-paying stocks, future contract = N(d1)|(N(d1)-1), exp(-qt)*N(d1)|(N(d1)-1) q=continuous dividend, exp(-rt)*N(d1)|(N(d1)-1) r= interest rate
+Gamma: option's delta / underlying asset's price = the rate^2 of change between the option's price vs underlying asset's price. so always positive. 
+Theta: / remaining time before maturity, theta =3.80 per day: option value drop $3.80 minus a day.
+Vega: / underlying asset's implied volatility (price of an option changes compared to a 1% change in its volatility, if vega= -96.94 and if implied volatility rise by 1% then option value fall by $96.94.
+Rho: / interest rate. rho=12.124: interest rates increase 1%, the value of the option increases 12.124%. 
+
+implied volatility surface: 3D plot graph IV [Z-axis]=function(strike price or delta [X-axis],  time to maturity [Y-axis]). 
+IV smile:for a group of options with the same expiration date, volatility increases as the strike price getting more in-the-money or out-of-the-money, the lowest volatility occur at the strike price at-the-money, while IV skew: volatility decreases as the strike price increase from in-the-money to out-of-the-money 
+
+Exotic Option: defined payoff or multiple underlying assets results in complex pricing and risk (http://www.wikinvest.com/wiki/Options)
+
+Asian: payoff linked to avg price of underlying assets over preset period of time, strong Path Dependence: on all historic prices
+-average rate: call|put pay at expiry Max((avg-strike)|(strike-avg),0)
+-average strike:  pay at expiry diff avg and terminal price 
+
+Barrier: payoff at expiry if the underlying assets price Pa cross the target barrier price Pb (multi-touch: cross at least twice), weak Path Dependence: on one historic prices
+up|down-n-in|out: option become active|void if Pa >|< (rise|drop to) Pb during life for both call or put
+1(19) 2(25) 3(18) 4(15) expirty(20) value at expiry for up-n-in (strike price 15,barrier price 25) = 20 (Pa at expiry) - 15 (strike price)
+Pa rise to Pb 25 and activate the option, if Pb=30 then it never activated and expire worthless
+down-and-out put = strike - expiry (0 if minus) only have value when expiry < strike, so if barrier > strike then alway no value
+regular|reverse cross the barrier under|obove strike price (out|in the money)
+double: 2 barrier prices above|under current price 
+reset: cross barrier create a new barrier option
+rainbow: linked to different assets
+multi-touch|persian: must cross mult times|during certain period to against price manipulation  
+
+barrier vs Vanilla 
+call strike 105 Vanilla|down-and-out barrier(97)  price=2.06|1.36% of principal, barrier is better if no big drop forseen
+current index =1500, to protect index drop, put option strike=1450 Vanilla|up-and-out barrier(1550) price =37|25
+current EUR/USD = 1.4000, to protect USD devalue (EUR/USD rise), up-and-out strike 1.4000 euro put / USD call barrier 1.4500, while down-and-out barrier 1.3500 will lose if expiry between 1.4000 and 1.3500,barrier is better because out willl end with better position for rehedge  
+
+lockback: payoff dependent upon the max/min underlying asset price  the underlying asset over the life of the option. 
+-fixed strike: call|put payoff = max-strike | strike - min 
+-floating strike: call|put payoff = expity - min | max - expiry
+
+forward start (delayed-strike):  the strike price is set later (exp: employee stock options)
+-cliquet/Ratchet: periodically reset strike for next period at the prevailing spot price of the asset at the reset date. option value at reset date (spot price - previous strike price, if minus then worthless) can be paid per period or roll-up at maturity    
+-ladder: reset strike price whenever the asset price reaches predefined level 
+-shout: holder are allowed to reset strike price predefined times (once or twice whenever he want) to the current asset price, pay-off = locked-in profit (asset price at shout - previous strike price) + final gain (asset price at expiry - reset strike price, 0 if minus)     
+
+binary
+-Cash|Asset-or-nothing: If a predefined asset price is crossed (up/down), pays off a predetermined fixed amount|unit of cash|asset 
+
+multi-dimensional 
+-basket:  on portfolio contains multi-assets, their positve|negative correlation affect the price 
+-rainbow: payoff depend on relative performance of diff assets (best|worst performing asset)
+ spread is on difference of two related assets price (like crude oil and gas).
+-quanto:  payoff in different currency than underlying 
+
+second order: option over option
+-compound (call/put): strike price = premium of underlying option (call/put)
+-extendible: holder postpone expiry by paying additional premium | writer auto extend expiry upon certain condition 
+-choser: call|put is chosen later by holder at predetermined time
+
+only European call Ct|Pt=Max(St-K|K-St,0)
+Put-Call Parity: C0-P0=S0-K/(1+r)^t|K*e^(-rt) the strike price discounted by time of year from expiration at a risk-free annual rate, e=2.71828
+
+Pricing:
+easy: Closed-form only for European-style and path-INdependent
+medium: Lattice method generate a forward bi/trinomial tree or definite difference grid for Pa in future (for pricing American or Bermuda optins can
+be exercised at different times prior to maturity, good for limited number of dimensions (<4) or early exercise, can not avg price-not for asian option,)
+difficult: Monte Carlo simulate variant price path (incl. avg price) to pricing for asian option, for instrument has many dimensions, not for early exercise like American. 
+ 
+Price by hedging: find a risk-free hedge and then price the option based on it.
+sold(write) one call (strike=current stock price)  and buy n share to hedge, begining O(S=100,C=?) month later T maybe A(S=110,C=10) or B(S=90,C=0) C=S-Strike(100) if >0 else 0
+if A|B reached, the final porf value/payoff Va|b=100n-10|90n, n=1/2 make Va=Vb=45 as riskless, 100*1/2-C=90*1/2*exp(-Rf*T) Rf is annual risk-free
+rate=0.6 T is time to maturity by years (1 month = 0.083 year) C=5.22
+Price by replication is reverse way as hedging
+ 
+Price by risk-neutral probabilities
+Given up|downward probabilitues are both 1/2, bi-tree 2 steps 3 final states, perfectly hedged portfolio (Stock and Call) should has the same value at O and T
+up|downward prob P|1-P make risk-neutral
+E[S(T)]*exp(-Rf*T) = P^2*110 + 2P(1-P)*100 + (1-P)^2*90 = 100 = S(O), so P=1/2 without exp(-Rf*T), then C(O) = E[C(T)]*exp(-Rf*T) = 1/4*10 + 1/2*0 +1/2*0 = 2.5
+N time steps result in N+1 final states, each step up|down-moves probability =p|(1-p), probability of reaching state j (j up-moves, N-j
+down-moves, j=0,1,...,N) P(j)=[N,j]|((N*N-1*...*N-j+1)/j!)*p^j*(1-p)^(N-j)
+value of the derivative with payoff F(S)=[P(j)*F(Sj) j=0 to n
+ 
+#basket Call option of underlying A B stike 100
+A{100,97,94} B{100,102,109} Basket{100,99,101}
+payout: Asian=avg(100,99,101)-100=9.14 Fixed strike max lockback=max(100,99,101)-100=1  Rachet (reset strike= previous close{(strike=100,payout=0)(99,2)}
+ 
+pricing basket structured product (hybrid : underlying are different asset classes like equity and commodity )
+grow strategy: value is tied to the performance of underlyings
+income stratefy : return keeps steady by bound market condition with agreed 'cap'
+buy or sell (senstivity to) volatility
+strarlight : call option extinguish (knock out) is barrier is crossed
+ariane : payout is func on the number of underlyings crossed the lower barrier during a period, more of them then less payout, basically short volatility
+buy or sell correlation
+best or worst of: value is determined on the best or worst performing, best|worst call or worst|best put will benefit from lower|higher correlation
+less correlation means greated dispersion of possible future outcomes
+correlation matrix between underlying A and B: p(A,B) p(B,A), conintegration measures long run co-movement in prices
+
+interest rate (Single currency) swap
+cash flow contract: notional principal 100m GBP, A fixed 4.6% to B, B float LIBOR to A, per semi-year thru 5 years, A|B=100mx4.6%|LIBOR*183/365,  
+so if speculate the rate will rise then choose pay fixed cash flow 
+equity index swap cash flow 
+equity index leg is based on the 'total return' (% change + dividend payments) of a stock market index (equity swap can also based on basket of stocks or a single stock)
+interest rate leg is based on either fixed or floating rates (also can switch)
+A equity index payer (interest rate receiver) B equity index receiver (interest rate papyer)
+A pay B positive(+dividend) index (exp FTSE100) change
+B pay A negative index change and money market rate (exp LIBOR) +- agreed spread amount (exp 10 basic points to make initial equity index leg payment =  interest rate leg payment) 
+if speculate index S&P up|down for short term, to hedge porf avoid buy|selling its S&P stock > long|short future contract or swap be index receiver|payer (no purchase cost, mirror index move)
+constant notional: vanilla
+equity index payment = notionalx(index[t+n]-index[t])/index[t] interest rate payment = notionalx(rate[t]%+-spread%)n/365 net = difference
+equity index appreciate|depreciate -> variable notional in/decrease based by equity index payment (or net flow) over previous period. (exp if index fall, B pay A negative change % decreased notional less than constant)  
+to reduce credit risk, frequent reset (exchange payment/notional per 3>1month), or "marked-to-market" during its life
+cap|floor:set index increase|decrease limit, if exceed payment direction reverse. relative performance:both legs are based on two seperate index  
+blended|rainbow:equity index leg include 2|many index with weighted % (0.3S&P+0.7FTSE). two index:max(S&P,FTSE) better for equity receiver, so usually a spread is added to rate for equity payer  
+
+The FX market is an over-the-counter (OTC) market: negotiable size price settlement date of the deal
+EUR/USD = 1.23 mean 1 EURO (base currency) = 1,23 USD(quoted currency)
+usually JPY is quoted currency, USD is base currency except GBP and EUR, GBP is base currency except EUR, EUR is base currency
+ 
+fixed rate
+free|dirty float rate: varies on demand and supply US| counteract JPY
+semi-|pegged rate: intervene former Exchange Rate Mechanism EU |peg to another major currency Caribbean country
+ 
+market maker: bank dealing room FX dealing desk dealer quote bid/offer price in interbank market, internal|external price: to other dealing desk|customer
+spot market: quote USD/CHF 12.2596/99 (12.25 is big figure) means market maker will buy USD and sell CHF at bid 1.2596 or sell USD and buy CHF at offer 1.2599 to market taker
+spot trade::buy CHF in 10 against USD at 12.2596, pay USD = 10/12.2596million
+settle after 2 business days (value date)
+Reuters and EBS are system for FX spot deal
+Cross rate : neither currency is USD, EUR/JPY = USD/JPY%USD/EUR
+USD/JPY=82.64/69 USD/CHF=0.9648/52
+CHF/JPY=82.64%0.9652 / 82.69%0.9648=85.62/71 reciprocal JPY/CHF=0.9648%82.69 / 0.9652%82.64 =0. 011668/0.011680
+Mark to market (revaluing) by comparing Average/breakeven rate (= net quoted/base currency balance) to current market price
+Sold GBP 10m @ GBP/USD 1.8070 |USD bought 10*1.8070 , bought GBP 15m @1.8030 |USD sold 15*1.8030,
+net quoted USD/baseGBP currency balance = (18070000-27045000)/5000000 = 1.795, sell GBP 5m >|<1.795 will profitloss 5*(spot-1.795)
+
+Quantitative methods use mathematical tools to filter the data to separate trending or nontrending periods to capture trends.
+Quantitative trading: 
+1.mean reversion (eventually a current price will return to its historical mean/average), exmp: long|short when Relative Strength Index is low|higher  
+Leading Indicators RSI = 100 - 100/(1 + RS*) //RS = Average of x days' up/down closes,  compares the magnitude of recent gains andlosses to determine overbought if RSI>=70, oversold if RSI<=30
+
+2.momentum trending (comparing past data with the current trend of prices),exmp: long|short positions as the close crosses above|below its 200 day simple moving average http://stockcharts.com/help/doku.php?id=chart_school:technical_indicators:moving_averages
+http://www.fxkeys.com//macd-moving-average-convergence-divergence-how-to-use-macd-in-forex-trading/
+Simple Moving Average: eliminate the noisy price fluctuation and find the trend, {Price(t) - Price(t-1)/N, N=26 takes the average of each 26 close price, eliminate more price fluctuation and more smooth than 12MA.
+represent true avg prices (200-day SMA) better for identify support or resistance levels.
+Exponential moving average faster (less lag) to current price turn because they have put more weight on the recent prices than the older prices.
+EMA (t) = EMA (t-1) + alpha * (Price (t) - EMA (t-1))  alpha = 2/ (N+1)
+MACD(12,26) is Moving Average Convergence | Divergence =  EMA12 - EMA26 difference between two moving averages as main line. 12 is faster and fluctual than 26 
+price crossover: price cross below|above EMA = down|up trend 
+double crossover: shorter cross below|above longer EMA = down|up trend
+Benefits and Drawbacks of lagging indicators: signal sustained move but late for entry/exit
+up|downtrend it form high|lower high|lows, indicates if market is overbought (buyers may take profit soon by sell > the price goes down) or oversold.
+confirmation for support and resistance break (reversal signals)
+MACD fresh down + not oversold+above the zero level = short sell
+MACD Divergence = price goes up higher highs + MACD (above 0 level) go down and make lower highs (probably down thru 0)=> the price will go down.
+MACD convergence = price goes down lower lows + MACD (below 0 level) go up and make higher lows (probably up thru 0)=> the price will go up.
+
+Oscillators capture turning points by comparing the rate of change of prices from two trends.
+
+price line pierce through the VWAP line indicates up|down trends 
+VWAP line that was acting as resistance|support often becomes support|resistance once penetrated
+http://gekkoquant.com/category/trading-strategy/
+
+elements  of statstics learing http://www-stat.stanford.edu/~tibs/ElemStatLearn/
+Weka supports standard data mining tasks data preprocessing, clustering, classification, regression, visualization, and feature selection.
+
+tool:Theta Suite and Matlab:backtest ThetaML models using the Theta Suite Orchestrator and connect it with the historical market data in Matlab in the Configurator. 
+Backtest applying a trading strategies to historical data during the specified time period with simulator
+P/L, Time frame(similar market conditions:bear/bull),universe(specific genre of stock targeted by the strategy), Exposure (capital % put to the market),Volatility(Max% upside and downside)
+Monte Carlo  Simulation by randomly sample trades data
+A strategy performance report metrics: P/L (Net Profit (total|average), Profit Factor (gross profit/loss)), Maximum drawdown (peak-to-bottom decline during a specific record period of an investment,worst case scenario measures the greatest loss, it must < the trader's risk tolerance amount)
+
+stock indexes are proxies for measure overall market performance.
+market capitalization-weighing ([outstanding share X price/divisor:large company stock have more influnce, float-adjusted:exclude closely held shares 5%, capped: set a limit on perccentage weighing of large stocks) S&P 500 for large-cap stocks, FTSE 100 blue-chips stocks, Russell 2000 for small-cap stocks
+divisor is to neutrilize insubstantial changes made to component stocks that alter the total market value to make index value comparable to previous. 
+to contruct a index on stocks A: $10 200  B: $15 100 initial divisor=(10*200 + 15*100)/100 =35 index=(10*200 + 15*100)/35=100, later B:$20 index=(10*200 + 20*100)/35=114, later A: 250 new divisor=35+(250-200)*10/114=39 index=(10*250 + 20*100)/39=115, later A split $5 400, divisor and index unchanged because price*share unchanged
+price-weighing ([price/divisor affected only by changes in the prices of the component stocks.higher priced stock have more influnce , DJIA and the Nikkei 225
+initial divisor=(10 + 15)/100=0.25, later A split $5 400 new divisor=(5+15)/100=0.2 index= (5+15)/0.2=100, later B has a dividen of $0.50 and price to 14.50 new divisor=(5+14.5)/100=(100*0.2-0.5)/100=0.195 index= (5+14.5)/0.195=100, both index unchanged because split and special dividend and share repurchase are not substantial change
+equal-weighing large=small stock
+A total return index the prices of the underlying stocks, AND the dividends paid to investors and then reinvested.
+index investing is passive portfolio  mgmt strategy as constructing an index fund to mirror the perf of a stock market index  
+index future (long/short for expected index rise/decline) can be used to hedge portfolio: hold portfolio longterm with hedging > buy/sell with transaction cost
+beta is movement ratio between market (index) and a stock (portfolio), (if stock has beta=2 then it raise 20% when index raise 10% ) 
+portfolio beta is weighed average market value (shareXprice) of component stocks beta   
+number of index future contracts to hedge portfolio=beta*portfolioValue/(indexLevel*valuePerIndexpoint) to calcu how many   
+profit/loss on future=+/-points*H*valuePerIndexpoint
+
+Bondfuture is interest rate derivative using bond as underlying asset, used to hedge (lock into an interest rate for a future period): if interest rates raise, bond|future contract price drop 
+cheapest-to-deliver (CTD) bond has the greatest implied repo rate, the rate of interest changed in a repo transaction (bond is sold and latter repurchased at higher price)
+conversion factors (CF<|>1 if bond is delivered with lower(4%)|higher(9%) coupon than underly notional bond coupon 6%)
+CF effectively makes each deliverable bond yield the theoretical coupon on the future
+invoice price=face value of bond*future settle price*CF+Accured Interest 
+CheapToDelivery (yield:low|high, coupon:high|low, maturity:shortest|longest, modified duration:shorte|longer) bond determins futures contract's price with same modified duration, the bond with the higher yield will be lower in value and thus cheaper to deliver.
+CTD is decided by basis is diff btw Spot price and Futures price Gross basis = bond clean price - CFxfutures price Net basis = gross basis - cost of carry(=accured interest-repo cost) 
+
+value of a bond future changes as repo rate|yield on the CTD change, diffcult|can be hedged 
+hedge ratio (number of future contracts to hedge underlying bond position)= (face value of position/value per contract)*CF
+compare underly bond vs bond future price change over the same yield change by one basis point (0.01%) and then recalculating the bond's  present value (PV)
+dirty price (PV) = future prive * CF + + accrued interest 
+
+A bond makes a regular payment(coupon) at fixed intervals, and a terminal|redemption|maturity payment(face/nominal/par value) at maturity date.
+yield=constant coupon value/current market price = 4%100/100 (par=100) when price drop to 98=4%100/98  
+bond par price P is all coupon C and terminal B payments time value discounted by interest rate Ri which may varies  
+P(years=n) = C/(1+R1) + C/(1+R2)^2 + .. + C/(1+Rn)^n + B/(1+Rn)^n, yield to maturity (total return interest payment equivalent unchanged value for R) is rate that equates the present value of all bond payments to its price, as rate of return if hold till maturity 
+P(3 years 4% annual coupon bond with face value 100 at yield to maturity 8% 10% 12%) = 4/(1+0.08) + 4/(1+0.1)^2 + 104/(1+0.12)^3
+dirty price (T) = clean price (present value (PV) right after previous coupon payment t) + accrued interest  (compensate seller during T-t)
+if sold in March then accrued interest = 4*3/12 
+if coupon C < interest of same investment amount then market < norminal value, if sold at its par value, yield to maturity = coupon rate, return on the bond consists only coupon payments    
+bond price decrease if current yield, yield to maturity increase. Price-yield curve higher the coupon|longer the maturity, Greater the price change over yield rate
+bond duration how long takes for the price of a bond to be repaid by its coupon/terminal payments. Vanilla|Zero-Coupon Bond <|= maturity. bonds with higher durations carry more risk and have higher price volatility, higher coupon rate/yield give shorter duration,measuring bond prices change opon interest rates move: bond price decrease on interest rates rise 
+Convexity measure curvature between prices and yields n how duration changes as the interest rate changes. A bond with greater convexity is less affected by interest rates & have a higher price, in price(y)-yield(x) graph: higher convesity bond curve over lower one (higher increase|decrease more|less than lower), duration is straight skew down under them, higher the coupon rate the lower the convexity (Zero-Coupon Bond highest convexity)
+The spot rate treasury curve is a yield curve (a line that plots the interest rates) constructed using Treasury spot rates rather than yields. The spot rate Treasury curve can be used as a benchmark for pricing bonds.
+
+convertible bonds holder has option to exchange the bond for a predetermined number (conversion ratio) of shares underlying stock of issuing company
+hedge: purchase a convertible bond and short sale the underlying common shares, to produce a higher yield on the bond regardlessly (market neutral)  
+
+ETF holds a portfolio of securities that is intended to track the price and yield performance of an underlying benchmark index
+Unlike mutual funds that are priced and exchangeable only at the end of each day, ETF can be traded intraday just like stock
+to hedge positions in individual securities of same market sector/industry
+as an alternative to stock index futures, without margin requirement and expiration dates associated with futures contracts
+NetAssetValue=all assets cur price-all cur liabilities value / num of outstanding ETF shares
+shares of ETF and underly securities are traded independently, incur discrepency between  ETF share price and NAV
+ETF price >|< NAV : traded at premium|discount, but ETF price generally is close to NAV
+NAV only calculated at the end of each business day based on closing market prices of the portfolio securities, similar intraday indicative value (IIV) is based on the last sale prices of the securities
+broad-market|sector|bull/bear|bond ETF, Sector ETFs more volatile than broad-market ETFs, currency ETF profit from FX rate move,
+Investors in ETFs purchase shares on the stock exchange in the same way that they purchase 'regular' shares. Creation units represent large blocks of shares that are issued by ETFs to market makers (authorized participants) in exchange for depositing baskets of securities with the ETF.investor can NOT sell shares directly back to ETF
+50,000-share unit contains 50% AT&T, 30% Verizon and 20% Sprint, To create one unit for the first day of trading, the lead market maker will exchange 25,000 shares of AT&T, 15,000 shares of Verizon and 10,000 shares of Sprint for 50,000 of the ETF,  then sells 5,000 shares of the ETF to retail buyers @ 2 cents higher than NAV, and hedge the sales to minimize risk by buying back shares of the underlying components 250 shares of AT&T, 150 shares of Verizon and 100 shares of Sprint @ 3 cents lower than NAV, profit by 5 cents spread x 5,000 = $250 
+If someone is desperately trying to buy or unload shares, he often doesn't pay attention to the difference between price and underlying value, market maker using high-frequency trading to profit from gap.
+high liquid ETF ( track major market indexes like the S&P 500) have narrower bid/ask spreads(generally a penny), while low liquid ETF (More specialist or niche ETF like clean energy sector) has wider spread: lead market maker may be the only buyer and seller around. This means that retail investors may have to pay a premium to buy shares and sell their investments at a discount
+
+A financial instrument that is created artificially by simulating another instrument: create a synthetic stock by purchasing a call option and simultaneously selling a put option on the same stock. The synthetic stock would have the same capital-gain potential as the underlying security. 
+
+Value at Risk measures a portfolio: the amount|probability of potential loss over a specific time frame. fxp 95% chance to lose less than VaR amount over a 1-day
+5% one month VAR of $100 million = 5% chance lose more than $100 million in any month =$100 million loss expected once every 20 months. 
+VAR(T days) = VAR(1 day) x SQRT(T) //As returns across different periods are close to uncorrelated, the variance of a T-day return should be T times the variance of a 1-day return. in terms of volatility (or standard deviation) 
+VAR(95%) = VAR(99%) x 1.645 / 2.326
+VAR(95%,1day)=daily price volatility(standard deviation(fxp 1.08%) x 1.65) x Market value of position, mean+-STDEV*1.65 covers 95 percentile of a standard normal distribution (99%:2.58)
+can not simply add risk/var of positions from diff sections as risk/var of whole portfolio,because they do NOT move together in perfect lockstep. Instead use correlations (fxp 55%) between all positions. VAR^2=VAR1^2+VAR2^2+2CorrVAR1VAR2 
+Using Monte Carlo Simulations to Calculate VAR of portfolios containing derivatives like options.
+1.generating thousands price scenarios to value the assets in a portfolio over a range of possible market conditions.
+factors taken into account:  
+Opportunity cost of capital : growth rate expected by investor >= risk-free (like US treasury 5%)
+Stochastic element : Stock market and exchange rate fluctuations/Violatity 
+Probability distribution : random variable from standardized normal distribution (standardized value of random variable x= (x-mean)/standardized deviation) creates a normal distribution with a mean of zero (rather than the real mean of the observations in the sample) and a standard deviation of one.
+Pcurrent+1week=Pcurrent:100*exp[(AnnualRiskFreeRate:0.05-AnnualViolatity:0.35peryear^2/2)*(aweekoutofayear:1/52)+0.35*sqrt(1/52)*randomVar:0.615076] //Pcurrent+1day use adayoutofayear:1/255 (252-5 trading days per year)
+Pcurrent+2week=Pcurrent+1week*exp[same as above]
+(for 8 weeks options, use MCS to generate 8 random variables and calculate 8 prices)
+  
+Cholesky decomposition adjust options on correlated (between -1|+1) assets to move against|together
+options on Ice and Gas companies that have -0.7 stock price corelation (G/I price move against each other on temperature change)   
+if have options call on both (negatively correlated), they are unlikely to be executed at the same point, MCS without adjustment (0 correlation) will over estimate the risk
+if have options call on I and put on G (postively correlated), they are likely to be executed at the same point, MCS will under estimate the risk  
+
+2.calculate value of the portfolio for each scenario from 1
+Vt=[Wi*(ishares*iPcurrent+t)//Wi=value weight of asset i relative to value of the portfolio
+revalue options portfolio by delta approximation: 
+option A (shares:100, market price:62, delta:0.62) 
+option B (shares:200, market price:53, delta:0.43) 
+one of 1000 simulations generate PAt=60.92 PBt=49.03
+VARt=0.62*(60.92-62)*100 + 0.43*(49.03-53)*200=-408.38//gain/loss calculated based on price change, similarly 1000 VARt are calculated
+
+3.rank the portfolio revaluations (max to min loss) from 2 to select the required level of confidence for the VAR calculation.
+if 1,000 simulations are run, then the VAR at the 95% confidence level (expect the actual loss to exceed the VAR in 5% of cases = 50) is the 51st highest loss on the list. 
+
+pricing and calibration tools/models.
+stochastic processes, partial differential equations, numerical analyst and probability theory
+stochastic calculus, statistics, PDE, matrix algerbra, montecarlo sim, var, GARCH, ecomometrics 
