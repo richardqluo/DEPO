@@ -1713,6 +1713,7 @@ public:
 };
 std::call_once(flag, foo|[](){...;});//foo or closure/lambad will only be run once based on std::once_flag flag;
 
+promise to set shared object by producer thread, associated future to retrieve it from consumer thread
 1. std::future<int> ret = std::async([std::launch::any(default)|async|sync,] func,10, 0,);//called asynchronously on a new thread|called at the point of access to the shared state. 
 2. std::packaged_task (movable not copable) wrapper put the return value or exception from the task into a promise as shared state, and asynchronously access via the corresponding future, augmented version of std::function 
 std::packaged_task<int(int,int)> task(func); //int func (int x, int y){...retrun z;}  
