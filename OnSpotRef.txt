@@ -262,7 +262,7 @@ firebase boropost project > hosting > get start - finish >
 firebase deploy > https://boropost-ea8ed.firebaseapp.com
 firebase boropost project > hosting > conn domain > copy TXT val to GODADDY (richcluo Hanger7139 https://sso.godaddy.com/login?app=o365&realm=pass&username=admin@boropost.com Hanger7139!) DNS mgr add TXT record > after 1 hour > firebase verify > show 2 IP copy to GODADDY DNS mgr add A record, click existing A record in GODADDY and trash can icon to del it for new to take effect
 https://codebeautify.org/htmlviewer
-zoho.com mail bostmedios@gmail.com Hanger99!
+zoho.com mail bostmedios@gmail.com Hanger99! https://mail.zoho.com/zm/#mail/folder/inbox
 
 Cloud functions
 https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init, selcet functions, pick boropost project : install all lib \functions\node_modules\ and  firebase.json 
