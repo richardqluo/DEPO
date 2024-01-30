@@ -1,0 +1,12 @@
+#inc <threadgroup.1>
+
+cls ThreadPool {
+  public:
+    typedef std::function<void()>    Job;
+    typedef BoundedQueue<Job> Queue;
+
+  private:
+    Queue                   _queue;
+    std::Atomic<int>        _activeThreads;
+    const int               _totalThreads;
+}
