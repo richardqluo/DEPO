@@ -2,11 +2,29 @@
 
 cls ThreadPool {
   public:
-    typedef std::function<void()>    Job;
+    typedef function<void()>    Job;
     typedef BoundedQueue<Job> Queue;
 
+    ThreadPool(int  numThreads, int maxNumPendingJobs);
+     ~ThreadPool();
+
+     //blocks the thread until the queue has free capacity, unblock and return error code if disable() is invoked by another threads
+     int enqueueJob(const Job& functor); //(movable<Job> functor) C++20
+     int tryEnqueueJob(const Job& functor); //return error code if the queue is full
+
+     int start(); //Spawn threads until there are 'totalThreads()' processing threads.
+     void drain(); //Wait until the queue is empty without disabling this pool (may thus wait indefinitely) and all executing complete, jobs are submitted concurrently with this method may or may not wait until they have also completed.
+      void shutdown(); //Disable enqueuing jobs on this thread pool, CANCEL all pending jobs, wait until all active jobs complete, and join all processing threads. 
+      void stop(); //Disable enqueuing jobs on this thread pool, wait until all active and pending jobs complete, and join all processing threads.
+
+
   private:
-    Queue                   _queue;
-    std::Atomic<int>        _activeThreads;
-    const int               _totalThreads;
+    Queue            _queue;
+    atomic<int>      _activeThreads;
+    atomic<bool>      _drainFlag;
+    const int          _totalThreads;
+    Barrier          _barrier; //sync threads during 'start' and 'drain'
+    mutex            _metaMutex; //ensure only one controlling thread at any time
+    void workerThread(); // The main function executed by each worker thread.
+    int startNewThread(); //spawn a new processing thread and increment the count, must be called with metaMutex locked
 }
