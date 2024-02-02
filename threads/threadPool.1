@@ -1,4 +1,6 @@
 #inc <threadgroup.1>
+ns Org {
+ns Div {
 
 cls ThreadPool {
   public:
@@ -23,8 +25,27 @@ cls ThreadPool {
     atomic<int>      _activeThreads;
     atomic<bool>      _drainFlag;
     const int          _totalThreads;
-    Barrier          _barrier; //sync threads during 'start' and 'drain'
-    mutex            _metaMutex; //ensure only one controlling thread at any time
+    ThreadAttributes _threadAttributes; //schedulingPolicy schedulingPriority
+    Barrier          _barrier; //C++20 sync threads during 'start' and 'drain'
+    Mutex            _metaMutex; //ensure only one controlling thread at any time
     void workerThread(); // The main function executed by each worker thread.
     int startNewThread(); //spawn a new processing thread and increment the count, must be called with metaMutex locked
+
+
+inline //comppiler insert at where called to avoid func call overhead, better perf for small func
+int ThreadPool::enqueueJob(const Job& functor) //(movable<Job> functor)
+{
+    BSLS_ASSERT(functor);//avoid undefined behavior if 'functor' is null.
+    return _queue.pushBack(functor); //(move(functor))
+}
+
+inline
+int ThreadPool::tryEnqueueJob(const Job& functor)
+{
+    BSLS_ASSERT(functor);
+    return _queue.tryPushBack(functor);
+}
+}
+
+}
 }
