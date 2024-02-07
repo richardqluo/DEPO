@@ -8,10 +8,10 @@ void ThreadPool::workerThread()
     Job functor;
     do {
         if (_drainFlag) {
-            _barrier.wait();  // pool threads acknowledge drain
+            _barrier.wait();  // pool threads acknowledge drain() by main thread
             _barrier.wait();  // pool threads may proceed
         }
-        while (0 == _queue.popFront(&functor)) {
+        while (0 == _queue.popFront(&functor)) {//able to get job from queue
             _activeThreads.fetch_add(1,memory_order_acq_rel);
             functor();                                               //EXEC
             functor = nullptr;  // ensure destructor is called
@@ -33,7 +33,7 @@ ThreadPool::ThreadPool(int  numThreads,
 : _queue(maxPendingJobs)
 , _activeThreads(0)
 , _drainFlag(false)
-, _barrier(numThreads + 1) //number of participating threads
+, _barrier(numThreads + 1) //number of participating threads + main thread
 , _threadGroup(basicAllocator)
 , _threadAttributes()
 , _totalThreads(numThreads)
@@ -66,92 +66,6 @@ int ThreadPool::start()
     _barrier.wait();
 
     return 0;
-}
-
-
-
-
-
-
-inline
-void ThreadPool::drain()
-{
-    LockGuard<Mutex> lock(&_metaMutex);
-
-    if (isStarted()) {
-        _queue.waitUntilEmpty();
-
-        _drainFlag = true;
-        _queue.disablePopFront();
-        _barrier.wait();
-
-        _drainFlag = false;
-        _queue.enablePopFront();
-        _barrier.wait();
-    }
-}
-
-inline
-void ThreadPool::shutdown()
-{
-    bslmt::LockGuard<bslmt::Mutex> lock(&_metaMutex);
-
-    if (isStarted()) {
-        _queue.disablePushBack();
-        _queue.disablePopFront();
-        _threadGroup.joinAll();
-        _queue.removeAll();
-    }
-}
-
-inline
-void FixedThreadPool::stop()
-{
-    bslmt::LockGuard<bslmt::Mutex> lock(&d_metaMutex);
-
-    if (isStarted()) {
-        d_queue.disablePushBack();
-        d_queue.waitUntilEmpty();
-        d_queue.disablePopFront();
-        d_threadGroup.joinAll();
-    }
-}
-
-// ACCESSORS
-inline
-bool FixedThreadPool::isEnabled() const
-{
-    return !d_queue.isPushBackDisabled();
-}
-
-bool FixedThreadPool::isStarted() const
-{
-    return d_numThreads == d_threadGroup.numThreads();
-}
-
-int FixedThreadPool::numActiveThreads() const
-{
-    return d_numActiveThreads.loadAcquire();
-}
-
-int FixedThreadPool::numPendingJobs() const
-{
-    return static_cast<int>(d_queue.numElements());
-}
-
-int FixedThreadPool::numThreads() const
-{
-    return d_numThreads;
-}
-
-int FixedThreadPool::numThreadsStarted() const
-{
-    return d_threadGroup.numThreads();
-}
-
-int FixedThreadPool::queueCapacity() const
-{
-    return static_cast<int>(d_queue.capacity());
 }
 
 }
