@@ -1,6 +1,6 @@
 #inc <threadgroup.1>
-ns Org {
-ns Div {
+ns Ent {
+ns Pkg {
 
 cls ThreadPool {
   public:
@@ -25,13 +25,13 @@ cls ThreadPool {
     atomic<int>      _activeThreads;
     atomic<bool>      _drainFlag;
     const int          _totalThreads;
-    ThreadAttributes _threadAttributes; //schedulingPolicy schedulingPriority
+    ThreadAttributes _threadAttributes; //schedulingPolicy schedulingPriority, stack size
     Barrier          _barrier; //C++20 sync threads during 'start' and 'drain'
     Mutex            _metaMutex; //ensure only one controlling thread at any time
     void workerThread(); // The main function executed by each worker thread.
     int startNewThread(); //spawn a new processing thread and increment the count, must be called with metaMutex locked
 
-
+// MANIPULATORS
 inline //comppiler insert at where called to avoid func call overhead, better perf for small func
 int ThreadPool::enqueueJob(const Job& functor) //(movable<Job> functor)
 {
@@ -45,7 +45,101 @@ int ThreadPool::tryEnqueueJob(const Job& functor)
     BSLS_ASSERT(functor);
     return _queue.tryPushBack(functor);
 }
+
+inline
+void ThreadPool::drain()
+{
+    LockGuard<Mutex> lock(&_metaMutex);
+
+    if (isStarted()) {
+        _queue.waitUntilEmpty();
+
+        _drainFlag = true;
+        _queue.disablePopFront();
+        _barrier.wait();
+        //barrier auto reset 
+        _drainFlag = false;
+        _queue.enablePopFront();
+        _barrier.wait();
+    }
+}
+
+inline
+void ThreadPool::shutdown()
+{
+    bslmt::LockGuard<bslmt::Mutex> lock(&_metaMutex);
+
+    if (isStarted()) {
+        _queue.disablePushBack();
+        _queue.disablePopFront();
+        _threadGroup.joinAll();
+        _queue.removeAll(); //purge pending jobs
+    }
+}
+
+inline
+void FixedThreadPool::stop()
+{
+    bslmt::LockGuard<bslmt::Mutex> lock(&d_metaMutex);
+
+    if (isStarted()) {
+        d_queue.disablePushBack();
+        d_queue.waitUntilEmpty();
+        d_queue.disablePopFront();
+        d_threadGroup.joinAll();
+    }
+}
+
+inline
+void FixedThreadPool::disable()
+{
+    d_queue.disablePushBack();
+}
+
+inline
+void FixedThreadPool::enable()
+{
+    d_queue.enablePushBack();
+}
+
+// ACCESSORS
+inline
+bool FixedThreadPool::isEnabled() const
+{
+    return !d_queue.isPushBackDisabled();
+}
+
+bool FixedThreadPool::isStarted() const
+{
+    return d_numThreads == d_threadGroup.numThreads();
+}
+
+int FixedThreadPool::numActiveThreads() const
+{
+    return d_numActiveThreads.load(memory_order_acquire);
+}
+
+int FixedThreadPool::numPendingJobs() const
+{
+    return static_cast<int>(d_queue.numElements());
+}
+
+int FixedThreadPool::numThreads() const
+{
+    return d_numThreads;
+}
+
+int FixedThreadPool::numThreadsStarted() const
+{
+    return d_threadGroup.numThreads();
+}
+
+int FixedThreadPool::queueCapacity() const
+{
+    return static_cast<int>(d_queue.capacity());
 }
 
 }
-}
+
+}// close package ns
+}// close enterprise ns
