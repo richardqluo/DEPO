@@ -33,5 +33,74 @@ cls ThreadGroup {
     void joinAll();
     // ACCESSORS
     int numThreads() const;
-};
+}; //close cls
+
+// MANIPULATORS
+tmpl<cls INVOKABLE>
+inline
+int ThreadGroup::addThread(const INVOKABLE& functor)
+{
+    return addThread(functor, ThreadAttributes());
+}
+
+tmpl<cls INVOKABLE>
+inline
+int ThreadGroup::addThreads(const INVOKABLE& functor, int numThreads)
+{
+    return addThreads(functor, numThreads, ThreadAttributes());
+}
+
+tmpl<cls INVOKABLE>
+int ThreadGroup::addThread(const INVOKABLE&        functor,
+                                  const ThreadAttributes& attributes)
+{
+    thread handle;
+    int rc = 1;
+    if (ThreadAttributes::e_CREATE_JOINABLE != attributes.detachedState()) {
+        ThreadAttributes newAttributes(attributes);
+        newAttributes.setDetachedState(ThreadAttributes::e_CREATE_JOINABLE);
+        rc = ThreadUtil::createWithAllocator(
+                                        &handle,
+                                        newAttributes,
+                                        functor,
+                                        d_threads.get_allocator().mechanism());
+    }
+    else {
+        rc = ThreadUtil::createWithAllocator(
+                                        &handle,
+                                        attributes,
+                                        functor,
+                                        d_threads.get_allocator().mechanism());
+    }
+
+    if (0 == rc) {
+        addThread(handle);
+    }
+    return rc;
+}
+
+tmpl<cls INVOKABLE>
+int ThreadGroup::addThreads(const INVOKABLE&        functor,
+                                   int                     numThreads,
+                                   const ThreadAttributes& attributes)
+{
+    ASSERT(0 <= numThreads);
+
+    int numAdded;
+    for (numAdded = 0; numAdded < numThreads; ++numAdded) {
+        if (0 != addThread(functor, attributes)) {
+            break;
+        }
+    }
+    return numAdded;
+}
+
+// ACCESSORS
+inline
+int ThreadGroup::numThreads() const
+{
+   return _numThreads.load(memory_order_relaxed);
+}
+
 }  // close package ns
+} // close enterprise ns
