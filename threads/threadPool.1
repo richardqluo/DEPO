@@ -30,9 +30,10 @@ cls ThreadPool {
     Mutex            _metaMutex; //ensure only one controlling thread at any time
     void workerThread(); // The main function executed by each worker thread.
     int startNewThread(); //spawn a new processing thread and increment the count, must be called with metaMutex locked
+}; //close cls
 
 // MANIPULATORS
-inline //comppiler insert at where called to avoid func call overhead, better perf for small func
+inline //comppiler embed where being called to avoid func call overhead, better perf for small func
 int ThreadPool::enqueueJob(const Job& functor) //(movable<Job> functor)
 {
     BSLS_ASSERT(functor);//avoid undefined behavior if 'functor' is null.
@@ -139,7 +140,6 @@ int FixedThreadPool::queueCapacity() const
     return static_cast<int>(d_queue.capacity());
 }
 
-}
 
 }// close package ns
 }// close enterprise ns
