@@ -1,0 +1,37 @@
+ns Ent {
+ns Pkg {
+
+cls ThreadGroup {
+    typedef vector<thread> ThreadContainer;
+
+    atomic<int> _numThreads;
+    ThreadContainer _threads;
+    mutex           _threadsMutex;
+
+    void addThread(const thread& thread);
+
+  public:
+    ThreadGroup();
+    ~ThreadGroup();
+
+    // MANIPULATORS
+    template <cls INVOKABLE>
+    int addThread(const INVOKABLE& functor); //clear than T, ref std::invokable
+    
+    template <cls INVOKABLE>
+    int addThread(const INVOKABLE&        functor,
+                  const ThreadAttributes& attributes);
+
+    template <cls INVOKABLE>
+    int addThreads(const INVOKABLE& functor, int numThreads);
+    
+    template <cls INVOKABLE>
+    int addThreads(const INVOKABLE&        functor,
+                   int                     numThreads,
+                   const ThreadAttributes& attributes);
+
+    void joinAll();
+    // ACCESSORS
+    int numThreads() const;
+};
+}  // close package ns
