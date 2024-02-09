@@ -84,60 +84,60 @@ void FixedThreadPool::stop()
     bslmt::LockGuard<bslmt::Mutex> lock(&d_metaMutex);
 
     if (isStarted()) {
-        d_queue.disablePushBack();
-        d_queue.waitUntilEmpty();
-        d_queue.disablePopFront();
-        d_threadGroup.joinAll();
+        _queue.disablePushBack();
+        _queue.waitUntilEmpty();
+        _queue.disablePopFront();
+        _threadGroup.joinAll();
     }
 }
 
 inline
 void FixedThreadPool::disable()
 {
-    d_queue.disablePushBack();
+    _queue.disablePushBack();
 }
 
 inline
 void FixedThreadPool::enable()
 {
-    d_queue.enablePushBack();
+    _queue.enablePushBack();
 }
 
 // ACCESSORS
 inline
 bool FixedThreadPool::isEnabled() const
 {
-    return !d_queue.isPushBackDisabled();
+    return !_queue.isPushBackDisabled();
 }
 
 bool FixedThreadPool::isStarted() const
 {
-    return d_numThreads == d_threadGroup.numThreads();
+    return _numThreads == d_threadGroup.numThreads();
 }
 
 int FixedThreadPool::numActiveThreads() const
 {
-    return d_numActiveThreads.load(memory_order_acquire);
+    return _numActiveThreads.load(memory_order_acquire);
 }
 
 int FixedThreadPool::numPendingJobs() const
 {
-    return static_cast<int>(d_queue.numElements());
+    return static_cast<int>(_queue.numElements());
 }
 
 int FixedThreadPool::numThreads() const
 {
-    return d_numThreads;
+    return _numThreads;
 }
 
 int FixedThreadPool::numThreadsStarted() const
 {
-    return d_threadGroup.numThreads();
+    return _threadGroup.numThreads();
 }
 
 int FixedThreadPool::queueCapacity() const
 {
-    return static_cast<int>(d_queue.capacity());
+    return static_cast<int>(_queue.capacity());
 }
 
 
