@@ -25,7 +25,7 @@ cls ThreadPool {
     atomic<int>      _activeThreads;
     atomic<bool>      _drainFlag;
     const int          _totalThreads;
-    ThreadAttributes _threadAttributes; //schedulingPolicy schedulingPriority, stack size
+    ThreadAttributes _threadAttributes; //schedulingPolicy (1 first-in-first-out 2 round-robin) schedulingPriority, stack size
     Barrier          _barrier; //C++20 sync threads during 'start' and 'drain'
     Mutex            _metaMutex; //ensure only one controlling thread at any time
     void workerThread(); // The main function executed by each worker thread.
