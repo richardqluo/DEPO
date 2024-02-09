@@ -54,29 +54,14 @@ tmpl<cls INVOKABLE>
 int ThreadGroup::addThread(const INVOKABLE&        functor,
                                   const ThreadAttributes& attributes)
 {
-    thread handle;
-    int rc = 1;
-    if (ThreadAttributes::e_CREATE_JOINABLE != attributes.detachedState()) {
-        ThreadAttributes newAttributes(attributes);
-        newAttributes.setDetachedState(ThreadAttributes::e_CREATE_JOINABLE);
-        rc = ThreadUtil::createWithAllocator(
-                                        &handle,
-                                        newAttributes,
-                                        functor,
-                                        d_threads.get_allocator().mechanism());
+    //ThreadAttributes is supported by pthread_create() in gnu/gnulib/lib/pthread-thread.c 
+    try{
+       thread handle(functor);
+    } catch(...){
+        return -1;
     }
-    else {
-        rc = ThreadUtil::createWithAllocator(
-                                        &handle,
-                                        attributes,
-                                        functor,
-                                        d_threads.get_allocator().mechanism());
-    }
-
-    if (0 == rc) {
-        addThread(handle);
-    }
-    return rc;
+    addThread(handle);
+    return 0;
 }
 
 tmpl<cls INVOKABLE>
