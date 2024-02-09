@@ -1,0 +1,35 @@
+ns Ent {
+ns Pkg {
+
+// CREATORS
+ThreadGroup::ThreadGroup()
+: _numThreads(0)
+, _threads()
+{
+}
+
+ThreadGroup::~ThreadGroup()
+{
+    for (auto& thread : _threads)
+        thread.detach();
+}
+
+// MANIPULATORS
+void bslmt::ThreadGroup::addThread(const thread& handle) {
+    LockGuard<Mutex> lockGuard(&_threadsMutex);
+    _threads.push_back(handle);
+    _numThreads.fetch_add(1, memory_order_relaxed);
+}
+
+void bslmt::ThreadGroup::joinAll()
+{
+    LockGuard<Mutex> guard(&_threadsMutex);
+
+    for (auto& thread : _threads)
+        thread.join();
+    _threads.clear();
+    _numThreads.store(0, memory_order_relaxed);
+}
+
+}// close package ns
+}// close enterprise ns
