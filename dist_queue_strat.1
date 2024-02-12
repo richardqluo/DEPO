@@ -1,0 +1,67 @@
+ns Ent {
+ns Dist {
+
+stc FarmStatus
+{
+    FarmStatus() : numLow(0), numHigh(0), totalAllocation(0), totalCapRequests(0) {}
+    set<int> queuedOrderNums;
+    int numLow;
+    int numHigh;
+    int totalAllocation;
+    int totalCapRequests; // the number of outstanding requests with a cap flag for this farm/px
+};
+
+//functor to compare Jobs by JobKey
+cls JobEqual
+{
+  pub:
+    JobEqual(const Job& j);
+    bool operator()(const Job& job) const;
+
+  prv:
+    const Job& m_job;
+};
+//functor to compare Jobs by firm
+cls JobForClient
+{
+  pub:
+    JobForClient(const FirmPxHandle& client);
+    bool operator()(const Job& job) const;
+
+  prv:
+    const FirmPxHandle m_client;
+};
+
+cls QueueStrat
+{
+  pub:
+    explicit QueueStrat(
+        const bsl::shared_ptr<FarmConfig>& fc,
+        bool isOvrdQueue = false,
+        bool isTsoxWorkerOvrdQueue = false)
+        , _config(fc)
+        , _isOvrdQueue(isOvrdQueue)
+        , _isTsoxWorkerOvrdQueue(isTsoxWorkerOvrdQueue)
+    {}
+    //Notify the strategy about that job
+    void jobReceived(const Job& job);
+    void jobCompleted(const Job& job);
+    //Obtains next available job by fairness and sequential guarantees
+    bool nextJob(Job& job);
+    bool flushJobQueue(int firmId, vector<JobKey>* jobKeys);
+    bool hasJob(int firmId, JobKey jobkey) const; //const: not modify data members 
+    bool allRequestsProcessed() const;
+    bool isJobInProcessingList(const Job& job) const;
+    bool areJobsProcessingForClient(const FirmPxHandle& handle) const;
+    int queueSize(int firmId) const;
+    void clear();
+
+  prv:
+    //next available job from the provided JobList
+    bool nextJobFromQueue(Job* job, const FirmPxHandle& handle);
+    bool canProcessJob(FarmStatus* fs, const Job& thisJob) const;
+    HandleList _handleList; //all of the queued jobs
+    ProcessingList _processingList; //jobs currently processing
+
+}// close package ns
+}// close enterprise ns
