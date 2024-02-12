@@ -1,0 +1,27 @@
+#include <dist_job.h>
+
+ns Ent {
+ns Dist {
+
+typedef list<Job> JobList;
+
+str FirmHandle
+{
+    FirmHandle(int f) : firmId(f) {}
+    FirmHandle(const Client& client)
+    {
+        firmId = client.clientId;
+    }
+    int firmId;
+    shared_ptr<JobList> jobs;
+    distdb::Client toDbClient() const;
+};
+
+bool operator<(const FirmHandle& h1, const FirmHandle& h2);
+bool operator==(const FirmPHandle& h1, const FirmHandle& h2);
+
+typedef list<FirmHandle> HandleList; //HandleList of JobList
+typedef set<Job> ProcessingList;
+
+}  // close package ns
+} // close enterprise ns
