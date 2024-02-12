@@ -1,7 +1,7 @@
 ns Ent {
 ns Dist {
 
-stc FarmStatus
+str FarmStatus
 {
     FarmStatus() : numLow(0), numHigh(0), totalAllocation(0), totalCapRequests(0) {}
     set<int> queuedOrderNums;
@@ -49,7 +49,7 @@ cls QueueStrat
     //Obtains next available job by fairness and sequential guarantees
     bool nextJob(Job& job);
     bool flushJobQueue(int firmId, vector<JobKey>* jobKeys);
-    bool hasJob(int firmId, JobKey jobkey) const; //const: not modify data members 
+    bool hasJob(int firmId, JobKey jobkey) const; //const: not modify data members otherwise compile error. 
     bool allRequestsProcessed() const;
     bool isJobInProcessingList(const Job& job) const;
     bool areJobsProcessingForClient(const FirmPxHandle& handle) const;
