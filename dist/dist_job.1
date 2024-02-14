@@ -1,0 +1,24 @@
+ns Ent {
+ns Dist {
+typedef string JobKey;
+typedef tsoxutils::tsoxdist::Job Job;
+
+class Job {
+    vector<int>                        d_ordersAffected;
+    string                             d_jobKey;
+    string                             d_requestName;
+    DatetimeTz                        d_timeAdded;
+    NullableValue<bdlt::DatetimeTz>   d_timeProcessed;
+    NullableValue<bdlt::DatetimeTz>   d_timeCompleted;
+    NullableValue<WorkerInformation>  d_workerInfo;
+    int                                     d_firmId;
+    int                                     d_priority;
+    bdlb::NullableValue<bool>               d_isOverride;
+    bdlb::NullableValue<bool>               d_capWorkerUtilization;
+    bdlb::NullableValue<bool>               d_isOverrideTsoxWorker;
+};
+
+
+
+}// close package ns
+}// close enterprise ns
