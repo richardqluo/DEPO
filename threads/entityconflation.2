@@ -1,0 +1,39 @@
+ns Ent {
+ns Pkg {
+
+Conflation::Conflation(CallbackT cb)
+:d_cb(cb){}
+
+Conflation::~Conflation()
+{
+    if(d_cb){
+        d_cb();
+    }
+}
+//triggered by prev cb to run the next cb
+bool Conflation::consume()
+{
+    if(!d_queue.isEmpty())
+    {
+        auto cb=d_queue.front();
+        d_queue.pop();
+        cb(); 
+        return true;
+    }
+    return false;
+}
+
+void Conflation::setCB(CallbackT cb)
+{
+    if(d_queue.size() > d_len)
+    {
+        d_queue.pop();//drop older cb
+        d_queue.push(cb);
+    }
+    else
+    {
+        d_queue.push(cb);
+    }
+}
+}// close package ns
+}// close enterprise ns
