@@ -1,0 +1,67 @@
+ns Ent {
+ns Pkg {
+
+class Conflation
+{
+    public:
+        typedef function<void(void)> CallbackT;
+        static constexpr int   MAX_LEN=1;
+        Conflation(CallbackT cb,size_t maxLen=0):d_len(maxLen==0?MAX_LEN:maxLen){}
+        ~Conflation();
+        bool consume();
+        void setCB(CallbackT cb);
+    private:
+        CallbackT               d_cb;
+        queue<CallbackT>        d_queue;
+        size_t                  d_len;
+    friend class EntityConflationTestFixture;
+};
+
+class EntityConflation
+{
+    public:
+        typedef function<void(void)> CallbackT;
+        EntityConflation(size_t maxLength=0):d_length(maxLength){}
+        void add(string key,CallbackT cb);
+        bool consume(string key);
+    private:
+        map<string,shared_ptr<Conflation>> d_conflation;
+        size_t                             d_length;
+        mutex                              d_lock;
+    friend class EntityConflationTestFixture;    
+};
+void EntityConflation::add(string key,CallbackT cb)
+{
+    LockGuard<mutex> guard(d_lock);
+    // d_conflation is being used as a lock/check here
+    auto res = d_conflation.insert(key,make_shared<Conflation>(cb));
+    if(res.second) // insert successful
+    {
+        //no existing cb for the key, run it and then consume
+        cb();
+    }
+    else
+    {
+        //existing cb for the key, queue it 
+        auto& conflation=res.first->second;
+        conflation->setCB(cb);
+    }
+}
+bool EntityConflation::consume (string key)
+{
+    LockGuard<mutex> guard(d_lock);
+    bool result=false;
+    auto iter = d_conflation.find(key);
+    if(iter != d_conflation.end())
+    {
+        //existing cb for the key
+        result=iter->second->consume();
+
+        if (!result) //conflation queue for this key is empty, so erase
+            d_conflation.erase(iter);
+    }
+    return result;
+}
+
+}// close package ns
+}// close enterprise ns
