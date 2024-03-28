@@ -1,3 +1,4 @@
+inc entityconflation.1
 Client(){
     d_threadPool = make_shared<ThreadPool>(5, 50000);//5 threads and 50000 jobs
     ASSERT_OPT(!d_threadPool->isStarted());
@@ -47,4 +48,4 @@ void Client::ordersHandler(vector<order> orders)
 }
 
 shared_ptr<ThreadPool>    d_threadPool;
-EntityConflation<string, mutex> d_entityConflation;
+EntityConflation d_entityConflation;
