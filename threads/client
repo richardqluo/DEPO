@@ -1,0 +1,50 @@
+Client(){
+    d_threadPool = make_shared<ThreadPool>(5, 50000);//5 threads and 50000 jobs
+    ASSERT_OPT(!d_threadPool->isStarted());
+    int rc = d_threadPool->start();
+    BSLS_ASSERT_OPT(rc == 0);
+}
+~Client(){
+    if(d_threadPool->isStarted())
+    {
+        d_threadPool->drain();
+        d_threadPool->shutdown();
+    }
+}
+void Client::enqueue(function<void()> job)
+{
+    int rc = d_threadPool->tryEnqueueJob(job);
+    if(rc != 0)
+    {
+        if(rc == 1) 
+        {
+            LOG_ERROR << "job Queue is full with "
+                           << "numPendingJobs=" << d_threadPool->numPendingJobs()
+                           << ", "
+                           << "queueCapacity=" << d_threadPool->queueCapacity();
+        }
+        else
+        {
+            LOG_ERROR << " tryEnqueueJob failed with rc=" << rc;
+        }
+    }
+}
+void Client::ordersHandler(vector<order> orders)
+{
+        for(auto order : orders)
+        {
+            function<void ()> writer =  [=]()
+            {
+                ... process ...
+                d_entityConflation.consume(order.Id());
+            };
+            auto enqueueCb=[=]() {
+                enqueue( writer );
+            };
+            //ensure serialize process by orderId in multi-threads pool
+            d_entityConflation.add(order.Id(), enqueueCb);
+        }
+}
+
+shared_ptr<ThreadPool>    d_threadPool;
+EntityConflation<string, mutex> d_entityConflation;
