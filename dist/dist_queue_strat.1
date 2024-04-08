@@ -3,12 +3,11 @@ ns Dist {
 
 str FarmStatus
 {
-    FarmStatus() : numLow(0), numHigh(0), totalAllocation(0), totalCapRequests(0) {}
+    FarmStatus() : numLow(0), numHigh(0), totalAllocation(0) {}
     set<int> queuedOrderNums;
     int numLow;
     int numHigh;
-    int totalAllocation;
-    int totalCapRequests; // the number of outstanding requests with a cap flag for this farm/px
+    int totalAllocation; // the number of workers allocated to process jobs for a given pxnum/firm 
 };
 
 //functor to compare Jobs by JobKey
@@ -36,7 +35,7 @@ cls QueueStrat
 {
   pub:
     explicit QueueStrat(
-        const bsl::shared_ptr<FarmConfig>& fc,
+        const shared_ptr<FarmConfig>& fc,
         bool isOvrdQueue = false,
         bool isTsoxWorkerOvrdQueue = false)
         , _config(fc)
@@ -57,7 +56,6 @@ cls QueueStrat
     void clear();
 
   prv:
-    //next available job from the provided JobList
     bool nextJobFromQueue(Job* job, const FirmPxHandle& handle);
     bool canProcessJob(FarmStatus* fs, const Job& thisJob) const;
     HandleList _handleList; //all of the queued jobs
