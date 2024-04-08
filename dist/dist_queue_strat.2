@@ -1,0 +1,50 @@
+ns Ent {
+ns Dist {
+
+void farmStatusForFirm(FarmStatus* fs, int firmId, const Job& job)
+{
+    if(job.firmId() == firmId)
+    {
+        if(job.priority() < 0) //low priority jobs
+        {
+            fs->numLow++;
+        }
+        else //high priority jobs
+        {
+            fs->numHigh++;
+        }
+        fs->queuedOrderNums.insert(job.ordersAffected().begin(), job.ordersAffected().end());
+    }
+}
+
+bool QueueStrat::canProcessJob(FarmStatus* fs, const Job& thisJob) const
+{
+    bool result = false;
+    if(find_first_of(
+           fs.queuedOrderNums.begin(),
+           fs.queuedOrderNums.end(),
+           thisJob.ordersAffected().begin(),
+           thisJob.ordersAffected().end()) 
+        == fs.queuedOrderNums.end())
+    {
+        //No related orders of thisJob has been queued,
+        if(thisJob.priority() >= 0 || fs.totalAllocation == 1 || (fs.numLow < (fs.totalAllocation - 1)))
+        {
+            //keep at least 1 worker always available for Standard/High (i.e. not-Low) priority jobs. This retains
+            //responsiveness when flooded by of Low priority jobs for example process FIX messages.
+            //
+            // "fs.numLow" represents the number of low-priority jobs currently in-process, and
+            // "fs.totalAllocation" represents the number of total workers allocated to us for
+            // processing. The "fs.totalAllocation == 1" to handle 
+            //  "if we're only allocated one worker, then we can't reserve a worker for high
+            //  priority jobs, because then we'd never process any low priority jobs."
+            result = true;
+        }
+    } else{
+        fs.queuedOrderNums.insert(thisJob.ordersAffected().begin(), thisJob.ordersAffected().end());
+    }
+    return result;
+}
+
+}// close package ns
+}// close enterprise ns
