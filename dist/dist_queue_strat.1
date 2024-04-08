@@ -37,10 +37,10 @@ cls QueueStrat
     explicit QueueStrat(
         const shared_ptr<FarmConfig>& fc,
         bool isOvrdQueue = false,
-        bool isTsoxWorkerOvrdQueue = false)
+        bool isWorkerOvrdQueue = false)
         , _config(fc)
         , _isOvrdQueue(isOvrdQueue)
-        , _isTsoxWorkerOvrdQueue(isTsoxWorkerOvrdQueue)
+        , _isWorkerOvrdQueue(isWorkerOvrdQueue)
     {}
     //Notify the strategy about that job
     void jobReceived(const Job& job);
