@@ -1,21 +1,35 @@
 ns Ent {
 ns Dist {
-typedef string JobKey;
-typedef tsoxutils::tsoxdist::Job Job;
 
 class Job {
     vector<int>                        d_ordersAffected;
     string                             d_jobKey;
     string                             d_requestName;
-    DatetimeTz                        d_timeAdded;
-    NullableValue<bdlt::DatetimeTz>   d_timeProcessed;
-    NullableValue<bdlt::DatetimeTz>   d_timeCompleted;
+    Datetime                        d_timeAdded;
+    NullableValue<Datetime>   d_timeProcessed;
+    NullableValue<Datetime>   d_timeCompleted;
     NullableValue<WorkerInformation>  d_workerInfo;
     int                                     d_firmId;
     int                                     d_priority;
-    bdlb::NullableValue<bool>               d_isOverride;
-    bdlb::NullableValue<bool>               d_capWorkerUtilization;
-    bdlb::NullableValue<bool>               d_isOverrideTsoxWorker;
+    NullableValue<bool>               d_isOverride;
+    NullableValue<bool>               d_capWorkerUtilization;
+    NullableValue<bool>               d_isOverrideWorker;
+
+    const char PROCESS_NEW_FIX_MESSAGE[] = "ProcessNewFixMessage";
+    const char REFRESH_ORDER[] = "refreshOrder";
+    const char STAGE_REQUEST[] = "stageOrder";
+    const char MODIFY_ORDER_REQUEST[] = "modifyOrder";
+    const char CANCEL_REMAINING_REQUEST[] = "cancelRemaining";
+    const int LOW_PRIORITY = -100;
+
+    bool operator<(const Job& j1, const Job& j2)
+    {
+        return (j1.jobKey() < j2.jobKey());
+    }
+    string Job::generateKey()
+    {
+        return fastseed();
+    }
 };
 
 
