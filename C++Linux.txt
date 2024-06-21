@@ -110,9 +110,8 @@ int main() {
 similar rule apply to const volatile Functions and objects   
 
 void foo(int n){
-constexpr int c1 = n+1;//err:must known at compile
-    const int c2 = n+7;//ok  c2 = 7;
-//err:unchangable}
+constexpr int c1 = n+1;//err:must known at compile : results in a compile time constant value
+    const int c2 = n+7;//ok  c2 = 7;//err:unchangable} : prevents from being modified
 
 A volatile location indicate unpredictable value that can be changed by code beyond the control of compiler (such as hard ware kernel driver),compiler must read/write to actual memory per access without cache the content in a register that allow faster access than on-board memory, immediately reflect change on var used by multi thread
 every access on volatile object considered has visible side-effect, so exempted from optimization (reordered or collapsed): X=1;X=0; for non-volatile object x, the compiler optimize only exe x=0 ).
