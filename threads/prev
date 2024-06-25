@@ -1,0 +1,35 @@
+Serializer::Serializer(CallbackT cb) //typedef function<void(void)> CallbackT;
+:d_cb(cb){ //CallbackT  d_cb;
+}
+Serializer::~Serializer(){
+  if(d_cb){
+     d_cb();
+  }
+}
+bool Serializer::consume(){
+  if(!d_cbCnt.isEmpty()){//queue<CallbackT>   d_cbCnt;
+    auto cb = d_cbCnt.pop();
+    cb(); //incrsively call back to serialize process by key
+    return true;
+  }
+  return false;
+}
+void Serializer::setCallBack(CallbackT cb){
+  if(d_cbCnt.isFull()){
+    d_cbCnt.pop();
+    d_cbCnt.push(cb);
+  }else{
+    d_cbCnt.push(cb);
+  }
+
+
+
+
+
+bsl::function<void ()> writer = [=](){
+  d_serializer.consume(entityKey); 
+}
+auto cb=[=]() {
+  enqueue( writer );
+}
+d_serializer.add(entityKey, cb);
