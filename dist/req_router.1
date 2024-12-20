@@ -1,0 +1,17 @@
+ns Ent {
+ns Req {
+
+class ReqRouter :  Bas::ReqRouter {
+shared_ptr<ReqProc> _reqProc;
+
+void dispatchRequest(shared_ptr<Req>& req, shared_ptr<Context>& ctx);
+void peekReq(shared_ptr<Req>& req, vector<int>&  orderids);
+
+ public:
+ReqRouter(shared_ptr<ReqProc>&  reqProc, const string& service,const unordered_map<string, int>& config);
+~ReqRouter(); 
+
+virtual void procReq(shared_ptr<Req>& req, shared_ptr<Context>& ctx);
+virtual void procCtrlEvt(const bassvc::ControlEvent& evt); //start | ready (not | accepting req), stop | exit ( has | no  previous req), reconfig
+
+ReqPro& proc(); //Return a modifiable reference to the implemented request processor
