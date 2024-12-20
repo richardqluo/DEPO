@@ -1,12 +1,20 @@
-
+template <>
+void peekOrder(shared_ptr<<CreategFillLockReq>& req,
+               vector<int>& orderids)
+{
+    orderids.push_back(req->orderNumber());
+    if (!req->multilegId().isNull()) {
+        orderids.push_back(req->multilegId().value());
+    }
+}
 
 template <typename T>
 static void peekListOrder(const vector<T>&      orders,
-                            bsct::CustomDataContainer& orderids)
+                          vector<int>& orderids)
 {
     typename vector<T>::const_iterator iter;
 
     for (iter = orders.begin(); iter != orders.end(); ++iter) {
-        orderids.addElement("", iter->orderNumber());
+        orderids.push_back(iter->orderNumber());
     }
 }
