@@ -1,3 +1,5 @@
+ns Ent {
+ns Req {
 template <>
 void peekOrder(shared_ptr<<CreategFillLockReq>& req,
                vector<int>& orderids)
@@ -18,3 +20,13 @@ static void peekListOrder(const vector<T>&      orders,
         orderids.push_back(iter->orderNumber());
     }
 }
+
+inline
+void ReqRouter::dispatchRequest(shared_ptr<Req>& req, shared_ptr<Context>& ctx)
+{
+  peekOrder(req, orderids);
+  reqProc_sp->process(req, ctx);
+}
+
+ }
+ }
