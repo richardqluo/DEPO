@@ -1,0 +1,12 @@
+
+
+template <typename T>
+static void peekListOrder(const vector<T>&      orders,
+                            bsct::CustomDataContainer& orderids)
+{
+    typename vector<T>::const_iterator iter;
+
+    for (iter = orders.begin(); iter != orders.end(); ++iter) {
+        orderids.addElement("", iter->orderNumber());
+    }
+}
