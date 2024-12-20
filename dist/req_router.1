@@ -2,7 +2,7 @@ ns Ent {
 ns Req {
 
 class ReqRouter :  Bas::ReqRouter {
-shared_ptr<ReqProc> reqProc;
+shared_ptr<ReqProc> reqProc_sp;
 
 void dispatchRequest(shared_ptr<Req>& req, shared_ptr<Context>& ctx);
 void peekReq(shared_ptr<Req>& req, vector<int>&  orderids);
@@ -19,7 +19,7 @@ ReqPro& proc(); //Return a modifiable reference to the implemented request proce
 
 inline
 ReqPro& proc(){
- return *reqProc;
+ return *reqProc_sp;
  }
 
  }
