@@ -5,9 +5,9 @@ str FarmStatus
 {
     FarmStatus() : numLow(0), numHigh(0), totalAllocation(0) {}
     set<int> queuedOrderNums;
-    int numLow;
-    int numHigh;
-    int totalAllocation; // the number of workers allocated to process jobs for a given pxnum/firm 
+    int numLow; //low priority jobs
+    int numHigh; //high priority jobs
+    int totalAllocation; // the number of workers allocated to process jobs for a given firm by config
 };
 
 //functor to compare Jobs by JobKey
