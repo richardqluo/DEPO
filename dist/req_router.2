@@ -4,6 +4,7 @@ template <>
 void peekOrder(shared_ptr<<CreategFillLockReq>& req,
                vector<int>& orderids)
 {
+    //orderids -> job.ordersAffected
     orderids.push_back(req->orderNumber());
     if (!req->multilegId().isNull()) {
         orderids.push_back(req->multilegId().value());
