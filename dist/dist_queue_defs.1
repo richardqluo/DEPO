@@ -3,8 +3,6 @@
 ns Ent {
 ns Dist {
 
-typedef list<Job> JobList;
-
 str FirmHandle
 {
     FirmHandle(int f) : firmId(f) {}
@@ -13,8 +11,7 @@ str FirmHandle
         firmId = client.clientId;
     }
     int firmId;
-    shared_ptr<JobList> jobs;
-    distdb::Client toDbClient() const;
+    shared_ptr<list<Job>> jobs;
 };
 
 bool operator<(const FirmHandle& h1, const FirmHandle& h2);
