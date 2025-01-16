@@ -16,7 +16,49 @@ void farmStatusForFirm(FarmStatus* fs, int firmId, const Job& job)
         fs->queuedOrderNums.insert(job.ordersAffected().begin(), job.ordersAffected().end());
     }
 }
+bool QueueStrat::nextJob(Job& job)
+{
+    // Find the first firm queue that has a job wait for processing
+    iter = find_if( _handleList.begin(),
+                    _handleList.end(),
+                    ::bind(&QueueStrat::nextJobFromQueue, this, &job, _1)); //this.nextJobFromQueue(&job, *iter)
+    if(iter != _handleList.end())
+    {
+        if(iter->jobs->size() == 0)
+            _handleList.erase(iter);
+        else
+            //repoint the item to end since it was just handled 
+            _handleList.splice(_handleList.end(), _handleList, iter);
+        return true;
+    }
+    return false;              
+}
 
+bool QueueStrat::nextJobFromQueue(Job* job, const FirmPxHandle& handle)
+{
+    FarmStatus farmStatus;
+    farmStatus.totalAllocation = workerAllocation(handle.firmId); //config number of workers ddedicated to the firm
+    for_each(
+        _processingList.begin(),
+        _processingList.end(),
+        ::bind(&farmStatusForFirm, &farmStatus, handle.firmId, _1));
+    if((farmStatus.numLow + farmStatus.numHigh) >= farmStatus.totalAllocation)
+        return false; //total number of high and low priority jobs are more than the number of workers for the firm
+        
+    iter = bsl::find_if(
+        handle.jobs->begin(),
+        handle.jobs->end(),
+        ::bind(&QueueStrat::canProcessJob, this, &farmStatus, _1));
+    //find the first job in the wait queue of firm and move it to processing
+    if(iter != handle.jobs->end())
+    {
+        *job = *iter;
+        handle.jobs->erase(iter);
+        _processingList.insert(*job);
+        return true;
+    }
+    return false;    
+}
 bool QueueStrat::canProcessJob(FarmStatus* fs, const Job& thisJob) const
 {
     bool result = false;
@@ -45,6 +87,7 @@ bool QueueStrat::canProcessJob(FarmStatus* fs, const Job& thisJob) const
     }
     return result;
 }
+
 
 }// close package ns
 }// close enterprise ns
