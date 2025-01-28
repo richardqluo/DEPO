@@ -10,37 +10,12 @@ str FarmStatus
     int totalAllocation; // the number of workers allocated to process jobs for a given firm by config
 };
 
-//functor to compare Jobs by JobKey
-cls JobEqual
-{
-  pub:
-    JobEqual(const Job& j);
-    bool operator()(const Job& job) const;
-
-  prv:
-    const Job& m_job;
-};
-//functor to compare Jobs by firm
-cls JobForClient
-{
-  pub:
-    JobForClient(const FirmPxHandle& client);
-    bool operator()(const Job& job) const;
-
-  prv:
-    const FirmPxHandle m_client;
-};
-
 cls QueueStrat
 {
   pub:
     explicit QueueStrat(
-        const shared_ptr<FarmConfig>& fc,
-        bool isOvrdQueue = false,
-        bool isWorkerOvrdQueue = false)
+        const shared_ptr<FarmConfig>& fc)
         , _config(fc)
-        , _isOvrdQueue(isOvrdQueue)
-        , _isWorkerOvrdQueue(isWorkerOvrdQueue)
     {}
     //Notify the strategy about that job
     void jobReceived(const Job& job);
@@ -48,12 +23,7 @@ cls QueueStrat
     //Obtains next available job by fairness and sequential guarantees
     bool nextJob(Job& job);
     bool flushJobQueue(int firmId, vector<JobKey>* jobKeys);
-    bool hasJob(int firmId, JobKey jobkey) const; //const: not modify data members otherwise compile error. 
-    bool allRequestsProcessed() const;
-    bool isJobInProcessingList(const Job& job) const;
-    bool areJobsProcessingForClient(const FirmPxHandle& handle) const;
-    int queueSize(int firmId) const;
-    void clear();
+    int queueSize(int firmId) const; //const: not modify data members otherwise compile error.
 
   prv:
     bool nextJobFromQueue(Job* job, const FirmPxHandle& handle);
