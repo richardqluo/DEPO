@@ -21,7 +21,7 @@ bool QueueStrat::nextJob(Job& job)
     // Find the first firm queue that has a job wait for processing
     iter = find_if( _handleList.begin(),
                     _handleList.end(),
-                    ::bind(&QueueStrat::nextJobFromQueue, this, &job, _1)); //this.nextJobFromQueue(&job, *iter)
+                    ::bind(&QueueStrat::nextJobFromQueue, this, &job, _1)); //call this.nextJobFromQueue(&job, *iter) with predefined arg, to algorithms that expect function objects (e.g., std::find_if|for_each(first,last,bool|void functor) 
     if(iter != _handleList.end())
     {
         if(iter->jobs->size() == 0)
@@ -88,6 +88,31 @@ bool QueueStrat::canProcessJob(FarmStatus* fs, const Job& thisJob) const
     return result;
 }
 
+void QueueStrat::jobReceived(const Job& job)
+{
+    FirmHandle handle(job.firmId());
+    auto iter = find(_handleList.begin(), _handleList.end(), handle);
+    if(iter != _handleList.end())
+         handle = *iter;
+    else
+    {
+        handle.jobs.reset(new list<Job>());
+        _handleList.push_back(handle);
+    }
+    handle.jobs->push_back(job);    
+}
+
+void QueueStrat::jobCompleted(const Job& job)
+{
+    for(auto iter =m_processingList.begin(); iter !=m_processingList.end())
+    {
+        if(iter->jobKey() == job.jobKey())
+            iter=_processingList.erase(iter);
+            return;
+        else
+            ++iter;
+    }
+]
 
 }// close package ns
 }// close enterprise ns
