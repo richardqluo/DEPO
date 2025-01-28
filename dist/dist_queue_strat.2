@@ -96,7 +96,7 @@ void QueueStrat::jobReceived(const Job& job)
          handle = *iter;
     else
     {
-        handle.jobs.reset(new list<Job>());
+        handle.jobs.reset(new list<Job>);//new not recommended, unless by shared pointer, on STL due to manual mem mgmt 
         _handleList.push_back(handle);
     }
     handle.jobs->push_back(job);    
