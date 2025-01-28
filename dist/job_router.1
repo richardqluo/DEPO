@@ -1,0 +1,19 @@
+ns Ent {
+ns Dist {
+class JobRouter
+{
+pub:
+  static JobRouter& getInstance();
+  void routeJob(Job& job, const JobContext& jcontext);
+  void responseForJob(const Job& job, bool isFinal, const Blob& response);
+pri:
+  shared_ptr<FarmConfig> _farmConfig;
+  QueueStrat _queue;
+  Mutex _mutex;
+  JobRouter(); //private constructor for Singleton
+  void dispatchJob();
+}
+
+
+}// close package ns
+}// close enterprise ns
