@@ -104,7 +104,7 @@ void QueueStrat::jobReceived(const Job& job)
 
 void QueueStrat::jobCompleted(const Job& job)
 {
-    for(auto iter =m_processingList.begin(); iter !=m_processingList.end())
+    for(auto iter =_processingList.begin(); iter !=_processingList.end())
     {
         if(iter->jobKey() == job.jobKey())
             iter=_processingList.erase(iter);
@@ -112,7 +112,17 @@ void QueueStrat::jobCompleted(const Job& job)
         else
             ++iter;
     }
-]
+}
+
+int QueueStrat::queueSize(int firmId) const
+{
+    for(FirmPxHandle& hdl : _handleList)
+    {
+        if(hdl.firmId() == firmId)
+            return hdl.jobs->size();
+    }
+    return 0;
+}
 
 }// close package ns
 }// close enterprise ns
