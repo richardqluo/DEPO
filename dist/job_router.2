@@ -1,0 +1,31 @@
+ns Ent {
+ns Dist {
+
+void JobRouter::routeJob(Job& job, const JobContext& jcontext)
+{
+  {
+    LockGuard<Mutex> guard(&_mutex);
+    _queue.jobReceived(job);
+  }
+  int queueSize;
+  {
+    LockGuard<Mutex> guard(&_mutex);
+    queueSize = _queue.queueSize(job.firmId());
+  }
+  dispatchJob();
+}
+
+void JobRouter::dispatchJob()
+{
+
+}
+
+JobRouter::JobRouter() : _queue(_farmConfig){} 
+JobRouter& JobRouter::getInstance()
+{
+  static JobRouter instance;
+  return instance;
+}
+
+}// close package ns
+}// close enterprise ns
