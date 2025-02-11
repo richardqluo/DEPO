@@ -1,0 +1,9 @@
+class FIX_Processor
+{
+friend class FIX_Object;
+private:
+  static FIX_Processor    *m_instance;
+
+public:
+  FIX_Processor( bool init_tz = true );
+  virtual ~FIX_Processor();
