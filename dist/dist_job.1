@@ -1,3 +1,7 @@
+//dist svc uses waiting list of jobs that has affected orders populated by when request is received, and a set of processing jobs 
+//to ensure a job is not dispatch to processor if any of its affected order is currently being processed, to avoid intermediate status
+//of basket or multi-leg orders and ensure sequencial updates on a same order
+
 ns Ent {
 ns Dist {
 
