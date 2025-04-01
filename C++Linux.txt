@@ -8,19 +8,16 @@ classname(not instance)::static member
 only ::thing can be  something in the global scope (out of all namespaces) : a type, a function, an object or a namespace. 
 namespaces::type::member 
 unique namespace that eliminates name collision, 'using' name from a namespace without the scope operator.
-#include <string>
-[using namespace std ;]
-[std::]string s = "test me" ; 
 #include <string.h>
 char *strncat|char *str[n]cpy|int str[n][case]cmp|int strlen((const char *s1[, char *s2, size_t n])
 char *str[r]chr|*strstr(const char *s1, int c|const char *s2)//in string s1 find first|last occurrence of character c|string s2, returns a pointer to that occurance in s1  
 getch()/getchar()<stdio.h will let the output to be displayed till the user keyin a character/enter
 printf<stdio.h> print info to the standard output 
-#include <iostream> (cin, cout,cerr, clog)
+#include <iostream> (cin >> v, cout << v,cerr, clog)
 myfile.open ("myfile.txt", ios::ate|app|trunc); point at the end|append to existing|truncated existing
 ofstream inherites ostream (cout), so can write to files as well as console
 
-Java, all methods, variables, named constants, etc. must be members of a class. In C++ not required to be, usually be placed be a namespace (default std::)  minimiz the potential name conflict. 
+Java, all methods, variables, named constants, etc. must be members of a class. In C++ not required to be, usually be placed in a namespace (default std::)  minimiz the potential name conflict. 
 
 a==b | &a==&b compare value(content)|reference(address), content may contain diff padding bits for same value result in !=
 bool RefEqual(const Class& a, const Class& b){  return &a == &b;}//&reference return address of managed object
@@ -32,11 +29,11 @@ int count; if(|count<100)//not auto initialized, never true
 ; after class def, field not after function,if, loop, for(int x=0; x<100; x++);cout<<x; //100
 double half = 1/2 | 1.0/2;//0 | 0.5   doublerec=((double)inta)/intb
 
-singleton|auto& s = singleton::instance(); int|auto const i=100; auto [*]p = retPtr(), q = f();//p is pointer, q is [not]
+singleton|auto& s = singleton::instance(); int|auto const i=100; auto [*]p = retPtr(), q = f();//p [must] is pointer, q is [not]
 auto x|[const] &x//work on copy|[not modify]orig
 
 char|bool[8]:1 un|[signed]char [0|-128,255|127] (JAVA byte) equivalent to 8bits int<= short[16]:2 <= int[16,32]:4 <= long|float [32,64]:4<= long long|double [64,]:8  long double:12 //[bits]:bytes sizeof()
-if(a>0&&maxInt-a>b || a<0&&minInt-a<b){return a+b; //avoid over flow
+if(a>0 && maxInt-a>b || a<0 && minInt-a<b){return a+b; //avoid over flow calc a+b >|< maxInt | minInt
 Floats store in memory:sign(+-)1 bit,mantissa(digits of number)24 bits,exponent 7 bits
 floating point type: float(4byte) fValue =5e2|500.0f, double(8 bytes) dValue = 5e-2|0.05, represented number using a finite precision binary format approximation intead of real numbers (int does). precision : how many digits (default=6) it can represent without information loss  
 due to rounding error (truncate the approximation due to limited memory: double dValue = 0.1;//0.10001), compare face-equal floating nums by == unexpected results, use below instead
@@ -48,7 +45,7 @@ unsigned=unsigned int, int=signed int
 
 floating point operations such as dividing by zero may produce special floating point values such as infinity and the not a number value (NaN: a numeric type representing an undefined value Signaling NaNs raise an invalid exception while Quiet NaNs do not as they propagate through most operations)
 NaN is neither >,=,< any value including itself. for NaN a: a <>== b|a false regardless of the value of b. !(a < b) :true is not same to a >= b :false
- inline bool isnan(double x) { return x != x; } //<float.h>
+ inline bool isnan(double x) { return x != x; } //<float.h>, Nan op with any val like Nan+1 returns Nan
 
 union mytypes_t {  char c;  int i;} mytypes; elements occupy the same physical memory. The size decided by largest element.change one of the members affect other values
 union [X]{
@@ -69,14 +66,12 @@ The socket interface standard network-byte order is B so all network communicati
    if (*c) //Little endian lowest byte 1 is stored first
    else //Big endian
 
-
 main() is mandatory func returning an int. dynamic initialization of global variables is before main() 
 must place callee class/func definition before the caller, otherwise compile err 'not declared in this scope', so c++ bottom-up: write main last
 
 (public protected private static const volatile) not | apply to class/struct | members  
-date member must NOT initialize in declare: class{private: int i[=0];
+data member must NOT initialize in declare: class{private: int i[=0];
 C++: struct = class except struct|class defaults to public|private inheritance and member access, can inherit each other 
-C#: struct on stack, no inheritence, both can have member functions 
 class a{ friend class b; within b.member can access a.private/protected member, not vice versa, used to split code into two partial classes
 
 will[not] change the object structure, need [not] recompile calling code: un[safe]
@@ -128,7 +123,7 @@ register hints (not force) compiler to allocate some storage in the register fas
 static keep the var value upon re-entry into the same function,If this static variable is declared as a member of a class, then the value shared across all instances of the class,staic variables are allocated in global memory space with global variables.
 (A static member function can access only static member, no virtual/override (that is tie to an instance's vptr but Static functions tied to a class) but can be inherited, no instance or 'this' pointer of the class. can be called When a class is not instantiated Cls::Foo(). static destor perform additional steps need to be taken upon destroying an instance)
 class A {void foo() {
-      static int i;//only one copy inside the program, i end by scope of program not foo, default init=0.
+      static int i;//only one copy inside the program, i auto end by scope of program not foo, default init=0.
       i++;
 A o1, o2;o1.foo(); // i = 1 o2.foo(); // i = 2
 c++ no static constructors, must explicitly initialize the static member outside of the class (not subject to access controls)
@@ -161,14 +156,11 @@ void func(int *p) {//int j;func(&j);
     else        printf("Stack grows downward\n");
 }
 
-class Base{};class Child:Base{int a}; 
-void visit(Base* arr, int len) { for (int i = 0; i < len; i++) { Base a = arr;}//stack memory continously allocated by size of Base, unmatch if arr pass in Child instance
-
 void foo(){foo;}//use all stack mem void foo(){while(true){malloc(0);}}//use all heap mem, malloc(0) returns/use a 4 bytes unique pointer pointing to zero bytes allocate nothing void foo(){while(malloc(1)){ } return;}//wont crash, malloc(1) allocates 4bytes 32bits returns a unique pointer if succeed, nullptr if no mem left
 
 normal variables (auto) must be declared at compile time, life time is controlled by func scope,but difficult to conditionally declare a variable using if-- only exist within if block scope.
 static int zz = 10 * x // not allowed, A static  initialized only with a constant expression, x is not constant
-int anArray[nSize]; //compile err:  The size of the array must be a constant: int a[7]; sizeof(a);
+int anArray[nSize]; //The size of the array must be a constant: int a[7]; sizeof(a);
 int *pnArray = new int[nSize];//ok
 Dynamically allocated memory (run time) is not controlled by scope{}. it stays allocated by new until it is explicitly deallocated by delete or until the program ends. internal mutex lock make new() thread safe because heap is shared among threads, used when memory size to be allocated is unknown untill runtime such as array, or exist out of func scope. so can be allocated from one function and freed from another function via passing by reference or pointer. However, the pointer/reference used to access dynamically allocated memory follow the scoping rules of normal(auto) variables. 
 
@@ -181,9 +173,9 @@ if ( a != 0 ) {  // a check is necessary for delete
     ::operator delete(a);
 }
 
-type * pointer = new (nothrow) type [number_of_elements]//It�calls�operator new[](size_t) and the�class�default�constructor�for�each�element�of�the�array.�returns a non-null pointer to the first byte of this block.(nothrow)instead of throwing a bad_alloc exception or terminating the program, the pointer returned  a null pointer (p ==0/null), not point to anywhere, delete [] get the size_t from new[]. double** pvalue= new double* [row];//return pointer to 1st item of an array (row) of pointer each point to 1st item of an array (col) of double, char *string = new (nothrow) char[20]; if (!string) {..} delete[] string;delete [] pvalue; 
+type * pointer = new (nothrow) type [number_of_elements]//It calls operator new[](size_t) and the class default constructor for each element of the array. returns a non-null pointer to the first byte of this block.(nothrow)instead of throwing a bad_alloc exception or terminating the program, the pointer returned  a null pointer (p ==0/null), not point to anywhere, delete [] get the size_t from new[]. double** pvalue= new double* [row];//return pointer to 1st item of an array (row) of pointer each point to 1st item of an array (col) of double, char *string = new (nothrow) char[20]; if (!string) {..} delete[] string;delete [] pvalue; 
 
-void g() noexcept {} If the function throws an exception anyway, `std::terminate` is called, destructors is implicitly `noexcept`
+void g() noexcept {} If the function throws an exception anyway, `std::terminate` is called, destructors is implicitly `noexcept` : throws an exception from destructors can result in a crash because Stack unwinding see below
 
 placement new constructs an object on a memory has already been allocated, to eliminate time cost of normal dynamic allocation by separate the allocation of an object from its initialization, don't want to wait for dyn alloc after realtime app start up. or to place objects at a fixed loc such as predefined memory pools or put global/static obj at hardware component (memory-mapped I/O)
    char *memorypool = new char[sizeof(Fred)];//use char[] to allocate mem because one char per byte
@@ -196,18 +188,6 @@ class X {
 private:
     void *operator new(size_t);
     void *operator new[](size_t);
-};
-? struct p{class c, new p still allocate c on heap even if c private new
-to prevent an object being declared with auto duration (on the stack) , make all con/destructors private and provide friend or static functions or factory to create/delete instance.
-class X {
-public:
-    static X *New() {return new X;}
-    static X *New(int i) {return new X(i);}
-    void Delete(X *x) {delete x;}
-private:
-    X();
-    X(int i);
-    ~X();
 };
 
 uncopyable class: private copy ctr and = operator,  default copy constructor|assignment operator of derived classes invokes the copy constructor|assignment operator of base class, so derived classes uncopable too because can not access to private member of base class.
