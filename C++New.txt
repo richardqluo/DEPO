@@ -1,39 +1,39 @@
+map<price,list<order>> asks|bids
+unordered_map<id,list::iterator to that list order item> //for cancel by id
+or
+map<price,list<weak_ptr<order>>>
+unordered_map<id,shared_ptr<order>> //can be erased since the other has weak_ptr
+10 micro second processing depends on exec venue 
+functions/fields in unnamed namespace can only be accessed within the file it is created, avoid name conflicts from other linked functions, replacing static global in C
 ++a increment & use. a++ use & increment (a temporary is created to hold & use the same value while a is incremented). So, ++a is faster & better practice 
 ++a {a = a + 1;return a;}
 a++{b = a;a = a + 1;return b;}
-
+Same effect in for() loop
 Program crash before main() would because Static & Global Variable Initializations.
-
 strcpy stops when encounters a NUL ('\0') character (so does printf), memcpy (&dest,&src,size_t) does not, it binary copy of block size data
     char s[5] = { 's', 'a', '\0', 'c', 'h' };
     char p[5];
     char t[5];
     strcpy(p, s); //p { 's', 'a'}
     memcpy(t, s, sizeof(s)); //t { 's', 'a', '\0', 'c', 'h' }
-
 const O o [=a]; //error [ok] const must be init at declare
 O& o [=a]; //error [ok] reference is const pointer (const address value must be init at declare) can not be nullptr
 o=b; //ok, same as a=b; copy value b to a, modify object not pointer o still bind to address of a
 O* const po [= &a]; //error [ok] 
 po=&b;//error, modify pointer
-po->m=0;//ok
-
+po->m=0; // *po=b; ok
 const O* po = &a; //pointer to const obj
 po=&b; //ok
-po->m=0; //error, modify object 
-
+po->m=0; //*po=a; error, modify object 
 const O& o = a; //const ptr to const obj, 
 o=b; //error modify object 
 const O* const po = &a; //error on both modify pointer and object
-
 Usually use [const] ref as input [readonly] para (pass in ref : init from caller will stay, and return copy: init by func will dealloc), Use ptr (smart) as class member
-
 C++11 constexpr apply const on utility function /constructor by compile-time evaluation as long as not depend on runtime data, safer and efficient 
-
+//non-void, no var declare, single return constant expression
 constexpr int sq(int n) {
     return n*n
 }
-
 class Point {
 public:
     constexpr Point(int x, int y) : x(x), y(y) {}
@@ -42,39 +42,48 @@ private:
 };
 //static or global objects 
 constexpr Point origin(0, 0);
-
-
-C++17 std::optional<T> nullable (smart pointer than raw) input or return, .has_value() to check; .value_or(default) to replace std::nullopt and avoid deref nullptr z
-
+C++17 std::optional<T> nullable (smart pointer than raw) input or return, .has_value() to check; .value_or(default) to replace std::nullopt and avoid deref nullptr 
+ #include <variant>  //like union in c 
+variant<int,double,string> v = 1|1.1|”1”;
+//v.emplace<int|double|string>(1|1.1|”1”);
+ if (holds_alternative<int|double|string>(v)) {cout << get<int|double|string>(v);
+polymorphism variant<equity,bond> security;
 = delete means that the compiler will not generate the constructor
 class X {//uncopyable 
     X& operator=(const X&) = delete; 
     X(const X&) = delete;
-
 = default use compiler generated 
     X ()=default | {}  //non|user-defined 
-    
 safe practice prevent unintended implicit conversion by constructor with single para input type to X x=1, which covert 1 to an instance of X by the implicit constructor then call the [default] copy constructor 
     explicit X(int i){} //X x=1 compile error: no viable conversion from 'int' to 'X'; ok X x(1.0)
     [X(const X& c);]
     X(double) =delete; //prevent X x(1.0)
 };
-
-C-style (only unsafe on pointer/reference) compile time
-int a = 7, b = 2;
-double c = (double) a / b; //output (3.5) 3
-for std::string s: double c=std::stod(s); //stoi stof stol stoll by C++11
-
-C++
-convert to safe type at compile time
-double numDouble = static_cast<double>(numInt); 
-
+Catch reference instead of value to avoid object slice (myex : exception) by catch (exception[&] ex){e has not whole myex if without &, not throw reference or pointer because stack memory deallocate by unwind } throw value or unique_ptr instead, similar to input reference para to function and return value, return pointer only if it point to memory on heap instead of stack 
+class B final
+{public: virtual void func(int);
+class D : public B //compile err if above final
+{public: virtual void func(double) override final; 
+//compile err if override because sig mismatch, otherwise init a new virtual 
+class S : public D
+{public: void func(double); //compile err if above final
+Virtual table has pointers to the most derived function per base class with virtual function and each sub class, compiler add a hidden virtual pointer as 1st member of base and sub class to its v-table so instance object can access it
+class B{public: virtual void a | b | c(){…}};
+class D:public B{public: void b(){…}};
+class S:public D{public: void c(){…}};
+B v-table a=>B::a() b=>B::b() c=>B::c()
+D v-table a=>B::a() b=>D::b() c=>B::c()
+S v-table a=>B::a() b=>D::b() c=>S::c()
 downcast base ptr to derives ptr at runtime cost (only on polymorphic class pointer/reference because it uses that info to decide safe), return nullptr if fails 
-B* ptrB = new D(); //implicit upcast to base
-func(B* ptrB){
-//ptrB->virtualFunc() uses derived logic, cast to ptrD to access its nonvirtual func  
+B* ptrB = new D();//implicit upcast to base | D d;
+func(ptrB | d);
+func(B* ptrB | B& refB){
+//ptrB->|refB.virtualFunc() uses derived logic, 
+//B b=D(); b.virtualFunc() uses base logic
+//B& b=D(); //err const ptr to temp address, 
+//D d;  B& b=d;  b.virtualFunc() uses derived logic
+cast to ptrD to access its nonvirtual func  
 D* ptrD = dynamic_cast<D*>(ptrB);}
-
 Avoid below cast due to vulnerability 
 temp remove const to a pointer/reference so it can be modified or passed to a function not expects const arg 
 const int num = 5; 
@@ -86,21 +95,16 @@ constRef=10;//compile error]
 [int& nonConstRef = const_cast<int&>(constRef);
 nonConstRef =10; //ok]
 *nonConstPtr = 10; //ok
-
 convert the pointer to any other type of pointer without checking type at compile time
  int num = 10; 
  int* numPtr = &num; 
  char* charPtr= reinterpret_cast<char*>(numPtr); 
-
-
-class B final
-{virtual void func(int);
-class D : public B //compile err if above final
-{virtual void func(double) override final; 
-//compile err if override because sig mismatch, otherwise init a new virtual 
-class S : public D
-{void func(double); //compile err if above final
-
+convert to safe type at compile time
+double numDouble = static_cast<double>(numInt); 
+C-style (only unsafe on pointer/reference) compile time
+int a = 7, b = 2;
+double c = (double) a / b; //output (3.5) 3
+for std::string s: double c=std::stod(s); //stoi stof stol stoll by C++11
 //only allocated on heap not stack
 class A 
 { 
@@ -110,7 +114,6 @@ void del(){delete this;}
 private: 
 ~A(){cout<<"dstr"<<endl;}
 }; 
-
 int main() {
     //A a; //compile err local obj out scope unable private dstr  
     A* a = new A(); // 
@@ -119,15 +122,15 @@ int main() {
     //delete a; //same error
     a->del();
 }
-
 class Security{
 private| protected:
     int settleDate;
    void setSettleDate(int);
+    friend class Order;//access private|protected members
+    friend class SecurityTestFixture; 
+    //FRIEND_TEST (SecurityTestFixture, method); GTest method can access private 
 public:
     int getSettleDate();
-    friend class Order;//access private|protected members
-    friend class SecurityTestFixture;
 };
 class Order{
 private:
@@ -135,38 +138,37 @@ private:
 public:
     Place(int tradeDate){sec.setSettleDate(tradeDate +1);}
 };
-
 foo(){
 A* a = new A();
 goo(); //if exception, a won’t delete 
 delete a;
 }
-
 string literal is immutable char *p = "abc"; p[1]=d; won’t change  in read only mem like constant 
 std::string is mutable unless constant (unlike Java/c# string from pool, immutable for thread safety in case other threads modify the same instance)
-
 //in|output pointer of func pass a copy of its value (address)
 int* p(int* ptr| int arr[], int n) 
-{n = sizeof(arr) / sizeof(arr[0]|*arr);//arr is ptr to 1st element *arr++ is arr[1]
-int* dup =new int[n];//in heap, int a[n]; in stack
+{
+//sizeof(arr) / sizeof(arr[0]|*arr) =2 not array size n, sizeof(arr)=8 64bit arr is ptr to 1st element *arr++ is arr[1]
+int* dup =new int[n];//in heap undef value, new int[n]{0}|(0) to init 0 only|err, int a[n]; in stack
 for (int i = 0; i < n; i++) 
         dup[i]=ptr[i] | arr[i] ;
 return dup;
 }//dup is out  but its value (address to int[] heap memory remain) is copied to r, no dangling nor memory leak
-
+main(){
 int a[] = { 10, 20, 30 }; 
-int* r=p(a,3);
+[+ int n=sizeof(a)/sizeof(a[0]);//=3 +]
+int* r=p(a,n);
+[+ int s=sizeof(r)/sizeof(r[0])://=2 +]
 cout<<r[2];
 if(r) delete[] r; //release new int[] heap memory 
-
 A a[] = {A("1"), A("2")}; //constructor A(string d),  compile error by A a[2]= {"1","2"}; 
-
+#include <tuple>
 tuple<bool,int,string> t=make_tuple(true,2,”test”);
-std:get<1>(t); //2 <tuple>
-
+std:get<1>(t); //2
+#include <bitset>
 Each element is a bit (1/0) < char (8bits|1byte)
   bitset<8> foo;//00000000 <2^n>
-  bitset<8> bar (4);//00000100, binary value 
+  bitset<8> bar (4);//00000100, binary value 2^(index from right 111=2^2+2^1+2^0=7)
   bitset<8> baz (string("01001"));//00001001
   foo.set(3,1);//(3) 00001000 index from right not binary value, boundary check out_of_range exp if i >= size; .set() all to 1; .reset(i)|() [i]|all to 0; . flip(i)|() [i]|all to opposite 
   foo[2]=foo[3]; //00001100, [] no boundary check
@@ -176,106 +178,152 @@ Each element is a bit (1/0) < char (8bits|1byte)
   }
 //foo.all|any|none() if all|any|none is 1
 Find a missing 013| duplicate number 01223in 0-N: N(N+1)/2 - all elements = missing |-duplicate;
-Find a replaced number 0122: bit_set<2^n=N> bs; bs.set(each element); if !bs.test(each element)// if !bs.all()
-
-std::set<std::string> myset;
-pair<set<int>::iterator,bool> ret = myset.emplace("foo");
+Find a replaced number 0122: 
+int a[]={0,1,2,2};
+bit_set<4> bs; // index 0-3 
+for(int e : a){//for(int i=0;i<4;i++;)
+   bs.flip(e|a[i]); //index as each element value 
+   if (!bs.test(e))
+       cout<<e<<endl;
+}// if !bs.all()
+unordered|set<string> myset;
+pair<unordered|set<int>::iterator,bool> ret = myset.emplace("foo");
 if (!ret.second) {//foo already exists 
-
 myset.erase ("foo");
-it = myset.find ("foo");
+set<int>::iterator it=myset.find ("foo");//*it==“foo”
+if (it != myset.end())
 myset.erase (it[, myset.end()]);
-
+for (const string& x : myset)
 map.at(“k”) = v; override existing value, throws out_of_range if “k”is not an existing key.
 map[‘k’] create a new k-default value if not existing by even read access
-map.find(“k”) returns an iterator->second point to the value and stop searching after found 
-map.count(“k”) returns an int and continue searching till the end
-
+auto|value& p= map[‘k’]; //ref& to modify the value via p=v2
+map<string,cls> cls need default ctr cls(){}|=default for map[key] which create extra cls by def ctr(no arg), use insert|emplace to avoid:
+const auto im=mp.insert(make_pair(“k”,c)) | .emplace(“k”,c) ;
+if(!im.second){
+      im.first->second=c;
+}
+//mp[“k”]=c;
+map.find(“k”) != map.end() returns an iterator point to the pair (it->first|second key|value) and stop searching after found 
+map.count(“k”) returns an int 1/0 and continue searching till the end
+map.erase(“k”) //only by key
+pair<string,double> p ("a",0.3);
+pair<map<string,double>::const_|iterator,bool> r=map.insert(p); // copy insertion
+map.insert(make_pair[<string,double>]("b",6.0)); // move insertion
+map.emplace(“c”,1.2); //in place return same as insert
+r.first->first|second “a”|0.3/2.0, 
+r.second true(a new)/false(a exist, not replace value)
+for([const] auto& m : mp){m.first|second //key|value(un|[un]modifible)
+for(auto it=mp.begin();it!=mp.end();)
+{if(…)
+    it=mp.erase(it);//next to erased item
+  else
+     ++it;//no erase
+}
 vector.at(i) throw out_of_range | vector[i] nothrow but undefined behavior if i over boundary 
-
 vector dynamically allocate in heap auto delete vs array is fixed size manual delete if in heap
-
-resize(n) change size not capacity, the excess objects under current size are destructed or default-initialized objects are added to the end if over current size
+int iv =100;
+int* ip=new int(100);
+cout<<&iv<<endl;//0x7fe968000020 (stack)
+cout<<ip<<endl;//0x502000000010 (heap)
+ vector<int> vi;
+ vi.push_back(iv);//copy ctr to heap, push_back(int(100)) | emplace_back(100) move | constructed on heap
+ for(int& v:vi)
+       cout<<&v<<endl;//0x502000000030 (heap)
+resize(n) change size not capacity, the excess objects if n< current size are destructed or default-initialized objects are added to the end if n > current size
 shrink_to_fit() set capacity = size by discard unused allocation. after done building a vector and will never add another item to it. 
 reserve(n) If know in advance how many items will be adding, to avoid reallocate changes capacity during growing 
-
 begin|end() returns an iterator (pointer) to first|last element, front|back() returns a direct reference.
-
 for (vector<E|E*>::const_iterator it = ves.begin(); it != ves.end(); ++it)
 {it-> or *it.f() | (*it)->f();} //*it is obj | ptr
-
-
+map<int,obj*> : *it->second to obj // -> op prior to * prior to .
+vector elements are in consecutive memory highly probable fits a same mem page and moved all together in the CPU cache (1000 times faster than RAM) during iteration, 
+list elements are sparse memory, a different memory page need to be mapped from RAM to the cache upon every iteration step
+stack queue are container adapter, the underlying container is deque by default, its elements can be scattered in different memory locations 
+destlist.splice(destpos,srclist)//whole src to dest
+destlist.splice(destpos,srclist,srcpos)//single element in src to dest
+destlist.splice(destpos,srclist,srcfirst,srclast)
+repoint (not move / copy) range elements from src (which can be the same list as dest) to the insert pos like dest.begin/end() 
+l.splice(l.begin(), l, next(l.begin(), 3),
+             l.end());
+{1, 5, 8, 4, 6} > {4,6,1, 5, 8}
+list<int>* lp=new list<int>; //new() not recommended for creating STL due to manual memory management 
+lp->clear();delete lp;
+unless 
+shared_ptr<list<int>> sp;
+sp.reset(new list<int>);
+sp->push_back(1);
+#include <algorithm>
+auto is = [&s](int i){s+=i;};
+for_each(vi.begin(),vi.end(),is); //vector<int> pass *it to lambda, <int> match (int i)
+vector<int>::iterator it=find|remove_if(vi.begin(),vi.end(),[](int i){return i==2;});
+vi.erase(it); //must after remove_if which does not delete 
+vector<obj> vo;
+//rvalue && since o only last per loop as an obj element 
+auto it=find_if(vo.begin(),vo.end(),[](auto&& o){return o.f()==true;});
+for(const auto& item : container) for readonly observing, avoid local copy of each item within loop for(auto item : container), which is acceptable for cheap to copy type like <int|double>
+for(auto& item : container) for modifying, auto&& for container use proxy iterator like vector<bool> that use specialized template for bool, optimize space each value is stored by 1 bit instead of 1 byte (8 bits), since impossible to dereference a bit, proxy iterator returns a rvalue (temp copy of object)
+vector<bool> vb = {true,false};
+for(auto&& b : vb) {b=!b;}
+for(auto|const auto& b : vb) {cout<<b;} //false true
+generic <T> container should use const auto& | auto && for observing | modifying because T (to be defined type ) maybe expensive to copy | proxy iterator
+move casts arg to rvalue to ctor|func(T&& t), can be used amap except low copy cost like int or return which nullify orig anyway
+int | string x=1|”1”; int | string y= |move(x); cout<<x; //1|null 
+forward cast a templated function parameter (inside the function) to the same value category (lvalue or rvalue) the caller pass it. l/rvalue arg to be passed on as l/rvalues,"perfect"
 N threads process runs on M cores CPU, N<=M OS assign each thread a core to run parallel, N>M threads share core by splitting processor time and context switching from thread to thread
 thread can share an address space with other threads (but own register and stack for locals), such as global variable at namespace scope (except for thread_local each thread has own copy ). it differs from a process, which generally does not directly share data with other processes. 
 exception thrown in a thread will system.terminate itself and main thread but won’t stop other threads. C++11 has not built-in Thread priority 
-
-Atomic modify data in a single clock tick, impossible for other thread to access the data in the middle of such an operation, memory_order to prevent/control reordering the accesses
-
+Atomic modify data in a single clock tick, each atomic operation is completed on the object before any other atomic operation can access it (thread safe). But each thread may operate on memory locations other than the atomic object itself: may produce visible side effects on other threads: reader thread can observe the non-atomic variable values change in a different order than the writer thread
+memory_order specify how operations are synchronized among threads, using the atomic operations as synchronization points, i.e. how memory accesses, including non-atomic memory , is ordered around an atomic operation, memory orders for lock-free environments to synchronize non atomic data.
 For specialize atomic<int> c(0);
-i=c.fetch_add|sub(1, memory_order_relaxed); //c++|- -|+|-=1, return contained value before op,, relaxed (for all) only ensure atomicity, no sync nor control over access order: optimizer can reorder when execute
-
+i=c.fetch_add|sub(1, memory_order_relaxed); //c++|- -|+|-=1, return contained value before op,, relaxed (for all, loosest) only this operation's atomicity is guaranteed, no synchronization or ordering constraints on other reads or writes (optimizer can reorder when execute)
 For all atomic<T>
-//Atomic store|load move data between shared memory (atomic is for global variable) and thread own memory atomically.
-
+//Atomic store|load move data between shared memory (atomic is for global variable) and thread own memory atomically. Default a.store|load(val | [memory_order_seq_cst]) equivalent to a|a=, while memory_order_relaxed perform better but can be reordered, below load maybe executed before store
+al
 atomic<int> Guard(0);
 int Payload = 0;
 void prod(){
 Payload = 42; //order before
 Guard.store(1, memory_order_release); //place a sync point among all threads op on access order to memory of shared variable
-release (for store): no reads nor writes in the current thread can be reordered after store. All writes [data dependent on atomic var ] before store in current thread are visible to other threads after acquire [consume] the same atomic var 
+release (for store): no reads nor writes codewise before it in the current thread can be reordered after store. 
+All writes [data dependent on atomic var ] before store in current thread are visible to other threads after acquire [consume] the same atomic var 
 }
-
 int main() {  
     thread t(prod);
     t.detach();   while(Guard.load(memory_order_acquire)==0){cout<<"wait"<<endl;}
-//acquire (for load): no reads nor writes in the current thread can be reordered before this load.
+//acquire (for load): no reads nor writes codewise after it in the current thread can be reordered before this load.
 cout<< Payload<<endl; //order after
     //t.join();
 }
-
 Two machine instructions, executed in the same thread, are data-dependent whenever the first outputs a value to a memory location and the second input the value from that memory location. memory ordering among multiple instructions through this dependency chain is preserved
-
 atomic<int*> Guard(nullptr);
 int Payload = 0;
-
 Payload = 42;
 Guard.store(&Payload, memory_order_release)
-
 g=Guard.load(memory_order_consume;//consume (for load):apply when data dependent on atomic var 
 if (g != nullptr)
     p = *g;
-
 acquire | consume is synchronizes-with | dependency-ordered-before relationship 
-
 mach instructions:  cmd output input
 lwz r9 O(r8) //load from guard to g
 isync //memory barrier for acquire
 lwz r10 O(r9) //load from g to p
-
-i=c.exchange(v, memory_acq_rel) : c=v and return previous c
-//acq_rel (for read-modify-write op like fetch_add) is both acquire and release, no reads nor writes can be reordered before load | after store. All writes in other threads before release the atomic are visible before this thread modification (by read/acq); this thread modification is visible (by write/rel) to other threads after acquire the atomic 
+i=c.exchange(v, memory_order_acq_rel) : c=v and return previous c
+//acq_rel (for read-modify-write op like fetch_add) is both acquire and release, no reads/writes can be reordered across this (before load after store. All writes in other threads codewise before this (their rel ) are visible to this thread modification (by read/acq); this thread modification is visible (by write/rel) to other threads codewise after this (their acq)
 i=c.compare_exchange_weak|strong(exp,new) : return c==exp if true c=new; false   exp=c; 
-weak allow spurious failure (for no reason) return false even when contained==expected, perform better in loop like while(!c.compare_exchange_weak(exp,new) ); won’t set expected to contained in that case
+weak allow spurious failure (for no reason) return false even when contained==expected, perform better qin loop like while(!c.compare_exchange_weak(exp,new) ); //retrying if false|failed, won’t set expected to contained in that case
 strong requires return true if c==exp not allow spurious fail, preferably for non-loop 
-
-seq_cst (default for all) load (acquire) store (release) read-modify-write (acq_rel)
-
+memory_order_seq_cst (sequential consistent: strictest with least side effects but hurt performance , default for all) load (acquire) store (release) read-modify-write (acq_rel)
 Volatile instruct compiler no to  optimize: never cache the variable in a register (CPU internal memory to store data being actively processed ), always access the actual memory, never get stale value (memory visibility across threads) but not guarantee  atomicity or synchronization
-
 A Mutex is a locking mechanism while a semaphore is a signalling mechanism. A binary semaphore can be used as a Mutex but a Mutex can never be used as a semaphore
-
 Acquire (mutex object )
 Critical Section
 Release (mutex);
 mutex can be release only by the thread that acquired it, it lets the thread spinlock if the lock is not available: in a loop where the thread periodically checks whether the lock is available. busy waiting wastes CPU cycles, which can be avoided by A condition variable: cv.wait() release the mutex while block the thread then acquire it again upon wake and unblock the thread
-
 condVar.lock.acquire();
 while(queue.empty())
 {condVar.wait();}//instead of sleep(1);
 condVar.lock.release();
-
 condVar.signal() to wake up a random thread that is sitting asleep on syncVar.wait() (or signalAll() to wake up all the waiting threads, which semaphore cannot )
-
 a thread waiting on a semaphore can be signaled by any other thread. Faster than mutex but expensiver
 wait(S integer variable)
 {while (S<=0);
@@ -283,71 +331,72 @@ wait(S integer variable)
 signal(S)
 {S++;}
 limitations of semaphores is priority inversion. Low-priority processes enter the critical section, and high-priority processes continue to wait.
-
 A semaphore is better for multiple instances of a resource, but a mutex is better for a single shared resource.
 FXP: Route order to the first available avenue, whenever an avenue thread is done processing then semaphore.signal() , wake up a waiting thread to send an order to an avenue 
-
 C++11 don’t have built-in semaphore (C++20 has counting|binary_semaphore), instead  unique_lock<mutex> condition_variable
-
 If the mutex is currently locked by another thread, mutex.lock() thread is blocked until other thread unlock; mutex.trylock() fails and returns false without blocking
 if (mtx.try_lock()) {//acquire mtx
       ++counter;
       //throw exception never mtx.unlock, block till system terminate, use try {code throw exception} catch(…){ mtx.unlock(); } (all exception, no finally C++) or 
 { unique_lock|lock_guard<mutex> lc(mtx); code throw exception;} because their de|constructor un|lock mutex, When a scope { … } is exited (by return, reaching the end or throwing an exception) local objects created on stack instead of heap within that scope is destroyed (destructors are called ) : stack unwind
-
-      mtx.unlock();//release mtx
-    }
-
+}
 recursive_|mutex does|not allows trylock  and lock from a thread that is already locking it (occur in recursive, not in loop because mutex is unlocked upon exit previous loop), |produces deadlock with undefined behavior 
-
 unique_lock can lock and unlock explicitly instead of immediately locking (by default) on construction and implicit unlock on destruction, it can be moved to transfer lock ownership while lock_guard can not
-
 unique_lock<mutex> lck(mtx,std::defer_lock);
   lck.lock();
-  while(!pred()) {cv.wait(lck);}
-  cv.wait(lck,pred);
-//lock must be acquired by the current thread before wait(), otherwise undefined behavior. predicate is function (access global var) or lambda (access global var and capture local var) without arguments and returns bool, the thread is unblocked when it becomes true (also check against spurious wake-up calls not by notify_one|all). Notifying thread does not need to wait() first nor hold the lock on the same mutex as the waiting thread(s)
+  while(!pred()) {cv.wait(lck);}// if() will not recheck against spurious after wake up
+  //cv.wait(lck,pred); pred is called repeatedly until true
+//lock must be acquired by the current thread before wait(), otherwise undefined behavior. predicate is function (access global var) or lambda (access global var and capture local var) without arguments but can capture and returns bool, the thread is unblocked when it becomes true (also check using while instead of if against spurious wake-up calls not by notify_one|all). Notifying thread does not need to wait() first nor hold the lock on the same mutex as the waiting thread(s)
   …
   lck.unlock();
-
-lock_guard<mutex> (scoped_lock avoid deadlock C++17) is strict version of unique_lock, will be locked only once on construction and unlocked on destruction (exit scope }), not used with condition_variable
+lock_guard<mutex> is strict version of unique_lock, will be locked only once on construction and unlocked on destruction (exit scope }), not used with condition_variable
 both manage the mutex object and guarantees it is properly unlocked in case an exception is thrown.
 unique_lock<mutex> to ensure only 1 thread can access the queue at a time, add condition_variable if threads will wait on item to be stored into the queue by the other thread.
-
+C++17 scoped_lock to lock multiple mutexes while avoiding deadlock across them 
+{    // Option C 
+scoped_lock<mutex, mutex> lock(m1, m2);
+    // critical section ..
+}
+{   // Option A - lock mutexes first, adopt later
+    std::lock(m1, m2);
+    std::lock_guard<std::mutex> lock1(m1, std::adopt_lock);
+    std::lock_guard<std::mutex> lock2(m2, std::adopt_lock);
+    // critical section ..
+}
+{   // Option B - defer first, lock locks later
+    std::unique_lock<std::mutex> lock1(m1, std::defer_lock);
+    std::unique_lock<std::mutex> lock2(m2, std::defer_lock);
+    std::lock(lock1, lock2);
+    // critical section ..
+}
 #include <mutex>
 once_flag flag;
  void once()
 {call_once(flag, lambda|func, para);}
 Only one thread is actively executing call_once sharing the same flag, other threads (Passive executions) do not execute but do not return until the active execution itself has returned, if the active throws exception (propagated to its calling thread, handle by try{call_once}catch(…){}), one of passive become active and   execute 
-
 #include <barrier>
-barrier init with count of participating threads, wait() to block until all threads arrive(decrement count), having a callback func to be invoke only once by one of threads after the barrier is lifted (count ==0) , after completion callback finished count reset to orig - num of arrive_and_drop, then unblock threads next phase begins (reusable latch + callback)
+barrier init with count of participating threads, wait() to block until all threads arrive(decrement count), having a callback func to be invoke only once by one of threads after the barrier is lifted (count ==0) , after completion callback finished count reset to orig - num of arrive_and_drop, then unblock threads next phase begins (reusable latch + callback) : list orders are processed by multiple threads and update list status after all orders threads are done
 int main()
 {
-vector<string> workers{“A”,”B”};
+vector<string> workers{“A”,”B”};//={}
 auto on_completion = [](){
   static auto phase = 1;//static remains
   cout<<phase;
   phase++;
 };
 barrier bar(workers.size(), on_completion);
-
 auto work = [&](string name){
   cout<<name;
   bar.arrive_and_wait(); //phase 1
-
   cout<<name;
   bar.arrive_and_wait(); phase 2
 };
-
 vector<thread> ts;
-ts.reserve(size(workers));
-for(auto const& worker : workers)
+ts.reserve(size(workers));//.size()
+for(auto const& worker : workers)//const auto&
    ts.emplace_back(work,worker);
-
 }
 A B 1 A B 2
-
 The arguments to the thread function are moved or copied by value even defined as reference. If a reference argument , usually to return result, needs to be passed to the thread function, it has to be wrapped (e.g., with std::ref or std::cref).
 Same to std::bind returns a function object
 #include <functional> std::bind / ref
@@ -361,11 +410,10 @@ int main()
   thread t([bind(]inc, i | ref(i)));
 //lambdas are better than bind in terms of space and speed, also allow to capture by reference or value
 thread t( [&i](){ inc(i);} );
-thread t(&Mclass::memberfunc, mclass|this, para1, para2);//mclass is an instance, this if the same class
+thread t(&Mclass::memberfunc, [mclass|this,] para1, para2);//mclass is an instance, this if in the same class, []no need for static func
   t.join(); // i = 1 | 2 returns when the thread execution has completed. main don’t finish until all joined threads returned, system terminate if without t.join(), unless t.detach() make t run independently from main, t.joinable() false if already join() or detach()
 C++20 jthread (joining thread) auto join upon destruct if joinable, also can request_stop() via stop_token to function 
 }
-
 void foo(stop_token st){
   if (st.stop_requested()){return;}
 …
@@ -374,50 +422,119 @@ jthread jt(foo); //always has stop token regardless foo signature, specify to be
 //stop_token s = jt.get_stop_token();
 jt.request_stop();
 jt.join();
-
-double divide (double x, double y) {return x/y;}
- int main()
-{ using namespace std::placeholders;
-  auto invert = bind(divide,_2,_1);            
-  cout << invert(10,2); //0.2 2/10                  
-  auto round = bind<int>(divide,_1,_2); 
-  std::cout << round(10,3); //3 int(10/3)
-
 By default Any return value from the thread function is ignored. If the function throws an exception, std::terminate is called.
-std::future to transmit value and exception from thread func to calling thread 
+future+async to return value from thread
+thread_local int g_num;
+int read_it(int x) {
+    return g_num + x;
+}
+int main()
+{
+    g_num = 100;
+    int arg = 1;
+//future<void|int> for func return void|int
+    future<int> f1 = async(launch::deferred, read_it, arg);
+    future<int> f2 = async(launch::async, read_it, arg);
+//if not specify then can be async or defer,
+f1|2.wait(); //Blocks until the result becomes available. 
+valid() = true
+get() = wait()+return result only once
+valid() =false
+~future() blocks by out scope so {f1 }{f2} run sequentially instead of concurrently
+wait_for() to avoid blocking forever:
+auto span=chrono::milliseconds(10);
+    while(f1.valid() || f2.valid()){
+        if(f1.valid() && f1.wait_for(span) == future_status::ready){//status::timeout
+            cout << "1 is done! " << f1.get() << endl; //defer run on calling thread 100+1=101, lazy evaluation at get()
+        }
+        if(f2.valid() && f2.wait_for(span) == future_status::ready){//check valid before get
+            cout << "2 is done! " << f2.get() << endl; //async run on new thread 0+1=1, blocking at get()
+        }
+vector<future<size_t>> futures;
+for (size_t i = 0; i < 10; ++i) {
+futures.push|emplace_back(async(launch::async, [](size_t p){
+this_thread::sleep_for(chrono::seconds(p));
+return p;}, i)); //i pass to p
+}
+for (auto &future : futures) {
+      std::cout << future.get() << std::endl;
+ }
+void foo(promise<int>&& | & p) 
+{ 
+   //p.set_value(25); 
+  //if p not set val, if && a temp p is used and destroyed by } of foo and future_error is thrown as broken promise and propagate to f.get(); if & the orig promise won’t destroyed until } of main which never reach because f.get wait for p.set timeout 
+}
+int main()
+{
+    promise<int> p; //fut<T>match prom<T> not thread func return type
+    future<int> f = p.get_future();//get fut before move promise to thread
+    //promise is movable not capyable, prom/fut is 1to1 communication channel for set/get only once, move|ref(p) to f(promise[&&]|&)
+    thread t(foo, move|ref(p));
+    t.join();
+    cout << f.get();
+future + promise to transmit value and exception from thread func to calling thread 
 promise.set_value(ret) | set_exception(ex) > future=promise.get_future() > future.get() from another thread
-
 #include <functional>     // std::ref
 #include <thread>         // std::thread
-#include <future>         // std::promise, std::future
+#include <future>         // std::promise, std::future std::packaged_task
 #include <exception>      // std::exception, std::current_exception
-
-void set (std::promise<int>& prom) {
+void set (promise<int>& prom) {
   int x;
   try {prom.set_value(x);}
-  catch (std::exception&) {
-prom.set_exception(std::current_exception());//use shared pointer to the exception 
+  catch (exception&) {
+prom.set_exception(current_exception());//use shared pointer to the exception 
   }
 }
-void get (std::future<int>& fut) {
+void get (future<int>& fut) {
   try {
-    int x = fut.get();
+    int x = fut.get();//set by prom
   }
-  catch (std::exception& e) {
+  catch (exception& e) {
     cout << e.what();//set by prom
   }
 }
 int main ()
 {
-  std::promise<int> prom;
-  std::future<int> fut = prom.get_future();
-  std::thread th1 (get, std::ref(fut));
-  std::thread th2 (set, std::ref(prom));
+  promise<int> prom;
+  future<int> fut = prom.get_future();
+  thread th1 (get, ref(fut));
+  thread th2 (set, ref(prom));
   th1.join();
   th2.join();
   return 0;
 }
-
+future +packaged_task
+packaged_task<int(int, int)> pt(sum);//int sum(int i,int j) or [](int i,int j){return i+j;}
+future<int> fut = pt.get_future();
+thread t(move(pt), 1, 2); //uncopyable
+t.join();
+cout<<fut.get();//after run task otherwise wait forever
+https://medium.com/@bhushanrane1992/getting-started-with-c-thread-pool-b6d1102da99a
++
+template <typename T>
+class ThreadPool {
+public:
+  using task_type = packaged_task<T()>;
+  future<T> enqueue(task_type task) {
+    // could be passed by reference as well 
+    future<T> fut = task.get_future();
+    { lock_guard<mutex> lock(mut);
+      tasks.push(move(task));
+    }
+    cv.notify_one();
+    return fut;
+  }
+  void worker() { 
+    while (true) {
+      task_type task;
+      { unique_lock<mutex> lock(mut);
+        cv.wait(lock, [this]{ return !this->tasks.empty(); });
+        task = move(tasks.top());
+        tasks_.pop();
+      }
+      task();
+    }
+  }
 vector<int> v1;
 //functor, must auto because it is compiler-generated unknown type
  auto f= [&] (int m)// access v1 by ref
@@ -431,39 +548,35 @@ vector<int> v1;
         for (auto p = v1.begin(); p != v1.end(); p++)
         {cout << *p << " ";}
     };
-
 //concise and readable such as callback functions
-std::thread t( [](){ cout << std::this_thread::get_id();} );//get id inside thread func
-thread t = std::thread{[this]() { this->proc(); }};//class member proc
-thread t([](int i){…},2);
-thread t(bind(foo,_1),2); //foo(int i){…}
+std::thread t( []{ cout << std::this_thread::get_id();} );//get id inside thread func
+thread t = std::thread{[this]() { this->proc(); }};//class member proc and the thread call is inside class to capture this
+cls c; //outside cls::foo(int k)
+for(int i=0;i<5;i++)
+   ts[i]=thread([&](int j){c.foo(j);}, i); //j=i
 //cout<<t.get_id();//get id outside 
-
 capture when the lambda is created whereas passing argument when the lambda is called, and captured value can be remembered if mutable (only applicable to value capture , change on reference capture in lambda reflects back to main function): each call to the lambda could cause a change in the lambda itself, has no thing to do with the actual value of x in the main function
-
     int x = 5;
     int y;
     auto lamb = [x](int i) mutable {return x++ + i; };//if no mutable: compile error can not assign to immutable captured value
     y= lamb(5);
     cout << y<<","<< x << endl; //outputs 10,5
-    x = 20;
+    x = 20;//not be recaptured by lamb
     y = lamb(10);
     cout << y << "," << x << endl; //outputs 16,20
 }
-
 f(p1,p2,p3) f1 is a "partial application" of f:
 vector<int> largeData;//copy STL containers into a closure is very expensive, so prefer moving 
 auto f1 = std::bind(f, 4, [std::placeholders::]_1, std::move(largeData) | a+b);
-Unlike 14 below, C++11 lambda can’t capture rvalue(move or expression), nor perfect forwarding, 
+C++14 lambda capture rvalue(move or expression), and perfect forwarding, 
 auto f1 = [largeData](auto arg) { f(4, arg, std::move(largeData)); };
 f1(5); //f(4,5,v); 1st arg in f1 map to 2nd arg in f
-
 std::function is generalized function pointers and std::bind provide forwarding to a callable to implement callback mechanism: don't want to wait for long run function to return, then you can run that function on separate thread and give it a function pointer that it will callback after it completes.
 #include <functional>
 class MyClass {
 private:
-    //just shorthand to avoid long typing
-    typedef std::function<void (int)> TCallback;
+    //using TCallback = function<void (int)>;
+    typedef function<void (int)> TCallback;
     void longRun(TCallback callback)
     {
         int ret = svcCall();
@@ -482,11 +595,85 @@ std::function<void (int)> callback = [](int result) { std::cout << result;};
         t.join();
     }
 };
-
+void func(function<int(int,int)> lb){//(auto& lb) since C++20
+   cout << lb(1,2);
+}
+ auto foo=[](int i,int j){return i+j;};
+ func(foo);
 void/generic pointer void* to some memory that the compiler doesn't know the type of. + that is why  
 void *operator new(size_t); returns a pointer to unknown type void *p = &t
-
-A shared pointer has one pointer to the object and one pointer to a control block (holding the ref counter, links to weak pointers ...).
+A shared pointer has one pointer to the object and one pointer to a struct containing two reference counts: strong references having ownership, and weak references don't have ownership. the shared object will be deleted if strong reference count=0. the reference count struct will be deleted if strong & weak reference count =0, the weak reference count is incremented when a weak_ptr is (can only) point to memory owned by a shared pointer
+int main()
+{ weak_ptr<int> wp;
+    {  auto sp = make_shared<int>(42); //sp.use_count() =1
+        wp = sp; //sp|wp.use_count() remains 1 as strong reference not 2 weak reference 
+        if (shared_ptr<int> spt = wp.lock()) //return a shared_ptr which shares ownership increments strong ref sp.use_count(), *spt=42
+    }//wp.use_count() =0
+      if (shared_ptr<int> spt = wp.lock()) //return a default-constructed shared_ptr<T>([nullptr]) as nullptr|0 when wp.expired() = true, wp.reset() to expire 
+}
+[avoid circular references ]
+struct B; //need by def A
+struct A {
+  shared_ptr<B> b;  
+  ~A() { cout << "~A()\n"; }
+};
+struct B {
+  shared[weak]_ptr<A> a;
+  ~B() { out<< "~B()\n"; }  
+};
+{
+  auto pa = make_shared<A>();
+  auto pb = make_shared<B>();
+  //pa.use_count()=1
+  pa->b = pb;
+  pb->a = pa; //[weak from shared]
+  //pb->a | pa.use_count()=2[1]
+  [ shared_ptr<A> paa = pb->a.lock();//shared from weak
+  pb->a | pa.use_count(); //2 ]
+}//out scope ~A/B() not [called] use_count=2[0]
+[Cache]
+template <class T>
+class CacheMgr{
+private:
+    unordered_map<string,weak_ptr<T>> cache;
+public:
+    shared_ptr<T> get(string key){
+        const auto& it=cache.find(key);
+        if(it!=cache.end())
+           if(auto exist=it->second.lock())
+               return exist;    
+           else
+               return shared_ptr<T>();
+        else
+            return shared_ptr<T>(nullptr);
+    }
+    void set(string key,shared_ptr<T>& sp){
+    //void set(string key,T* value){
+        //shared_ptr<T> sp(value); ~D out of set{}
+        weak_ptr<T> wp=sp;
+        const auto ip=cache.emplace(key,wp);
+        if(!ip.second)
+             ip.first->second=wp;
+      }
+};
+struct Data{
+      ~Data(){cout<<"~D"<<endl;}
+};
+CacheMgr<Data> cm;
+int main() {
+    //cm.set("a",new Data());
+    shared_ptr<Data> sp(new Data());
+//auto sp=make_share<Data>();
+    cm.set("a",sp);
+    {
+        if(shared_ptr<Data> spd=cm.get("a")) //cache exist
+            cout<<"ok"<<endl;
+    }
+    sp.reset(); //cache gone
+    if(shared_ptr<Data> spd=cm.get("a"))
+        cout<<"ok"<<endl;
+    cout << "end\n";
+} ok ~D end
 Even reference counter is thread-safe by atomic in/decrement, std::shared_ptr itself is NOT thread-safe: access to data object requires mutexes or synchronization among threads 
 So C++14 has
 //In thread 1
@@ -495,7 +682,6 @@ shared_ptr<myClass> private = atomic_load(&global);
 atomic_store(&global, make_shared<myClass>());
 C++17 has atomic<shared_ptr<myClass>> global;
 accesses to global will be thread safe
-
 //as replacement of auto pointer, unique pointer and associated object are deleted together 
 struct A{
   A(string n):Data(n){}
@@ -514,31 +700,26 @@ int main(){
     auto x = make_unique<A>(“dt”);
     auto y = *x; // dereference pointer
     auto r = x.get();// get the internal raw pointer, do NOT delete it since managed 
-    c->Data = "td "; // access members
+    x->Data = "td "; // ~ y.Data
     auto z = x; // Error: the object belongs to unique pointer
     auto z = move(x); //z owns the object and x null pointer
     x = make_unique<A>(“dd”);//~       x.reset(new A(“dd”)/nullptr); prev object deleted 
     swap(x,z);
-    //use move() passing by value and transfer ownership to pointer a in the target function, or directly passing it by ref to void PassIn(std::unique_ptr<A>& a) without ownership transfer
+    //only use move() assignment  (copy assignment disabled) passing by value and transfer ownership to pointer a in the target function, or directly passing it by ref to void PassIn(std::unique_ptr<A>& a) without ownership transfer
     PassIn(move(x)) // Pointer received.
     ; // Deleted.
    if (!x) cout<< "x is empty."; // true: x is empty.
-
-
 Linux
 kill -9|3 <pid> to terminate | take A thread dump provides a snapshot of all the threads in a program
-
 ulimit -S -c unlimited|0 //en|disable core dump
 permanently by /etc/security/limits.conf
 * soft core unlimited|0 //override per user
 * hard core 0 //unoverridable
 ulimit -c //check denote the setting
-
 sudo sysctl -w kernel.core_pattern=/coredumps/core-%e-%s-%u-%g-%p-%t
 to update core_pattern file /proc/sys/kernel/core_pattern from default location pattern /usr/libexec/abrt-hook-ccpp %s %c %p %u %g %t e %P %I
 permanently by  /etc/sysctl.conf
 kernel.core_pattern="/coredumps/core-%e-%s-%u-%g-%p-%t"
-
 %e executable name // ./myapp generate /coredumps/core-myapp upon crash by an unhandled exception 
 %g GID of dumped process
 %h  Hostname
@@ -546,5 +727,5 @@ kernel.core_pattern="/coredumps/core-%e-%s-%u-%g-%p-%t"
 %p  PID of dumped process
 %s  Number of signal causing dump
 %u  UID of dumped process
-
-VWAP try to reach the best price given time window (fxp 6hrs) , use price trail per sec/min/hr to predict direction, when price moving in favor, hold until it slow down which means it is getting close to the peak/bottom where the trade should be made to achieve the best price (usually not by limited price). the whole order can be divided into sub time window (fxp 1hr), instead of waiting and missing execution. If missed a sub window, volumes of the rest window can be adjusted accordingly to match up. IS metrics to evaluate VWAP performance 
+swapoff -a //disable swap to virtual memory for better performance 
+VWAP try to reach the best price given time window (fxp 6hrs) , use price trail per sec/min/hr to predict direction, when price moving in favor, hold until it slow down which means it is getting close to the peak/bottom where the trade should be made to achieve the best price (usually not by limited price). the whole order can be divided into sub time window (fxp 1hr), instead of waiting and missing execution. If missed a sub window, volumes of the rest window can be adjusted accordingly to match up. IS metrics to evaluate VWAP performance
