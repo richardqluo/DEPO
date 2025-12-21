@@ -1,3 +1,8 @@
+template specialization compile time cost (linked) to avoid runtime cost of inheritance (vtable lookup)
+ring buffer by array[index] with atomic head & tail
+FIX 35=D new order F cancel  order 8 exec report  : 150=4 cancelled 8 rejected C expired F filled 
+Direct Market Access: via FPGA (hardware) send order in nano seconds, drop copy to update order book 
+Smart Order Route by rules
 map<price,list<order>> asks|bids
 unordered_map<id,list::iterator to that list order item> //for cancel by id
 or
@@ -42,8 +47,10 @@ private:
 };
 //static or global objects 
 constexpr Point origin(0, 0);
-C++17 std::optional<T> nullable (smart pointer than raw) input or return, .has_value() to check; .value_or(default) to replace std::nullopt and avoid deref nullptr 
- #include <variant>  //like union in c 
+C++17 
+small string optimization Short strings (e.g., up to 15 characters) are stored within the std::string object internal buffer without heap allocation upon create/resize 
+std::optional<T> nullable (smart pointer than raw) input or return, .has_value() to check; .value_or(default) to replace std::nullopt and avoid deref nullptr 
+ #include <variant>  //like union in c but type safe
 variant<int,double,string> v = 1|1.1|”1”;
 //v.emplace<int|double|string>(1|1.1|”1”);
  if (holds_alternative<int|double|string>(v)) {cout << get<int|double|string>(v);
@@ -156,6 +163,7 @@ return dup;
 }//dup is out  but its value (address to int[] heap memory remain) is copied to r, no dangling nor memory leak
 main(){
 int a[] = { 10, 20, 30 }; 
+//int* a; a[0]=10;
 [+ int n=sizeof(a)/sizeof(a[0]);//=3 +]
 int* r=p(a,n);
 [+ int s=sizeof(r)/sizeof(r[0])://=2 +]
@@ -188,7 +196,7 @@ for(int e : a){//for(int i=0;i<4;i++;)
 }// if !bs.all()
 unordered|set<string> myset;
 pair<unordered|set<int>::iterator,bool> ret = myset.emplace("foo");
-if (!ret.second) {//foo already exists 
+if (!ret.second) {//foo already exists *ret.first==“foo”
 myset.erase ("foo");
 set<int>::iterator it=myset.find ("foo");//*it==“foo”
 if (it != myset.end())
@@ -200,15 +208,15 @@ auto|value& p= map[‘k’]; //ref& to modify the value via p=v2
 map<string,cls> cls need default ctr cls(){}|=default for map[key] which create extra cls by def ctr(no arg), use insert|emplace to avoid:
 const auto im=mp.insert(make_pair(“k”,c)) | .emplace(“k”,c) ;
 if(!im.second){
-      im.first->second=c;
+      im.first->second=c; //->first key immutable 
 }
 //mp[“k”]=c;
 map.find(“k”) != map.end() returns an iterator point to the pair (it->first|second key|value) and stop searching after found 
-map.count(“k”) returns an int 1/0 and continue searching till the end
-map.erase(“k”) //only by key
+map.count(“k”) returns an int 1/0 (may >1 if multimap) and continue searching till the end
+map.erase(“k”) //by key not val
 pair<string,double> p ("a",0.3);
 pair<map<string,double>::const_|iterator,bool> r=map.insert(p); // copy insertion
-map.insert(make_pair[<string,double>]("b",6.0)); // move insertion
+map.insert(make_pair[<string,double>]("b",6.0)); // move insertion, #include <utility> to make_pair move
 map.emplace(“c”,1.2); //in place return same as insert
 r.first->first|second “a”|0.3/2.0, 
 r.second true(a new)/false(a exist, not replace value)
@@ -219,7 +227,7 @@ for(auto it=mp.begin();it!=mp.end();)
   else
      ++it;//no erase
 }
-vector.at(i) throw out_of_range | vector[i] nothrow but undefined behavior if i over boundary 
+vector.at(i) slower because boundary check throw out_of_range | vector[i] nothrow but undefined behavior if i over boundary 
 vector dynamically allocate in heap auto delete vs array is fixed size manual delete if in heap
 int iv =100;
 int* ip=new int(100);
@@ -233,7 +241,9 @@ resize(n) change size not capacity, the excess objects if n< current size are de
 shrink_to_fit() set capacity = size by discard unused allocation. after done building a vector and will never add another item to it. 
 reserve(n) If know in advance how many items will be adding, to avoid reallocate changes capacity during growing 
 begin|end() returns an iterator (pointer) to first|last element, front|back() returns a direct reference.
-for (vector<E|E*>::const_iterator it = ves.begin(); it != ves.end(); ++it)
+Container With a plain pointer risk memory leakage and access to freed memory, while with references (especially to a local variable) risk the latter. container can only store assignable type, References (const ptr) are not assignable
+ STL Containers copy-construct elements: Type cheap | expensive to copy use value | shared_ptr
+for (vector<E|E*(no E&)>::const_iterator it = ves.begin(); it != ves.end(); ++it)
 {it-> or *it.f() | (*it)->f();} //*it is obj | ptr
 map<int,obj*> : *it->second to obj // -> op prior to * prior to .
 vector elements are in consecutive memory highly probable fits a same mem page and moved all together in the CPU cache (1000 times faster than RAM) during iteration, 
@@ -260,12 +270,32 @@ vi.erase(it); //must after remove_if which does not delete
 vector<obj> vo;
 //rvalue && since o only last per loop as an obj element 
 auto it=find_if(vo.begin(),vo.end(),[](auto&& o){return o.f()==true;});
+std::transform (va.begin(), va.end(), vb.begin(), [](int i) { return ++i; });
+//va{1,2} vb{2,3}
+vector<string> names = {"hi”, "foo"};
+vector<size_t> name_sizes;
+std::transform(names.begin(), names.end(), std::back_inserter(name_sizes), [](const string& name) { return name.size();}); // name_sizes{2,3}
+vector<unique_ptr<Player>> players;//string names[] 
+std::ranges::transform(names, std::back_inserter(players),
+     [&](const char* name) {
+          return make_unique<Player>(name); 
+        });
+ std::ranges::sort(players, std::greater<>{}, 
+     [](const std::unique_ptr<Player>& p) {
+          return p->score();
+        });
+ if ( std::equal | is_permutation (va.begin(), va.end(), vb.begin(),[](auto&& a,auto&& b){return a.val()==b.val();}))//linear | content compare elements from first to last pos, use default comparer without functor 
+auto it = std::search (va.begin(), va.end(), vb.begin(), vb.end());
+if (it!=va.end()){//va contains vb
+if(std::all|any|none_of(brokers.begin(), brokers.end(), [](char c) { return c==‘ ‘;}))
+{ brokers.clear();}
 for(const auto& item : container) for readonly observing, avoid local copy of each item within loop for(auto item : container), which is acceptable for cheap to copy type like <int|double>
 for(auto& item : container) for modifying, auto&& for container use proxy iterator like vector<bool> that use specialized template for bool, optimize space each value is stored by 1 bit instead of 1 byte (8 bits), since impossible to dereference a bit, proxy iterator returns a rvalue (temp copy of object)
 vector<bool> vb = {true,false};
 for(auto&& b : vb) {b=!b;}
 for(auto|const auto& b : vb) {cout<<b;} //false true
 generic <T> container should use const auto& | auto && for observing | modifying because T (to be defined type ) maybe expensive to copy | proxy iterator
+#include <utility>
 move casts arg to rvalue to ctor|func(T&& t), can be used amap except low copy cost like int or return which nullify orig anyway
 int | string x=1|”1”; int | string y= |move(x); cout<<x; //1|null 
 forward cast a templated function parameter (inside the function) to the same value category (lvalue or rvalue) the caller pass it. l/rvalue arg to be passed on as l/rvalues,"perfect"
@@ -310,7 +340,7 @@ lwz r10 O(r9) //load from g to p
 i=c.exchange(v, memory_order_acq_rel) : c=v and return previous c
 //acq_rel (for read-modify-write op like fetch_add) is both acquire and release, no reads/writes can be reordered across this (before load after store. All writes in other threads codewise before this (their rel ) are visible to this thread modification (by read/acq); this thread modification is visible (by write/rel) to other threads codewise after this (their acq)
 i=c.compare_exchange_weak|strong(exp,new) : return c==exp if true c=new; false   exp=c; 
-weak allow spurious failure (for no reason) return false even when contained==expected, perform better qin loop like while(!c.compare_exchange_weak(exp,new) ); //retrying if false|failed, won’t set expected to contained in that case
+weak allow spurious failure (for no reason) return false even when contained==expected, perform better in loop like while(!c.compare_exchange_weak(exp,new) ); //retrying if false|failed, won’t set expected to contained in that case
 strong requires return true if c==exp not allow spurious fail, preferably for non-loop 
 memory_order_seq_cst (sequential consistent: strictest with least side effects but hurt performance , default for all) load (acquire) store (release) read-modify-write (acq_rel)
 Volatile instruct compiler no to  optimize: never cache the variable in a register (CPU internal memory to store data being actively processed ), always access the actual memory, never get stale value (memory visibility across threads) but not guarantee  atomicity or synchronization
@@ -346,7 +376,7 @@ unique_lock<mutex> lck(mtx,std::defer_lock);
   lck.lock();
   while(!pred()) {cv.wait(lck);}// if() will not recheck against spurious after wake up
   //cv.wait(lck,pred); pred is called repeatedly until true
-//lock must be acquired by the current thread before wait(), otherwise undefined behavior. predicate is function (access global var) or lambda (access global var and capture local var) without arguments but can capture and returns bool, the thread is unblocked when it becomes true (also check using while instead of if against spurious wake-up calls not by notify_one|all). Notifying thread does not need to wait() first nor hold the lock on the same mutex as the waiting thread(s)
+//lock must be acquired by the current thread before wait(), otherwise undefined behavior. predicate is function (access global var) or lambda (access global var and capture local var) without arguments but can capture and returns bool, the thread is unblocked when it becomes true (also check using while instead of if against spurious wake-up calls not by notify_one|all). Notifying thread does not need to wait() first nor hold the lock on the same mutex as the waiting thread(s), waked thread/cv has to acquire lock on its mutex anyway (in different thread the same cv can wait on different mutex lock)
   …
   lck.unlock();
 lock_guard<mutex> is strict version of unique_lock, will be locked only once on construction and unlocked on destruction (exit scope }), not used with condition_variable
@@ -506,7 +536,7 @@ int main ()
 future +packaged_task
 packaged_task<int(int, int)> pt(sum);//int sum(int i,int j) or [](int i,int j){return i+j;}
 future<int> fut = pt.get_future();
-thread t(move(pt), 1, 2); //uncopyable
+thread t(move(pt), 1, 2); //uncopyable 1to1 fut 
 t.join();
 cout<<fut.get();//after run task otherwise wait forever
 https://medium.com/@bhushanrane1992/getting-started-with-c-thread-pool-b6d1102da99a
@@ -728,4 +758,4 @@ kernel.core_pattern="/coredumps/core-%e-%s-%u-%g-%p-%t"
 %s  Number of signal causing dump
 %u  UID of dumped process
 swapoff -a //disable swap to virtual memory for better performance 
-VWAP try to reach the best price given time window (fxp 6hrs) , use price trail per sec/min/hr to predict direction, when price moving in favor, hold until it slow down which means it is getting close to the peak/bottom where the trade should be made to achieve the best price (usually not by limited price). the whole order can be divided into sub time window (fxp 1hr), instead of waiting and missing execution. If missed a sub window, volumes of the rest window can be adjusted accordingly to match up. IS metrics to evaluate VWAP performance
+VWAP try to reach the best price given time window (fxp 6hrs) , use price trail per sec/min/hr to predict direction, when price moving in favor, hold until it slow down which means it is getting close to the peak/bottom where the trade should be made to achieve the best price (usually not by limited price). the whole order can be divided into sub time window (fxp 1hr), instead of waiting and missing execution. If missed a sub window, volumes of the rest window can be adjusted accordingly to match up. IS metrics to evaluate VWAP performance 
