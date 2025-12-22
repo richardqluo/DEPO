@@ -1,0 +1,2016 @@
+http://www.petri.co.il (IT network knowledge base)
+telnet 10.144.76.55 8080 to test ip/port connection, if blank screen > success, otherwise error msg.
+only one processes can listen on a single TCP/IP port so a active port is need for each running  web site  responding to  the same ip address:2182/2082/80
+#ADO.NET#
+DiffGram of dataset is an XML format that is used to identify current and original versions of data elements
+data source object in ASP.NET data-binding all : ICollection
+
+optimistic concurrency
+1.add a timestamp col to the table, compare ts orignal val return from previous query to current val in db, if = update otherwise no 
+2.compare the old val stored as original version to current val in db,   if = update otherwise no
+Custda = new sqldataadpter (‘select custid,custname from customers’)
+Custda.updatecommand = new sqlcommand(‘update customers set custname =@custname where custid =@custid and custname = @oldcustname’)//custid is not changeable, custname is
+Para = new sqlparameter(‘@custname’
+Para.sourcecolumn = ‘custname’
+Mpara = new sqlparameter(‘@oldcustname
+MPara. sourcecolumn = ‘custname’
+Mpara.sourceversion = datarowversion.original
+Custda.updatecommand.parameters.add(para|mpara)
+Custda.rowupdated+=new sqlrowupdateeventhandler(onrowupdate)
+Custda.fill(custds,’customer’)
+..modify custds
+Custda.update(custds,’customer’)
+For each (datarow dr in custds.table[‘customer’]
+{if dr.haserrors 
+         Write dr.rowerror}
+
+Protected onrowupdate(object sender, sqlrowupdateeventargs args)
+{if (args.recordsaffected ==0)
+ {args.row.rowerror=’opti concur violation’
+  Args.status=updatestatus.skipcurrentrow}
+
+DataReader vs  DataSet
+The connected, forward-only, read-only nature SqlDataReader can only retrieve one row at a time from the data source and in order for it to get the next record, it has to maintain its connection to the data source, so it can’t be used in web service. The DataReader can only get its data from a data source through a managed provider. Dataset is disconnected representation for tables in memory. So DataSet is fully navigable. they can be filtering, sorted or even searched. Multiple tables with relations can be stored in it. The DataSet can also get its data from a data source via a managed provider or xml. DataSet's disconnected nature allows it to be transformed into XML and sent over the wire via HTTP if appropriate. This makes it ideal as the return vehicle from business-tier objects and Web services. A DataReader cannot be serialized and thus cannot be passed between physical-tier boundaries where only string (XML) data can go. When intended to be bound to a single ASP.NET server control and the data is read-only, the DataReader could suffice. If a rowset is intended to be bound to more than one read-only ASP.NET server control, you should consider using a DataSet instead. If a DataReader was bound to more than one control (such as three DropDownList controls), the same query would hit the database three times since the DataReader can only move forward.
+DO NOT using a CommandBehavior.CloseConnection to close a connection along with a using statement to do the same, you are causing the CLR to have to clean up the same resources two different times cause 84% more time 
+using (SqlDataReader reader = sqlCmd.ExecuteReader(CommandBehavior.CloseConnection))
+ExecuteScalar() to get the count of rows returned by your database query
+As SqlDataAdapter using the native data transfer protocol does not have to go through an OLE DB layer,it is faster than the OleDbDataAdapter
+
+ForeignKeyConstraint restricts the action performed when a value in a column (or columns) is either deleted or updated In a parent/child relationship between two datatables in a dataset by setting ForeignKeyConstraint .KeyDeleteRule
+•	The child rows can also be deleted (a cascading action). Rule.Cascade
+•	The values in the child column (or columns) can be set to null values. Rule.SetNull
+•	The values in the child column (or columns) can be set to default values. Rule.SetDefault
+•	specifies that no action will occur, but exceptions are generated Rule.None
+•  1. Deleted The row was deleted using the Delete method of the DataRow., New The row has been added to a DataRowCollection, and AcceptChanges has not been called.
+•  2. Modified The row has been modified and AcceptChanges has not been called
+•  3. Detached The row has been created but is not part of any DataRowCollection. A DataRow is in this state immediately after it has been created and before it is added to a collection, or if it has been removed from a collection.
+•  4. Unchanged The row has not changed since AcceptChanges was last called.
+productInfo.GetChanges(DataRowState.Detached);only get changed data in a dataset 
+DataRowVersion : Current Original Proposed
+Default The row the default version for the current DataRowState. For a DataRowState value of Added, Modified or Current, the default version is Current. For a DataRowState of Deleted, the version is Original. For a DataRowState value of Detached, the version is Proposed.
+a typed DataSet provides strongly typed methods, events, and properties. This means you can access tables and columns by name like properties, instead of using collection-based methods. type mismatch errors are caught when the code is compiled rather than at run time. a typed DataSet also allows the Visual Studio .NET code editor to automatically complete lines as you type.
+2.0 DataAdapter.UpdateBatchSize allows  to execute queries in a batch. when you turn on the batch update behavior, the RowUpdating event is raised as before for each row but rowUpdated event is raised after the entire batch is updated
+ ref paper
+ DataTableReader is a light-weight, forward-only set of data that maintains the same structure (columns,rows) as a DataTable
+[while(dataTableReader.NextResult())  // multi resultsets]
+{          while(dataTableReader.Read())
+          {             DataTableReader[“codeID”].ToString();
+Sqldataadapter.fill(datatable), dataTable.Load(sqlCommand.ExecuteReader(..//direct fill from datareader,Datatable :xmlserializable can be passed over web svc 
+Set the EnforceConstraints property of the dataset to false to turn off the constraints checking.  Then use BeginLoadData and EndLoadData methods to turn off the index maintenance for faster processing
+dataSet.EnforceConstraints = false; 
+       dataSet.Tables["product"].BeginLoadData();
+       da.Fill(dataSet.Tables["product"]);
+        dataSet.Tables["product"].EndLoadData();
+
+MARS with Sqlconn multiactiveresults = true(default)
+Using(conn)
+{conn.open;
+ Using (sqlreader rd1 = cmd1.executereader())
+ {while rd1.read()
+  {listbox2.item.add(rd1[“name”]);
+   Cmd2.para[“@id”].value= (int)rd1[“id”]
+   Using(sqlreader rd2 = cmd2.executereader())
+   {while rd2.read()
+     {listbox2.items.add(rd2[“desc”])
+
+//batched queries for better performance
+             sqlCommand.CommandText ="select * from customer;select *  from product";
+             sqlCommand.Connection =sqlConnection;
+             SqlDataReader sqlDataReader =sqlCommand.ExecuteReader();
+             ddListCustomer.DataSource =sqlDataReader;
+             ddListCustomer.DataValueField ="id";
+             ddListCustomer.DataTextField ="name";
+             ddListCustomer.DataBind();
+             sqlDataReader.NextResult();
+             ddListProduct.DataSource = sqlDataReader;
+             ddListProduct.DataValueField ="id";
+             ddListProduct.DataTextField ="name";
+             ddListProduct.DataBind();
+
+Using System.Data.Common
+DbProviderFactory dataFactory = DbProviderFactories.GetFactory("System.Data.SqlClient");
+dataFactory.CreateConnection/CreateDbCommand/CreateDataAdapter
+
+SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+builder.AsynchronousProcessing = true;
+… can set all props corresponding to connstr 
+ using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+   {connection.Open();
+
+SqlBulkCopy enables us to copy a large volume of data between a source data store and a destination data table without repeated database accesses on row basis.
+using (SqlBulkCopy bulkCopy =  new SqlBulkCopy(destinationConnection))
+                {  bulkCopy.DestinationTableName = "dbo.BulkCopyDemoMatchingColumns";
+// so there is no need to map columns if src and dest have th same columns set
+              SqlBulkCopyColumnMapping mapID =
+                    new SqlBulkCopyColumnMapping("ProductID", "ProdID");
+                bulkCopy.ColumnMappings.Add(mapID);
+
+                SqlBulkCopyColumnMapping mapName =
+                    new SqlBulkCopyColumnMapping("Name", "ProdName");
+                bulkCopy.ColumnMappings.Add(mapName);
+…
+                 bulkCopy.BatchSize = 50;//default 0 –each WriteToServer is a single batch
+                    try
+                    {   bulkCopy.WriteToServer(reader);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {  reader.Close();
+                    }
+                }
+
+LOB (large object of binary) read/write to database (varbinary(max) or image col)
+using (SqlCommand sprocCommand = new (select document varbin(max)
+try
+ {sqlReader =        sprocCommand.ExecuteReader(CommandBehavior.SequentialAccess);
+//by default, sqlreader load data on row basis, but for BLOB is too big to be contained in a single row (actually varbin/image data is not stored in table, the row contains a pointer), SequentialAccess make sqlreader load data block sequentially as it received. 
+  sqlReader.Read();
+  using (FileStream fileStream = new FileStream(filePath,      FileMode.Create, FileAccess.Write))
+  {using (BinaryWriter binaryWriter = new BinaryWriter(fileStream))
+    { byte[] outbyte = new byte[4096];
+      long startIndex = 0;
+// Read 1st returned col into outbyte[] and retain the number of bytes returned. 
+long  retval = sqlReader.GetBytes(0, startIndex, outbyte, 0, bufferSize);
+// Continue reading and writing while there are bytes beyond the size of the buffer.
+while (retval == bufferSize)
+{binaryWriter.Write(outbyte, 0, Convert.ToInt32(retval));
+      // Reposition the start index to the end of the last buffer and fill the buffer.
+ 	 startIndex += bufferSize;
+ 	 retval = sqlReader.GetBytes(0, startIndex, outbyte, 0, bufferSize);
+}
+// Write the remaining buffer.
+binaryWriter.Write(outbyte, 0, Convert.ToInt32(retval));
+    }
+  }
+ }
+finally
+{sqlReader.Close();}
+
+DirectoryInfo directoryInfo = new DirectoryInfo(datafilesDirectory);
+if (!directoryInfo.Exists) throw new DirectoryNotFoundException
+FileInfo fileInfo = new FileInfo(datafilesDirectory + "testdoc.doc");
+if (!fileInfo.Exists) throw new FileNotFoundException
+using (BinaryReader binaryReader = new BinaryReader((Stream)File.OpenRead(datafilesDirectory + "testdoc.doc"), System.Text.Encoding.ASCII))
+{long fileSize = binaryReader.BaseStream.Length;
+ byte[] bytes = new Byte[fileSize];
+ binaryReader.Read(bytes, 0, (int)fileSize);
+ using (SqlCommand sprocCommand = new (insert @document)
+ {sprocCommand.Parameters.Add(new  SqlParameter("@Document",SqlDbType.Image));
+   sprocCommand.Parameters[4].Value = bytes;
+   sprocCommand.ExecuteNonQuery();
+  }
+ }
+
+Transaction
+1.       Atomic - it is one unit of work and does not dependent on previous and following transactions.
+2.       Consistent - data is either committed or roll back, no “in-between” case where something has been updated and something hasn’t.
+3.       Isolated - no transaction sees the intermediate results of the current transaction).
+4.       Durable - the values persist if the data had been committed even if the system crashes right after.
+create a TransactionScope that executes two commands against a single SQL Server 2000/5database. When the connection to SQL Server 2000/5 is opened, it joins the TransactionScope; because SQL Server 2000 does not support lightweight transactions, the DTC is involved—even though this is obviously not a distributed scenario (since I'm only hitting one database and it's on the same connection). But for a TransactionScope that executes two commands against a single SQL Server 2005 database, transaction stay local. Since SQL Server 2005 supports lightweight transactions: If the transaction is local, it will remain lightweight. If the transaction becomes distributed and involves a second resource manager, then the lightweight transaction will be promoted to a fully distributed transaction and will indeed involve the DTC must be running. 
+So only using System.Transactions  for a expensive distributed transaction or if your resource manager supports lightweight transactions, otherwise, use connection based local transaction
+Opt = new transactionoption();
+Opt.isolationlevel|timeout=isolationlevel.readcommited|timespan;
+Using (ts = new transactioncope([transactionscopeoption.requirenew,opt])//:idisposable
+{using (sqlconnection cn1){…}
+  using (sqlconnection cn2){…}
+//can call another transaction scope
+  ts.complete();//auto rollback if any exception thrown within the block, so throw exception instead of rollback subtrans 
+}
+  
+#NETFRAMEWORK#
+The main components of the .NET framework are:
+•  1. Common Language Runtime main CLR System assembly which contains the classes for built-in CLR types: Mscorlib
+•  2. Framework Class Libraries
+When a .NET program is compiled, first, source code is compiled to Microsoft intermediate language (MSIL) code using a .NET Framework-compatible compiler, such as that for Visual Basic .NET or Visual C#. Second, MSIL code is compiled to native code.
+a assembly in portable executable (PE) files (an .exe or .dll).  can consist of four elements: 
+•	The assembly manifest, which contains assembly metadata. (Assembly name, Version number, Culture ,Strong name, Type reference, information  on referenced assemblies)
+•	Type metadata. 
+•	Microsoft intermediate language (MSIL) code that implements the types. 
+•	A set of resources, the details of all the files
+Assemblies are  executable (.exe) file or dynamic link library (.dll) file, and are the building blocks of the .NET Framework
+Satellite assemblies are often used to deploy language-specific resources for an application Use the Assembly Linker (Al.exe) to compile .resources files into satellite assemblies. satellite assemblies can only contain resources. They cannot contain any executable code.
+System.Runtime.InteropServices.DllImportAttribute|InAttribute
+
+Signing an assembly with a strong name adds a public key encryption to the file containing the assembly manifest. However, no level of trust is associated with a strong name,  Signcode.exe requires a publisher to prove its identity to a third-party authority and obtain a certificate. This certificate is then embedded in your file and can be used by an administrator to decide whether to trust the code's authenticity. when using both a strong name and a signcode signature on an assembly, the strong name must be assigned first.Signcode can sign only one file at a time; for a multifile assembly, you sign the file that contains the assembly manifest.
+
+CTS provides a set of common data types for use across all programming languages, The common type system supports two general categories of types: Value types (Enum, Structs..)directly contain their data, and instances of value types are either allocated on the stack or allocated inline in a structure, The GC is not responsible for cleaning up the stack because the space on the stack reserved for a method call is automatically cleaned up when a method returns. while Reference types (Array,String..) store a reference to the value's memory address, and are allocated on the heap and auto managed by GC
+
+Namespaces organize the objects defined in an assembly to prevent ambiguity and simplify reference. Assemblies can contain multiple namespaces. alias namespace in C#?using aliasName = System.Data.OracleClient
+
+The stack is where local variables, method parameters, return values, and other temporary values are stored during the execution of an application. The GC is not responsible for cleaning up the stack because the space on the stack reserved for a method call is automatically cleaned up when a method returns.
+The unmanaged heap is used for runtime data structures, method tables, Microsoft intermediate language (MSIL), JITed code, and so forth. Unmanaged code will allocate objects on the unmanaged heap or stack depending on how the object is instantiated.
+The managed heap is where managed objects are allocated and it is the domain of the garbage collector. The CLR uses a generational Gen0, Gen1(objects that survive 1 GC), and Gen2 (objects that survive multiple GC), If an object is 85,000 bytes or larger, it is allocated by GC on the large object heap, which does not compact due to the expensive cost of moving the large objects require  twice as much memory and long time to complete, classifies them as second generation objects. After LOs are removed by GC, they leave behind holes in the large object heap become fragmented. Examine the types of objects that are on the large object heap using tools like the CLRProfiler. Avoid using large temporary large objects like huge dataset .
+The GC performs a collection non-deterministic when generation 0 is full, GC maintains set of references to objects created by the program called the ‘GC roots’, all objects in|directly referenced by these variables are reachable/live:
+1. A local variable in a currently running method,lasts for as long as the method is on the call stack. 
+2. Static variables
+3. objects with finalizer, as they will survive the first round GC found them unused. upon creating, a pointer to that object is placed on the finalization queue
+4. managed object passed to an unmanaged COM+ library through interop because COM+ uses reference counting not garbage collection 
+starting from roots, GC traverse all reachable/live objects thru refernce chain. compact by removing dead/unreachable objects and sliding live objects up toward the low-address end of the heap (oldest objects are at the lowest addresses). 
+GC normally only on GEN 0 instead of full 0&1&2 heap which is too expensive , reduce work load, longer an object survived, less chance it will be discarded..
+a = new A(); //root---a
+b= new B();//root---b
+a.B = b;
+b.A =a;// a --- b
+a = null;//root  -x- a 
+b=null;// root  -x- b
+//a and b will be collected since they are no longer ref with root, even they are ref with each other 
+
+A GetA()
+{A a = new A(); //root1 ---a
+  return b = a;} //root1 ---b, b---a 
+main()
+{A  _a = GetA(); //root ---_a---b---a ,  after exe GetA(), a won’t be collected because still referenced via b  
+
+Object referencing | being referenced by Live object will |not be collected.
+main()
+{a=new A(); root(type1)-->a
+ b=new B(a); root(type1)-->b-->a
+ a.Foo(b); a-->b//a, b are are cicular ref
+}//when run out of main, above 2 roots are gone, both a b will be eligible for GC even they are ref each other.
+String str1|2 = "1|2";
+str1 = str2;//Now the object "1" is not referred and eligible for GC
+
+.NET 4.5 two improvements to the large object heap. First, the runtime memory allocator will revisit the memory fragments that earlier allocation couldn’t use. Second, when in server GC mode, the runtime balances LOH allocations between each heap.
+
+must implement a Finalizer to release unmanaged objects  to avoid leak unmanaged (heap) memory. to avoid clean up managed objects from Finalize method, use Dispose(false) in Finalize method.  This is because the exact time and order of Finalize calls is unknown, Finalize methods may be executed in a diff background thread from GC, so GC can not also finalize and has to wait for Finalizer thread. just because  an object is reachable, doesn’t mean it hasn’t been cleaned up already.
+If an object implement a finalizer,
+   1.  when it is garbage (not-reachable), it is not collected in the first round of the GC but is placed in the finalizer queue
+   2. The finalizer thread calls the finalizers of each object in the finalizer queue and removes it from the queue, which making it once again reachable from user code (Object Resurrection).
+   3. The next round GC actually reclaims the object ( de-allocate the memory) 
+overriding Object.Finalize result in GC takes at least two collections to remove it. So an empty custom finalizer add overhead without any benefit.
+upon constructing object defines a Finalize, a pointer to the object is placed on the finalization queue, The garbage collector scans the finalization queue looking for pointers to the objects which are identified as garbage. if found, it is moved to freachable queue, A dedicated high-priority CLR thread is calling Finalize methods of these objects, they are reachable only to this finalization thread.
+
+IDisposable.dispose pattern is only for objects that access unmanaged resources and explicitly release them that are not control by GC. If only implement Dispose(){file.close();} without finalizer that is the last chance to free resource, forget explicitly call dispose() will leave resource (file) unclosed.  Manually Dispose incase finalizer run out of memory
+•Dispose should be safely callable multiple times, check to avoid double-freeing. 
+if (!disposed){if (handle != null) handle.Dispose();disposed = true;}// class level private bool disposed
+•Don't throw exceptions in Dispose, which will interrupt cleanup lead to unexpected result.   
+•call Dispose from the same thread that created the object  
+•GC.SuppressFinalization(this) go before or after the cleanup code in Dispose. after, in case something goes wrong before you've finished cleaning up. before, avoid race condition: Dispose is the last time your object is being referenced, As soon as Dispose() is entered in foreground thread, the object is eligible for collection by the GC, GC may start finalizer in backgroud thread at the same time, two threads double-freeing resources.
+class mComponent : IDisposable
+[~mComponent() // implicit finalizer is auto called by GC
+{  Dispose(false);//finalizer thread} ] // no need to implement a finalizer if the type does not directly create a unmanaged resource, which can be passed in as para          
+Public void Dispose()
+{  Dispose(true);  //main thread to clean up outside the finalizer 
+   GC.SuppressFinalize(this);}
+//avoid unnecessary expensive finalize and in case a subclass of this type implements a finalizer.
+protected virtual void Dispose(bool disposing) 
+//unified place can be  called from both the Finalizer or explicitly Dispose()
+//protected override void Dispose(bool disposing)
+{//base.Dispose(disposing); derived class dispose parent: IDisposable
+ If(!disposed) 
+   {if (disposing)//lock around if want thread safe 
+      {//Clean up managed resource, finalizer won’t dup exe this because of suppress}
+    if (_timer != null)
+          _timer.Dispose();     // clean up unmanaged resource, finalizer will go here 
+     } 
+ disposed = true;
+}
+Simple version for non-inherit class
+class mComponent : IDisposable
+[~mComponent() // implicit finalizer is auto called by GC
+  {  CleanUnmanagedResource();}
+  public void Dispose()
+  { CleanManagedResource();
+     CleanUnmanagedResource();
+     GC.SuppressFinalize(this);}	
+
+using(mComponent mcomp = new mComponent ()) is equal to
+try
+{    mcomp = new mComponent ();}
+finally
+{    mcomp.Dispose();}
+Managed objects:IDisposable usually hold unmanaged resource, , such as window handles like IntPtr, file handles like open files and streams, TextReader|Writer >Stream|StringReader|Writer, Stream > File|MemoryStream,network sockets or database connections  
+
+leaking memory sign: throwing an OutOfMemoryException. Maybe its responsiveness is growing very sluggish because it started swapping virtual memory to disk. Maybe memory use is gradually (or not so gradually) increasing in Task Manager. Use PerfMon to examine the following performance counters for the application:The Process/Private Bytes counter reports all memory that is exclusively allocated for a process and can't be shared with other processes on the system. The .NET CLR Memory/# Bytes in All Heaps counter reports the combined total size of the Gen0, Gen1, Gen2, and large object heaps. The .NET CLR LocksAndThreads/# of current logical Threads counter reports the number of logical threads in an AppDomain. If an application's logical thread count is increasing unexpectedly, thread stacks are leaking. If Private Bytes is increasing, but # Bytes in All Heaps remains stable, unmanaged memory is leaking. If both counters are increasing, memory in the managed heaps is building up.
+Using SYSWOW64/perfmon.exe for 64 bits server, not from admintool. For web app, the w3wp instance will be visible in the counter’s instance dropdown list only after the first request coming in.
+
+Common Language Specification (CLS), which is a set of basic language features needed by many applications, has been defined for cross-language interoperability code to be CLS-compliant,  'unmanaged' code can be added in C# which need not be CLS compliant
+
+Advantages of managed code application instead of unmanaged code application
+Automatic Memory management  garbage collection
+Support for multiple versioning and to run multiple versions of the same component within the same process to prevent DLL Hell
+type safety code accesses only the memory locations it is authorized to access. Like type-safe code cannot read values from another object's private fields.
+exception handling
+
+DLL hell is resolved in .NET by assembly versoning allows the application to include an version of the library it needs to run. (Dll problem in Win32 is to identifying the correct library which not includes version)
+using Publisher Policy file redirect all the application to a new version of shared assembly that has an old version also you don't know which applications on clients are using this old version of assembly.If a publisher policy file exists, the runtime checks this file after checking the assembly's manifest and application configuration file. Vendors should use publisher policies only when the new assembly is backward compatible with the assembly being redirected. assembly is not compitable. when  major.minor version of an assembly changed
+<publisherPolicy apply="no">// bypass publisher policy by settings in the configuration file
+The publisher policy file is compiled into an assembly and placed in the global assembly cache.
+<configuration>
+   <runtime>
+      <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+       <dependentAssembly>
+         <assemblyIdentity name="myAssembly"
+                           publicKeyToken="32ab4ba45e0a69a1"
+                           culture="en-us" />
+         <!-- Redirecting to version 2.0.0.0 of the assembly. -->
+         <bindingRedirect oldVersion="1.0.0.0"
+                          newVersion="2.0.0.0"/>
+       </dependentAssembly>
+      </assemblyBinding>
+   </runtime>
+</configuration>
+1.	Create a publisher policy file. 
+2.	Create a publisher policy assembly. 
+3.	Add the publisher policy assembly to the global assembly cache.
+
+An AppDomain belongs to only a single process, but single process can hold multiple AppDomains. An AppDomain is relatively cheap to create (compared to a process), and has relatively less overhead to maintain than a process. provide a unit of isolation for the CLR between applications (one appdomian for one app) . The .NET runtime uses an AppDomain as a container for isolating code and data, just like the operating system uses a process. Several threads can be executing in a single application domain, threads are free to cross application domain boundaries; a new thread is not created for each application domain.   IN iis6, Each application pool run in a separate worker process w3wp.exe (process isolation), each asp.net application/domain can be set in separate application pool -- worker process
+
+This component must be installed in the Global Assembly Cache (GAC) by gacutil.ese so that it can be shared by every application on the target computer, MUST use strong name. GAC’ed assemblies have FullTrust. if having an assembly in both GAC and local bin, If assembly reference specifies a strong name it will search GAC first then local. otherwise only search Local.
+The native image cache is a reserved area of the global assembly cache. Running Ngen.exe on an assembly to create a native image for an assembly, the runtime automatically uses that native image each time it runs the assembly, so it is faster.  A native image is a file containing compiled processor-specific machine code. Note that the native image that Ngen.exe generates cannot be shared across Application Domains. Therefore, you cannot use Ngen.exe in application scenarios, such as ASP.NET
+
+access Windows Registry in .NET Application
+Imports Microsoft.Win32 Microsoft.Win32.Registry Microsoft.Win32.RegistryKey
+HKLM\Software\WaMu\Online\MySecretCode,KeyName
+RegistryKey rk = Registry.LocalMachine ;
+RegistryKey sk = rk.OpenSubKey(Software\WaMu\Online\MySecretCode);
+string value = (string)sk.GetValue(KeyName);
+
+System.Reflection at runtime with System.Type to   1.Viewing metadata, 2.discovering type, 3.Late binding to methods and properties, 4.Creating types at runtime and invoke dynamic (System.Reflection.Emit) 
+Assembly.LoadFrom/GetType, Module (to get information about parent assembly, classes in the module)| Constructor| Method| Field| Event| Property| ParameterInfo
+1.System.Reflection.MemberInfo inf = typeof(iTarget);
+object[] attributes = inf.GetCustomAttributes(typeof(iAttribute),false);
+object[] methods = inf.GetMethods(typeof(iAttribute),false);
+MethodInfo i = typeof(MyClass).GetGetMethod("NAME"[,BindingFlags.Instance|Static.. ]) 
+//MethodInfo.IsFamily to ascertain whether MyMethod is accessible to a derived class
+2.Assembly a = Assembly.Load("SampleAssembly, Version=1.0.2004.0, Culture=neutral, PublicKeyToken=8744b20f8da049e3");
+Type[] types = a.GetTypes(  );
+3,Type theMathType = Type.GetType("System.Math");
+  Object theObj =  Activator.CreateInstance(theMathType);
+  MethodInfo CosineInfo =  theMathType.GetMethod("Cos",paramTypes);
+  Object returnVal = CosineInfo.Invoke(theObj,parameters);
+4.Assembly a = Assembly.LoadFrom(fileName + ".dll");
+  theClass = a.CreateInstance(className);
+  theType = a.GetType(className);
+
+  object retVal = theType.InvokeMember("methodName",...
+IL DASM is used to decompile .NET code into the underlying MSIL code. Net Reflector 5.0 can go a step further and reverse the MSIL code into readable .NET. (red-gate.com) open dll/exe, right click class file in treeview > disassemble, to prevent code from being decompliled: 
+1.put secured logic in native code like C++ DLL, which can’t be decompiled, then import and call it in managed code 
+[DllImport("SecureComponent.dll")]
+2.use a web service to capsulate the logic
+3.use Dotfuscator in Visual Studio  Obfuscation is a technique used to complicate code, makes code harder to understand when it is decompiled, but has no affect on the functionality of the code.Tool> Dotfuscator community edition>add new Dotfuscator project> add the SecureApplication project output to the "Input Assemblies" part of our Dotfuscator project and compile the project to obfuscate the resulting assemblies. set configuration options: like rename calss members as the unprintable characters; encryption of strings,the strings are decrypted on-the-fly as the application is running
+
+
+types of errors In ASP.NET Configuration,Runtime,compilation and parser errors
+
+Use connection pooling By using same Connection with same parameters, including the security settings. Connections are pooled per process, per application domain, per connection string and when using integrated security, per Windows identity. 
+"Integrated Security=SSPI;Initial Catalog=Northwind” Pool A is created when it open
+"Integrated Security=SSPI;Initial Catalog=Northwind"))
+// The connection string matches pool A if same Windows identity. }
+If MinPoolSize is either not specified in the connection string or is specified as zero, the connections in the pool will be closed after a period of inactivity. However, if the specified MinPoolSize is greater than zero, the connection pool is not destroyed until the AppDomain is unloaded and the process ends.
+Connections are pooled according to the connection string plus the user identity. Therefore, if you use Basic authentication or Windows Authentication on the Web site and an integrated security login, you get one pool per user, it result in pool fragment. Create a separate pool of connections to each database, thus increasing the number of connections pool to the server. To avoid this, connect to the same database on the server and then execute the Transact-SQL USE statement to change to the desired database. Default  timeout in sqlconnection 15
+using (SqlConnection connection = new SqlConnection(
+  "Server=MSSQL1;uid=xxx;pwd=xxx;database=master"))
+  {
+    connection.Open();
+    command.ExecuteNonQuery("USE " + databaseName);
+}
+When a pool is created, multiple connection objects are created and added to the pool so that the minimum pool size requirement is satisfied set Min Pool Size property to 10 to enforce conn pool and reduce time users wait for new connections to be created. Request will be queued if concurrent con reach max pool size, reset size in conn string take effect after restarting app. 
+Sql general\login/sec: repeatedly rise means new pool is created on diff credential
+Net\sqlclient\cur# of conn pools|peak# pooled conn|total failed conn      
+Connections are drawn from the pool and assigned based on transaction context. Unless Enlist=false is specified in the connection string, the connection pool ensures that the connection is enlisted in the Current context. When a connection is closed and returned to the pool with an enlisted System.Transactions transaction, it is set aside in such a way that the next request for that connection pool with the same System.Transactions transaction will return the same connection. If there is no connection available for that transaction, the connection is automatically enlisted when it is opened.
+When a connection is closed, it is released back into the pool and into the appropriate subdivision based on its transaction context. Therefore, you can close the connection without generating an error, even though a distributed transaction is still pending. This allows you to commit or abort the distributed transaction at a later time.
+
+When using Windows Integrated authentication against an IP address, the server does some very bad things - including sending NetBIOS packets out of the transaction interface. This causes the server to take 5-9 seconds to open a new SQL connection. The Database server dbsv00z name needs to be added to the host file on all servers and the web.config files need to be updated to use the name dbsv00z instead of the IP address 10.202.69.70 in connectionstring.  
+In web farm  Avoid Impersonating client identities to make database calls because of connection pooling is not by SSPI.  Remoting the default TCP channel cannot be load balanced using a NLB solution in a server farm, use the HTTP channel.
+SqlException.class return severity level of the SQL error, 17-19 indicates Hardware or software errors, 20+ closes the SqlConnection
+
+The queued components service enables you to create components that can execute asynchronously Or in disconnected mode
+
+Declarative security uses attributes to place security information into the metadata of your code
+[MyPermission(SecurityAction.Demand, Unrestricted = true)]
+public class MyClass
+Imperative security issues a security call by creating a new instance of the permission object
+public void MyMethod() {
+       //MyPermission is demanded using imperative syntax.
+       MyPermission Perm = new MyPermission();
+       Perm.Demand();
+       //This method is protected by the security call.
+use imperative security rather than declarative security when Ensuring that your application has access to an environment variable whose name is not known until runtime
+
+Delegate 
+Delegate is like type safe function pointer, Delegates encapsulate a reference to a TO-BE-DEFINED method inside a delegate object. The delegate object can then be passed to code that calls the referenced method, and the method to be invoked can be  defer  implementation to another place  and unknown at compile time.  Public/private delegate result-type identifier ([parameters]); In C# a delegate can return value like delegate double GetResult(params double p);If there is more than one method on this delegate, the return value is from the last one
+delegate declaring the signature of functions that this delegate can reference
+public delegate void SimpleDelegate();
+SimpleDelegate simpleDelegate = new SimpleDelegate(mType.MyFunc);//this could be defined in client class
+simpleDelegate();//= mType.MyFunc();
+in heap delegate instance (simpleDelegate) holds a reference to the target instance (mType), As long as an instance of the delegate lives, all chained targets will remain alive won't be GC unless explicitly -=.
+Callback: the Business tier component implements a particular functionality In order to inform the client tier when the job was performed successfully, it needs an address of the function\method implemented in the client. In C++ the address of a function pointer is just a memory address; does not carry any information regarding the signature of the function\method implemented in the client, not Type Safe. C# delegate is type safe by carrying the signature. Will safely raise an Compile time error if signature mismatch.
+Namespace CustApp// Business tier component
+{ public delegate void Nothifydel(string phoneNum);//public make it accessible under namespace
+  public class Customer
+  {public void ValidateCust(Nothifydel objDel, string phoneNo)
+    {if phoneNo.StartWith(“212”)
+         objDel(phoneNo);
+using CustApp; //client tier component referencing to Business tier component, not another way around, so it is impossible for business to call client function  directly because business do not even know who will be the client so no way to ref to client.  
+main()
+{ Customer cust = new Customer();
+  Nothifydel del = new Nothifydel(NotifyClient);//singlecast 
+[Nothifydel del = null;// multicast, if it return value, next override previous  
+del +=  new Nothifydel(NotifyClient);
+del +=  new Nothifydel(NotifyElse);]
+  cust. ValidateCust(del,”2123456789”);
+//cust. ValidateCust(delegate (string phone){ MsgBox(string.format(“{0} is local”, phone));} |Action<string> = (phone) => MsgBox(string.format(“{0} is local”, phone));,  ”2123456789”);//anonymous method can access class members/variables defined in the  class/method inside which anonymous delegate is created.
+
+private void NotifyClient (string phone)
+{MsgBox(string.format(“{0} is local”, phone)):
+
+public class MyContainer
+{public event EventHandler<ItemAddedEventArgs> ItemAdded;
+  public void Add( object item )
+  {...// Store it in an internal list or something 
+   if( ItemAdded != null )
+     ItemAdded( this, new ItemAddedEventArgs(item) );//fire the event, ItemAddedEventArgs.AddedItem= item when constructed
+
+[TestFixture]//use anonymous delegate to unit test event 
+public class ContainerMonitorFixture
+{ [Test]
+public void AddFiresAddedEventWithCorrectArgs()
+{object expected= new object();object actual = null;|bool eventRaised = false; 
+  MyContainer container = new MyContainer();
+  container.ItemAdded += delegate( object sender, ItemAddedEventArgs e ){actual = e.AddedItem;}|delegate{eventRaised = true; };
+  //The anonymous delegate can modify variables (expected actual eventRaised) in the test method 
+  container.Add( expected );
+  Assert.AreSame( expected, actual );|Assert.AreEqual( true, eventRaised);
+
+service:
+public delegate bool NumberTester(int i);
+public static void foo(int num, NumberTester filter)
+{ if (filter(num)){Console.WriteLine(num);}
+client:
+public static bool IsOdd(int i)
+{ return (i % d) == 0;}
+foo(5, new NumberTester(IsOdd));// delegate allow plug in different client functions IsOdd, IsEven .. as long as the signature matches
+//or anonymous methods without having to new delegate() and declare IsOdd(): 
+ foo(5, delegate(int i){ return (i % d) == 0;});
+//or C# 3.0 lambdas implementing anonymous methods with expression:  foo(5, i => (i % d) == 0); 
+//or generic delegate: foo(5, Func<int, bool> nonExprLambda = i => (i % d) == 0;); 
+Expression<Func<int, bool>> exprLambda = i => (i % d) == 0;//an expression tree is built upon compiling rather than compile to an IL method.
+
+public delegate int Multiple(int i, int j);//no need if lambra exp
+public static void main()
+{Multiple multiple =  new Multiple(MultiplyNumber);
+ //or anonymous method	
+ Multiple multiple =  delegate(int i, int j){ return i * j;};
+//or lambra exp  	
+Multiple multiple = (i,j) => i*j;
+Console.WriteLine(multiple(10, 11));
+}
+static public int MultiplyNumber(int i, int j) //no need if anonymous method
+{ return i * j;}
+
+v3.5 accept upto (Action void) 4 input para and (Func) 1 return result, lamba auto decide need to return val or not, no para ()=>{multiple lines ;}, 
+built-in declaration <T can be any cust type> implicit on service:
+public delegate TResult Func<Ti, TResult>(Ti argi)
+public delegate void Action<Ti>(Ti argi);
+client:
+Action<int,int>|Func<int, int, int> = (x,y) => x * x;  
+Predicate<string> lengthTest = str => str.Length == 5;//accept 1 para return bool
+many methods of types in the System.Linq namespace have Action |Func<T, TResult>| Predicate parameters, you can pass these methods a lambda expression without explicitly instantiating a Action|Func| Predicate delegate.
+(List<Person>)persons.ForEach(new Action<Person>(DisplayPerson));
+void DisplayPerson(Person p){ Console.WriteLine(p.Name);}
+or persons.ForEach(p => Console.WriteLine(p.Name));
+Person p= persons.Find(p => p.id==3)
+public Customer Find(Predicate<Customer> p)
+{
+    foreach (var customer in Customers)
+       if (p(customer)) return customer;
+}
+//instead of diff implement Find for name and address, pass in func from caller
+var byName = Find(a => a.Name == "lorem");
+var byAddress = Find(a => a.Address == "ipsum");
+var head = sortedSet.Where(s => string.Compare(s, "Carolina") < 0); //LINQ Extension methods: Count Max Min Sum Average Select|Many Distinct
+Single|OrDefault SkipWhile GroupBy OrderBy|Descending First|Last Reverse Intersect Join Union (othercollection,Func<T>)
+System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>
+
+class Foo
+ { public Action<string,string> DoSomethingDelegate; 
+   public void DoSomething(string s, string t) { DoSomethingDelegate(s, t); } 
+} 
+Foo f = new Foo(); 
+f.DoSomethingDelegate = (s1, s2) => { Console.Write(s1 + s2); }; 
+f.DoSomething("Hi","World");
+//variable contain value : delegate contain  function, can be passed or assigned to 
+
+Thread pool maintains 2 types of threads – Worker & I/O. Worker threads are computational threads while I/O are used for wait (block) of long duration. Delegate BeginInvoke exed by a worker thread from CLR managed thread pool, AsyncCallback{ EndInvoke()} exe on a IO thread. If no callback method is specified when calling BeginInvoke, EndInvoke can be called from the thread that called BeginInvoke.EndInvoke blocks until func complete, call EndInvoke is to avoid memory leaks and put the thread back to pool as avaialbe: .Net will store information about the function's result (or exception) until call EndInvoke to handle them.
+use ThreadPool.QueueUserWorkItem(  new WaitCallback(func), state  |  delegate { someDelegate(arg1, arg2); }  ); wait on call back| call and forget
+an unhandled exception in asynchronous method is tracked by the CLR and then thrown when call EndInvoke:
+Try{  retval = handler1.EndInvoke(ar)}
+Catch(e){
+
+four patterns in async delegate execution : 
+delegate long Calc( int N );
+C# compiler auto generates code equivalent to the following: 
+class Calc : System.MulticastDelegate 
+ { public long Invoke( int N );//execute the method on the current thread 
+   public IAsyncResult BeginInvoke( int N, AsyncCallback callback,  object asyncState );
+  //queue the method invocation to a worker thread (in thread pool by default)  
+   public long EndInvoke( IAsyncResult ar ); //must be called on the same delegate instance 
+public interface IAsyncResult 
+{object AsyncState{ get; } 
+  WaitHandle AsyncWaitHandle { get; } 
+  bool CompletedSynchronously { get; } 
+  bool IsCompleted { get; } 
+
+Calc cpn = new Calc(CalcFunc); 
+IAsyncResult ar = cpn.BeginInvoke( 672, null, null )|( 672,new AsyncCallback(MyCallback), cpn );//1,2|3 
+// Do some stuff 
+//1.fire and forget result not required, no EndInvoke may result in resource leaks
+//2.Polling 
+ while( !ar.IsCompleted ) {// Do some stuff} 
+   long result = cpn.EndInvoke(ar); 
+//3.Waiting [with Timeout ]
+if( ar.AsyncWaitHandle.WaitOne( [20000, true] )) // return a System.Threading.WaitHandle and  wait for it to signal upon op complete 
+{long result = cpn.EndInvoke(ar);} 
+else 
+{Console.WriteLine( "calculating");}
+//4.callback 
+void MyCallback( IAsyncResult ar ) //exe on a different thread where UI update must by control.invoke, synchronization if any shared state is updated in the methods.    
+{Calc cpn = (Calc)ar.AsyncState; // or Calc cpn = (Calc) ar.AsyncDelegate;
+  long result = cpn.EndInvoke(ar); }
+	
+void CalcFunc(int n){..long time call on a worker thread to service.. }
+
+cannot execute a multicast delegate asynchronously. Each in .GetInvocationList()must be called asynchronously in turn.  
+
+Event: publisher (similar to callback business tier) declares a delegate with the signature specified,  without having to know at compile time which method will actually be invoked ,subscriber (similar to callback client tier) referencing to publisher instantiate the delegate and encapsulates a reference to a method having the same signature.  in publisher   invoking the delegate object  instantiated by subscriber will route the call to that referenced method. events can not return type.
+
+Event encapsulate  private delegate instance withproperties exposing that delegate instance thru add/remove accessor, no raise accessor: to restrict access to it.while A public delegate allow other objects clear the list of event handlers, or raise the event, for Events only the object defining the event to be able to do that: only add/remove handlers methods are public.  Interface can have Event but not delegate. we don't have to use events to hook a list of delegates because Delegates themselves have the ability to be "multi-cast".
+public delegate int CalculationHandler (int x, int y);//:System.MulticastDelegate : System.Delegate (The single cast delegate)
+CalculationHandler allTargets = null;
+CalculationHandler sumHandler = new CalculationHandler (SumFunc);
+CalculationHandler multiplyHandler = new CalculationHandler (MultiplyFunc);
+allTargets += sumHandler;//allTargets = (CalculationHandler) Delegate.Combine(allTargets, sumHandler);
+allTargets += multiplyHandler;//allTargets = (CalculationHandler) Delegate.Combine(allTargets, multiplyHandler);
+foreach (CalculationHandler calcHandler in allTargets.GetInvocationList())
+{try {result = calcHandler (4, 3); }//must go thru each if handler return value, called underlying calcHandler.Invoke (4, 3) in the order they were added 
+ catch {}//exception must be catched at each for chained delegate
+once a delegate Function / a event (an encapsulated multicast delegate) handler in a multicast delegate throws an unhandled exception, Functions/ handlers later in the invocation list will not execute. the exception propagates to the higher level. Unless it is handled at the top level, application might crash. to trap unhandled exceptions within each individual delegate function/ event handler while still allowing the rest of them to fire, use GetInvocationList method to invoke thru each individual delegate function/ event handler within the try block.
+Pub:
+public event EventHandler MyEvent;  is shorthand for
+private EventHandler _MyEvent; 
+public event EventHandler MyEvent {
+  add { lock(this) { _MyEvent += value; } }
+  remove { lock(this) { _MyEvent -= value; } }
+    protected virtual void OnMyEvent()
+    {   if(_MyEvent != null)
+        {     foreach(EventHandler handler in _MyEvent.GetInvocationList())// returns an array of Delegate
+               { try
+                    { handler(this, new EventArgs());   }
+//delegate(object sender,EventArg e), MyEvent(this,e) for single cast
+                    catch(Exception e)
+sub: 
+MyEvent  += new System.EventHandler(this.doProcessing);
+MyEvent  += new System.EventHandler(this.showMessageBox);
+
+Registering and deregistering events is thread-safe.but for raising events:
+if (MyEvent != null)  MyEvent(this, EventArgs.Empty);//not thread-safe
+
+[volatile] EventHandler eh;//assign the event delegate into a local [volatile] field:[all] 2.0 thread-safe
+[lock (this) { eh = MyEvent; }]//put the assignment into a lock block:thread-safe
+if (eh != null) eh(this, EventArgs.Empty);
+
+source.SomeEvent += new SomeEventHandler(MyEventHandler) creates a strong reference from the event source to the event listener. The Event's InvocationList maintains a strong reference to any listeners as long as the source object remains alive unless the event handler is explicitly removed from it, the garbage collector can not collect any listeners (ie. forget to unsubscribe an event will cause memory leak). Whenever the source object lifetime extends beyond the object lifetime of the listener, lead to memory leaks. implement weakevent pattern: listeners:IWeakEventListener and EventManager:WeakEventManager
+
+Publisher  form definition:
+public delegate void ClickEventHandler (object sender, System.EventArgs e);
+or
+[public delegate void EventHandler(object sender, System.EventArgs e)]
+// pre-defined event delegate for an event that does not generate data, otherwise must supply custom event data type with extra data field and create a delegate where the type of the second parameter is your custom type, sender is the object that raises the event, and e is the event data object contain no data EventArgs.Empty (static member returns a nodata instance) 
+public class mForm : form
+{// events can only be invoked from within the class that declared them, to invoke from derived classes, base class must expose a protected method with invocation in it. an event can be placed in an interface while a field cannot.
+public event ClickEventHandler OnClickbutton1;
+or
+public event System.EventHandler OnClickbutton1;
+....
+protected void OnOnClickbutton1(System.EventArgs e)
+{if ( OnClickbutton1!=null){ OnClickbutton1 (this, e); }built-in event-firing definition in form/button
+……
+Subscriber  form instance: 
+//consider event have a delegate that can be multi-casted to many methods
+OnClickbutton1 +=new ClickEventHandler (this.doProcessing)
+OnClickbutton1 +=new ClickEventHandler (this.showMessageBox)
+or
+private void InitializeComponent()
+{
+this.button1.Click += new System.EventHandler(this.doProcessing);
+this.button1.Click += new System.EventHandler(this.showMessageBox);
+}
+
+private void doProcessing(object sender, System.EventArgs e)
+{
+//STEP 1 : Do the processing
+}
+private void showMessageBox(object sender, System.EventArgs e)
+{
+//STEP 2 : Show message box letting user know that processing completed
+}
+event keyword adds a layer of protection on the instance of the delegate. The protection prevents any client to reset thedelegate invocation list. They can only add += or remove -= the target from the invocation list.The event publisher and the subscribers are decoupled by the delegate.
+
+Serialized and persistent object will easily fail upon deserialization as the orig class changes.
+When serialize object defining an event, .NET Framework tries to serialize all the listeners to that event, which is problematic because subscriber objects may not all be serializable. should mark class's delegates or events [NonSerialized()] .
+
+Serialization is the process of converting an object (class, struct, delegate or enum) into a stream of bytes for saving a file or transmiting across a network connection. They are XML(XML serializer,SoapFormatter) and Binary (BinaryFormatter)Serialization
+the following should be done for an object to be serialized to be passed cross app domains.
+1)The object should be derived from MarshalByRefObject, an object reference will be passed from one application domain to another, rather than the object itself.
+2)The object should be marked with Serializable attribute, the object will automatically be serialized, transported from the one application domain to the other, and then deserialized to produce an exact copy of the object in the second application domain. This process is typically referred to as marshal by value.
+if [Serializable()] on class by default all public and private fields are serialized reflection runtime , unless [NonSerialized()] attribute, plus :ISerializable to further customize binary serialization process via two methods,: IXmlSerializable.GetSchema/ReadXml/WriteXml() to customize xml serialization
+[Serializable()]		
+public class MyClass  :ISerializable//MUST based on [Serializable()]
+{public string Member
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {info.AddValue("Member ", Member); } //save fields during serialization, only include field need to be serialized
+    protected MyClass(SerializationInfo info, StreamingContext context)//constructor
+    { Member = info.GetString("Member "); }//restore object during deserialization via construvtor, can manipulate 
+ [OnDe|Serializing|ed()]
+internal void anyname(StreamingContext context) //signature must
+{Member="updated during Serialization";}
+//[OnDe|Serializing|ed()] to perform extra actions (result into Deserialized object|serilized stream) only when a type [Serializable()].
+BinaryFormatter.Serialize(stream, obj);
+obj = (MyClass)BinaryFormatter.Deserialize(stream);
+the formatters deserialize a stream serialized from a older version class that does not include the new fields marked [OptionalField] in new version, no exception is thrown.
+The XmlSerializer cannot process classes implementing the IDictionary interface like Hash table. Array is Serializable.
+1.XML serialization serializes only the public fields and property values of an object into an XML stream.
+2.XML serialization does not include type information.
+3.XML serialization requires a default constructor to be declared in the class that is to be serialized.
+4.XML serialization requires all properties that are to be serialized as read write properties. Read only properties are not serialized. 
+
+#C#
+Stack:
+in RAM with LIFO continuous allocation> faster (struct is twice faster than classes at runtime)
+Stores local data, return addresses, parameter passing, Variables automatically deallocate when out of scope. 
+size is determined at runtime on program launches to hold variables (not call new()) within function, and generally does not grow significantly unless inifinite recursion (recursive enter:allocate without exit:deallocate) >stack overflow
+Data created on the stack can be used without pointers. 
+if you know exactly how much data you need to allocate before compile time and it is not too big. 
+
+Heap:
+in RAM with random allocation> slower, grow dynamic (call new()), linked list of used and free blocks
+Variables must be deallocate manually>fragmentation, memory leaks
+data created on the heap will be pointed to by pointers 
+allocation failures if too big of a buffer is requested to be allocated. 
+if don't know exactly how much data need at runtime or if need to allocate a lot of data. 
+
+All threads share a heap (Concurrent access to be controlled)  per application, Each thread has a private stack
+
+if (o is Class1)  vs string s = (string )myObjects  vs string s = myObjects as string;// as like cast except that it yields null on conversion failure instead of raising an exception. if object is null, object.ToString() raise NullReferenceException.Convert.ToString() return string.Empty. Convert.ToInt32 can handle null value but int.Parse throws ArgumentNullException error. 
+
+value type (build-in or user defined) derived from System.ValueType (:System.Object without ReferenceEquals ) holds the data within its own memory allocation in stack. 
+reference type derived from System.Object contains a pointer to another memory location that holds data: reference portion of reference-typed local variables in stack, poining to content of reference-type objects in heap  
+Value types i.e. struct hold data for faster access, but reference types i.e. classes are meant to control how applications behave like inheritance. 
+Value type field in ref type is allocated on heap, ref type field in value type has 4byte reference on stack point to allocated memory in heap, ref type field in ref type has both reference  and  allocated memory on heap
+
+boxing Encapsulating a copy of a value type in an object, displayed in MSIL with keyword ‘box ‘
+int i=12; object obj = i; Memory is allocated from the heap to hold the value, and the value is copied into it
+ i =34; Console.WriteLine(obj); 12
+int j = (int) obj; // obj must be previously created by boxing a value of compatible type , exception thrown if o  is null
+Console.WriteLine(1 + 2 + "3" + 4+5); //3345
+array is ref type even its elements are value type.  Like string (char[]),The ints inside int[] array will be located on the heap  and not be boxed. Boxing will only occur when a value type is assigned to a reference of type object.
+To avoid the boxing overhead declare a strongly typed array like int[] rather than Object[],strongly typed arrays are more efficient than collection for value types such as structs because they must be boxed in collection
+
+Boxing is slow process: 20 times as long as an assignment.an object has to be created, then the valuetype variable copied into it. should be avoid as possible
+null value value types (by boxing them as reference types) has been replaced by with the nullable struct types in .NET 2.0
+txtValue.Text = Convert.ToString(value); // boxing 
+return ( ( int ) sqlCmd.Parameters ["@ReturnValue"].Value );unboxing
+
+value types is passed byval any change in function will not reflected back because a copy of is passed, whereas byref will because the same variable is passed. For example value type like struct with string field implicitly by val (which creates a copy of the data unless specifying by ref)  then change on it within callee won’t be reflected back to caller
+struct HumanStruct{public string Name;}
+public static void ChangeName(HumanStruct human){human.Name = "James";}
+public static void ChangeName(ref HumanStruct human){human.Name = "James";}
+public static void Main()
+{HumanStruct a = new HumanStruct();
+a.Name = "Andrew";
+ChangeName(a);Console.Write(a.Name);//Andrew
+ChangeName(ref a);Console.Write(a.Name);//James
+no matter passing a reference type byval (default) or byref, change in function will be reflected. Because whenever an instance of reference type is created the pointer on stack is returned pointing to the data on heap, all access to the obj is through the pointer. when passed the object by val, a copy of the orignal pointer is actually passed but it still points to the same memory on the heap and hence any manipulation in func will be done on the same data, except immutable string. when passed the object by ref, the orignal pointer is passed,  end up the same result. but if set it to null in function:
+        StringBuilder s = new StringBuilder();|string s ="A";
+        PassByVal(s);  console.write(s)//B|A, copy of  pointer is set null in func,  original one unchanged
+        PassByRef(ref s); );  console.write(s) //null|null, original pointer set to null in func, C if not set to null
+        static void PassByVal(StringBuilder|string s1)// pass a copy of  the original pointer to the same memory on the heap
+        {   s1.Append("B")|="B";
+//reset immutable string will set the copy pointer to use a new memory in heap, the data in original mem won’t change
+            s1 = null;   }
+        static void PassByRef(ref StringBuilder|string s2)// pass the original pointer
+        {   s2.Append("C")|="C";//reset immutable string will set the orignal pointer to use a new memory in heap, so 
+immutable object like string is threadsafe
+            s2 = null;   }
+
+Ref vs out  all pass by reference to value or reference type. Any changes made to the parameter in the method will be reflected to the calling method.  Ref and out are put before para when calling.
+Ref parameter can be in or out and must be declared and assigned by the caller and passed to the method, compiler error if they are not assigned a value in the method.  round trip
+Out only for out, is declared in caller (int i) and method sig (out int i) must assign a value in method before return to the caller. can be used when we want to return more than one value from a method. single trip int value; Method(out value); // void Method(out int i){i=0;}
+ foo(bool b,params object/int[] list)//only one params allowed and must be the last
+foo(true,1, 'a', "test");
+
+Named arguments associating the argument with the parameter's name rather than  position . Optional arguments omit arguments for some parameters.  the arguments are evaluated in the order in the argument list, not the parameter list.
+foo(p2: 64, p1: 123);// foo(123, p2: 64); ok     foo(p2: 64, 123); err
+void foo(int p1,int p2, string p3="78")//default value for Optional arguments at the end of the parameter list
+
+C# references can, and will be unpredictably relocated by garbage collector but normal pointers are static memory adress. fixed statement prevents the garbage collector from moving a managed object in memory duting GC, so it can be passed to unmanaged code using pointer.
+
+A nullable type can represent its value type, plus an additional null value, Nullable types are instances of the System.Nullable struct. syntax T? is shorthand for System.Nullable<T>, where T is a value type, cannot create a nullable type based on a reference type 
+bool? / DataTime? b = null; or Nullable<bool/DateTime> b = null;
+object o = b; //o ref to null no boxing
+if (b) // compile Error
+null &| true = null true null &| false =  false null null&| null =null
+int? X = null; //X.HasValue = false X.Value error
+int? J = 0; //J.HasValue = true J.Value = 0
+object o = J; // o contains boxed 0
+Type t = J.GetType(); //t = int32 type boxed  if (J is int) // true – can NOT identify nullable type 
+if (X > J) //always false if anyone is null 
+int  J = X.GetValueOrDefault();// if X == null, J =0 (default value of X’s underlying value type: int) 
+int J = X ?? -1;// J = X, unless X is null, J = -1.
+
+IEnumerable<SomeType> col = new SomeCollectionType();foreach (var a in col){.. //a is inferred by the compiler to be SomeType
+var b = true;b = false; b = "str";  //err: Cannot implicitly convert type 'string' to 'bool'
+var compiler infer variable type based on the = new assignment type(), it is strong type (compile time type check) instead of virant/latebind.  can only be used when a local-scope only variable (no class level fields or method arguments) is declared and initialized in the same statement; the variable cannot be initialized to null or without initializing a value.
+especially useful for a variable to asign an anonymus method  or results of the LINQ query expression returning an IEnumerable of the anonymous type, which is automatically generated by the compiler, but hidden from the program
+var productQuery = from prod in products select new { prod.Color, prod.Price };
+foreach (var v in productQuery){ v.Color|Price
+Anonymous Types allow you to create a class structure on the fly, with Implicitly Typed Variable in LINQ 
+var query = from c in customerList   select new { Name = c.CompanyName,  State= c.BusinessAddress.State };
+
+The dynamic type bypass compile-time type checking, to be done at run time. The type simplifies access to COM APIs 
+dynamic dynamic_ec = new ExampleClass();
+//if exampleMethod1 has only one parameter: no compiler error, but a run-time exception.
+dynamic_ec.exampleMethod1(10, 4);
+
+Extension methods allow you to add functionality to a type (class or interface) that you don't want to modify, thus avoiding the risk of breaking code in existing applications. they are  static method but called using instance method syntax.  
+namespace ExtensionMethods
+{public static class ExtensionsClass
+{ public static string Reverse(this String strReverse, bool case){..}// type specified after 'this' is the target type to extend, 'String' ie.
+using ExtensionMethods;
+.. (String) s.Reverse(true);
+
+CLR  invokes destructors from most- derived class to base class while constructor  from base class to derived class,  Destructors cannot take parameters. cannot have accessibility modifiers. cannot be called explicitly, constructors can NOT be overridden/sealed/abstract, keyword :base|this (parameter list) to invoke the appropriate overloaded constructor in parent|self. Default constructor [public c():base()] is optional but it must be explicitly defined if there is a overloading constructor. If sub ctr(para):base(para) then that base ctr(para) will be called instead of default base ctr() , if sub ctr(para):this(), then base ctr()>sub ctr()> sub ctr(para)
+default constructor(no para) auto created sets member variables to the default values (bool=false int=0 without default val(string)=null, public ctr(para)[: base()], base() is auto called if not specified
+c# destructors(finalizer) are called automatically by the garbage collector.
+clone() is another way to create obj that construction is expensisve
+class SomeType{public prop1 { get; set; } public prop2 { get; set; }}// compiler auto-implemente  private, anonymous backing field
+SomeType|var o = new SomeType(){prop=val1,prop2=val2}; // generate same IL 
+List<Customer> custList = new List<Customer>   {   new Customer {ID = 101, CompanyName = "Foo Company"},   new Customer {ID = 102, CompanyName = "Goo Company"} };//object & collection initialize
+
+Attributes attatch declarative metadata / compiler instructions  to the Types(Class,Method,Property..) visible through ILDasm.
+intrinsic :[assembly: AssemblyKeyFile(".\\keyFile.snk")] /[serializable]
+compiler instructions
+   [Conditional("DEBUG")]:
+   private void SetConnectionDebug()
+   {cn.ConnectionString = DebugConnectString;}
+   private void SetConnectionRelease()
+   {cn.ConnectionString = ReleaseConnectString;}
+same as old compiler directive
+#if DEBUG
+       cn.ConnectionString = DebugConnectString;
+#else
+      cn.ConnectionString = ReleaseConnectString
+#endif
+
+cutomer:
+[AttributeUsage(AttributeTargets.All|Assembly|Delegate|Interface|Event|Struct|Class|ClassMembers|AttributeTargets.Constructor|Field|Method|Property, AllowMultiple = true)]
+public class iAttribute : System.Attribute
+{public iAttribute(int para1, string para2)
+ {   this.Para1 = para1;
+//values are accessible by System.Reflection.MemberInfo.GetCustomAttributes
+[iAttribute(1,"tst")]
+public class iTarget
+
+using is used to create an instance and ensure that object is disposed when the using statement is exited, the object must implement the System.IDisposable interface. using  causes a compile time error if used in a static method 
+
+return terminate a function, break terminates a loop,continue ignore the rest code of the loop, the control is transferred back to the beginning of the loop
+IEnumerable<string> FindBobs(IEnumerable<string> names)   
+{ foreach(var currName in names)   
+  {if(currName == "Bob")  yield return currName; //inside an iterator to form IEnumerable (not a single value )
+
+//implement iterator
+public class DaysOfTheWeek : System.Collections.IEnumerable
+{     string[] days = { "Sun", "Mon", "Tue", "Wed", "Thr", "Fri", "Sat" };
+      public System.Collections.IEnumerator GetEnumerator()
+     {   for (int i = 0; i < days.Length; i++) {yield return days[i];}
+
+Numeric  is functionally equivalent  to Deciaml
+decimal myMoney = 300.5m;//Without the suffix m, the number is treated as a double and generates a compiler error.
+short(Int16) int(Int32) long(Int64) float(Single 32bits) double(Double 64bits) decimal(Decimal 128bits), decimal has greater precision but smaller range than floating-point
+checked
+{   int i = int.MaxValue;
+    i++;} //by default overflow exception  is ignored on ++ — * / or conversion on only integral types (not for other numeric  type like decimal), checked make the overflow exception raised, has performance penalty and no effect on DivideByZeroException 
+
+C# provides a unified type system. All types including value types derive from the basic type: object.Equals(object2)/(s)Equals(object1,object2)/(s)ReferenceEquals(object1,object2)/(prt)Finalize/GetHashcode/GetType/Tostring/(prt)Memberwiseclone. implicit conversion reduce overhead
+String class operator == overloaded, which calls String.Equals underneath. String.Equals for case sensitive or insensitive comparisons ,string.Compare method provides a great deal of matching options (ordinal, ignoring white space) by CompareOptions
+String str1="Hello";
+String str2=str1;
+str1=str1+"  ";
+Console.WriteLine(str2);//Hello
+str2=str2+"  ";
+s1 == s2//true 
+ Object.ReferenceEquals(s,s1)//false, modify a immutable string, its reference (memory) changes
+interning make different strings with the same simple value reference the same string in memory, ReferenceEquals true
+For other reference type objects such as stringbuilder == compare reference equality only return true if both references point to the same object like Object.ReferenceEquals(obj1,obj2) ; .Equals(reference|value type) tests for reference|value equality
+StringBuilder sb = new StringBuilder("Hello ");
+StringBuilder sb1 = new StringBuilder("Hello ");
+s1 == s2 | Object.ReferenceEquals(s,s1)//false
+s.Equals(s1) //true
+String:IComparable, ICloneable, IConvertible(ToXXX()), IEnumerable
+Object.ReferenceEquals(valueVar, valueVar)//return false for value type (int, strut..) because boxed in two different objects on heap
+
+if obj1.equals(obj2) then obj1.gethashcode()==obj2.gethashcode(), but not verse versa
+default system.object.gethashcode() returns int like 46104728 by  ObjectNative::GetHashCode function in the CLR
+
+int i=1;if(i) {..}//compile err:Cannot implicitly convert type 'int' to 'bool', System.Boolean Structure default = false
+char c='f';int i=(int)c;//102
+if i<3 //always check index to avoid "out of valid index range"  before ref to array member t[i] = 0;
+ForEach is a heavy object and slower than For
+when obj is null, access obj ok ,  access obj.member  will throw  null reference exception
+x+=1 > x = x +1 where the JIT evaluates the variable x twice
+len = arr.Length; for(int x=0, x<len;x++) > for(int x=0; x<arr.Length;x++)//length property of the ArrayList class is called every loop, avoid putting expensive operation (creating obj ,access prop)within loop,  
+use local variables as much as possible, as they remain in memory for a lesser period of time than class variables
+if (strSomeString.Length != 0) > if (strSomeString != "" //creates an additional empty string) or if (strSomeString != String.Empty)
+use overloaded methods than methods with variable number of arguments, which would result in code paths for each possible combination of the parameters.   Avoid using virtual methods, as they result in slower performance due to the overhead involved in the virtual table lookup.
+Signature of method: name (not return type)and para type (datatype, byval,byref,out)( not para name, instead by order) 
+Use base type instead of derived type in define method parameters.
+if unhandled exception is not be covered by global exception handler, application will terminate.
+Exception.TargetSite = the method that threw the exception, source=name of the assembly that threw the exception, stack trace has code line that threw the exception, innerexception by throw new ApplicationException("out exp",inexp) , throw [inexp] won’t  wrap it as innerexception 
+A try statement can only have one catch { } statement (general catch clause ) it must be the last catch clause, may also catch all exceptions from other languages, compile error if catch generic exception prior to specific exception. Local var defined within try block in not available out of try,  including catch an finally block 
+A FinallyBlock is acceptable without Catch Block.
+catch only the specific exceptions you are handling
+catch(Exception e) 
+{throw e; // stack trace for the original exception to be lost
+ throw; // that preserves the stack trace intact
+try {  throw new IOException("A")} 
+catch(IOException e) { throw new ApplicationException("B");}
+catch(Exception e) {//B won't be caught here, propgate to upper} 
+finally{throw new ApplicationException("C");}//just like any uncaught exp propgate to upper, code after it won't exe, (break; or return; in finally will get compile err) should be avoided becasue code such as cleanup in finally is suppose to always be exed. similarly throw an exception from a constructor should be avoided because cleanup (like destructor) might not occur properly
+try{Console.WriteLine("Level 1"); 
+       try{Console.WriteLine("Level 2"); 
+             goto exit;} 
+       finally{Console.WriteLine("Level 2 Finished");} 
+      }
+finally{Console.WriteLine("Level 1 Finished");} 
+exit:;
+//Level 1,Level 2,Leve2 finished,Level1 finished,  finally always runs.
+Throwing exceptions in destructors affects performance as well as could cause logic problems when shutting down a class. Destructor must run as fast as possible because they execute in their own thread (background GC) while all other threads of your application are blocked and Throwing an exception is an expensive operation.
+try{System.exit (0);} finally{//won't be exed}
+put [serializable]custom exception in .dll shared by diff app, so It can be thrown and catch cross app domin  
+
+class IndexerClass//property-like access to a private array element within a class, no static
+{   private int[] arr = new int[100];
+    public int this[int index]   // Indexer declaration
+    {  get {return arr[index];}
+       set{ arr[index] = value;}
+When index out of the range, indexer throw ArgumentOutOfRangeException instead of  IndexOutOfRangeException, Multi-dimensional indexers can significantly reduce the usability.
+
+by default  under namespace Classes, interface ,delegate and structs are declared as internal, interface member MUST be [public], class members are private non-virtual, and less accessible than containing class. Protected methods, if not virtual, can not be over-riden. Derived class/member can not be less accessible than base class/member. 
+can access the protected methods of a base class within definition of the derived class, but NOT through an instance of the derived class.
+public class  BaseClass
+{protected void  MethodOne( ){..
+public class DerviedClass : BaseClass
+{internal void MethodTwo( ){MethodOne( );//OK
+public static void Main( )
+{DerviedClass dc = new DerviedClass();
+ dc.MethodOne();//syntax err
+An Interface is a reference type and it contains only abstract members can be Events (not delegate), Methods, Properties and Indexers.The interface can't contain constants, data fields (property ok), constructors, destructors and static members. can NOT be instantiated (no constructor allowed), GET / SET of property can have different access modifiers, must be more restrictive than prop, and only one (either set or get) can have diff access from prop:  public prop{get; private set;} ok, public prop{protected get; private set;} err
+public interface IMyInterface
+{    int MyProperty { get; set; }}//contract without any behavior or state: int myProperty;
+public abstract class MyInterfaceBase : IMyInterface
+{   int myProperty;
+    public int MyProperty
+    {   get { return myProperty; }
+        set { myProperty = value; }
+if a class implements 1class and some interfaces, C : C1, I1,I2.. C1 must be at the first otherwise compile err 
+Explicit Interface Implementation, if a class implements 2 interface have member with the same name but different type/signature, it can be differentiated by I1/I2.Member.  explicitly implement interface member can be accessed only when the object is cast as the interface 
+public class C : I1, I2
+{	int I1.Op(string Id){..}//ok
+	string I2.Op(int Id){..}// ok
+c.Op(id); //Syntax Error('C does not contain a definition for 'Op' ).
+((I1)c).Op(id);//ok
+public interface|class MyInterface
+class public and  method sealed allow a class to be inherited, but prevent the method from being over-ridden
+use Sealed classed whenevr posibble because it remove the inheritance features and have .NET run-time optimizations.Delegate types are sealed, and at namespace level.
+virtual methods must have a implementation, it can but does not have to be override.
+ Abstract methods have no implementation, like interface, Derived classes must implement all abstract methods. If all the methods of an abstract class are Abstract then it is same as an interface, its public/protected method for baseline implementation to be herited. abstract class can not be sealed, cannot be instantiated (no public constructor, protected ctor ok for sub class access) , have to declare a class as abstract When at least one of the methods in the class is abstract
+public abstract void DoWork(int i);
+private class-level variables are inherited but they are not accessible in a derived class, sealed override  to stop virtual inheritance
+cross-language inheritance is supported in .NET
+Overridding same signature with different definition in sub class, overloading has same name but different signature in same class.
+a partial classes splitting one type over more than one source file. can't span across different assemblies, also applicable to events interfaces , not delgates enums
+
+public class BaseType
+ {   public BaseType()
+     {   Console.WriteLine("Call base ctor.");
+         DoSomething(); }
+     public virtual void DoSomething()
+     {   Console.WriteLine("Base DoSomething"); }
+ }
+public class DerivedType : BaseType
+ {   public DerivedType()
+     {   Console.WriteLine("Call derived ctor.");}
+     public override void DoSomething()
+     {   Console.WriteLine("Derived DoSomething");}
+ }
+
+     public static void Main()
+     {    DerivedType derived = new DerivedType();
+
+Call base ctor.
+Derived DoSomething
+Call derived ctor.
+If you call a virtual method from the base/abstract class constructor, the most overridden method is called while the derived class constructor was not executed and the instance is not properly initialized yet.there are no errors or warnings generated by the compiler but if expose this abstract class to further deriving, the call to overrides may hit un-initialized variables and return nullreference err.
+
+class A
+{ public A(){Console.WriteLine("A.A"); }   
+  public virtual void F() { Console.WriteLine("A.F"); 
+class B: A
+{  public B(){Console.WriteLine("B.B"); }  
+   public override void F() { Console.WriteLine("B.F"); 
+class C: B
+{ public C(){Console.WriteLine("C.C"); }     
+  public [virtual]new void F() { Console.WriteLine("C.F"); //can virtual and new at the same time.
+class D: C
+{ public D(){Console.WriteLine("D.D"); }     
+  public override void F() { Console.WriteLine("D.F"); //must be either override or new( default)
+static void Main() {
+      D d = new D();//A.A B.B C.C D.D 
+// func (d) ;->void func(A a){a.F(); } CLR implicitly upcast d to A at run time 
+      A a = d; 
+      B b = d;
+      C c = d;
+      a.F(); // B.F
+      b.F();//B.F
+      c.F();//D.F
+      d.F();//D.F
+C# allow redefinition of inherited methods C.F()in the derived classes by hiding/overshadowing the inherited methods  C{B.F()} from base class, but it cause  compiler warning. new modifier suppress this warning, this feature ensure that you intentionally want to hide the base method instead of by accident. Conversely, if you declare a method as new and it does not really hide a base method in derived class, the compiler will also issue a warning. 
+
+class base
+{void foo1(object p){--A 
+ void foo2(string p){--B 
+virtual void foo3(string p){--E
+virtual  void foo4(string p){--G
+class sub:base
+{void foo1(string p){--C 
+ void foo2(object p){--D//hide B to sub, not to base (even casted from sub)
+override void foo3(string p){--F
+void foo4(){--H
+
+sub s = new sub();
+s.foo1("str");//C
+s.foo1((object)"str"); //A  sub para string:object base para  CA1061
+s.foo2("str");//D
+s.foo2((object)"str");//D
+
+base b = new sub();
+b.foo2("str"); //B
+ b.foo3("str"); //F
+b.foo4("str"); //G, with or without virtual
+b.foo4();//H
+
+((base)sub).foo(); ok  ((sub)base).foo();runtime invalidcastexception  
+base b = s;//ok  sub s=b;//compile error : no  implicitly convert ,  sub s=(base)b;// runtime: invalidcastexception
+
+Use generic types (interfaces, classes, methods, events and delegates) to maximize code reuse (type can be changed when creating instance), type safety, and performance (avoid boxing unboxing casting to object), Generic type is instantiated at run-time not compiled time, type are checked at time of declaration not at instantiation, generic types that are bound to value types instances are instantiated for each value type (List<int> and List<double> are separate instances), for generic types that are bond to reference types, the generic type instance refers to the location in memory of the reference type for all the instances of the generic type (List<string> and List<Employee> are one instance). 
+public class Employee<T> [where T : class]
+{
+    public T Identity;//no static member in generic type
+}
+public class EmpList<T> where T : Employee, Iemployee//compile time type safety check 
+//Constraints(optional, multiple): must be or derive from Employee
+{
+    Employee<T> emp = ReturnEmpById<T>(empid) 
+    Protected Employee<T> ReturnEmpById<T>(int? EmpId){..
+
+Caller can specify T as different type:
+Employee<string> g = new Employee<string>(empid);
+g.Identity = "rick";
+or
+Employee<EmpIdentity> g = new Employee<EmpIdentity>(empid);
+g.Identity = new EmpIdentity("rick","650-20-7788","949-232-5678")
+<T> is placeholder for an unspecified type, that is specified when creating an instance and can be obtained at run-time by using reflection
+  public interface IList<T>
+  {  void AddHead(T item);
+  public class NumberList : IList<int>
+  { public void AddHead(int item)
+    {...}
+  IList<int> numbers = new NumberList(); 
+  ProcessList(numbers);
+  public void ProcessList(IList<T> list)
+can not implicitly cast List<subtype> to List<basetype>.
+OnInitComplete after initialization before load  all declared controls are initialized, but the page's view state is not yet populated.
+
+public int Length
+{..
+ get{return Length;}//typo: property get itself result in recursive call eventually cause StackOverflowException
+
+Switch(i)//3|4
+{Case3: //if no stmt  break fall to run the next even case doesn't match 
+  Case4:Console.WriteLine(“4”);break; // stmt without break cause compile err 
+  Case3:Console.WriteLine(“3”);//dup cause compile err
+  Default: Console.WriteLine(“d”);//default is optional
+A  proj can't have 2 static Main() overloads - compiler error for multiple entry points, Main can be static void or static int, which is stored in an environment variable %ERRORLEVEL%, enables the program to communicate status information to other programs or scripts that invoke the executable file.  If directly call method , method has to be static.
+static void Main(string[] args)
+{for (int i = 0; i < args.Length; i++)
+ {switch(arg[i])
+   case "-c": if(++i < args.Length) mdir=args[i];
+   case "-f": ...
+
+mytestprog -c "c:\mytestfolder" –f
+
+public class AClass
+{	static public int aVar;
+	public AClass()	{aVar++;}
+	public AClass CreateInstance(){return new AClass();}
+	public int CountInstance(){return aVar;	}
+}
+static void Main()
+{System.Console.WriteLine(new AClass().CreateInstance().CountInstance());}//2
+
+use static classes (all member including constructor must be static) to store single-instance, global data. static class is implicitly sealed and can not be derived, non-static class can have static member, Static methods can not be overwriten (no static virtual) but can be inherited, can not access non-static fields/methods at same class level,  but within Static methods local non-static var /object can be created and accessed, no static local variables in method scope, static field must init on declare (even before static constructor if has) and retain shared  value within the application domain. regardless of a reference type or a value type Static variable is stored on the heap that is separate from the normal garbage collected heap , and there's one per application domain. static member can not be referenced thru instance instead class type name. myclass.i >mcls.i/this.i  
+Events can be declared as static 
+static constructors (no static destructor): 
+executes at most once in a given application domain
+it's called automatically to initialize class before 1st instance created (before instance constructor if any)/any static members refered, user has no control on when the static constructor is executed in the program
+static field should be initialized on declaration in stead of in static constructor for performance. 
+A static constructor cannot be called directly
+A static constructor does not take access modifiers nor have parameters.
+A typical use of static constructors is factory (for like log).
+private constructor  is commonly used in classes that contain static members only, It is not possible to inherit from a class which has only a private constructor. Also for singleton and concret class to be created by factory.
+Singletons can be extended, can be lazy loaded and don't require that you use the static keyword everywhere, better if need keep state. Unlike static classes not be derived, early loaded, better  for store global data, better performance if just access static method that bind on compile time.  we can use singletons as parameters or objects. can use singletons with interfaces. Dependency injection Spring support  singleton, easy to mock and unit test than static.
+Constant is implicitly static (const M defined in class A can be accessed from class B like a static member A.M ), must be init at declare (compiletime =value), can not be modified, can't declare a DateTime constant. readonly variable can be assigned only once at either declaration or constructor( runtime =new cls()), can not be changed after constructed. ENUM store constant values and auto increment ENUM a=10,b,c,d Output: a=10, b=11,c=12,d=13
+
+c++ use new to allocate class/struct on the heap, otherwise on the stack. c# If struct is member of a reference type, then it will be allocated within the class on the heap. otherwise on stack, even when it contains ref type field (pointer stored in stack pointing to heap). An instance of a struct (stack operate faster) will use less memory than the equivalent class (complex data structure requires to extend functionality with heap memory GC), but once used in collections, boxing the struct into a reference type memory overhead unless the data in the struct is very small or use generic<strut>. structs cannot inherit, so can’t be protected,the struct is less expensive. Good for object only have data fields, no prop or method. value type that can contain constructors, methods, indexers, events, error to declare a default (parameterless) constructor, structs can be instantiated without using the new operator. If you do not use new, the fields will remain unassigned and the object cannot be used until all of the fields are initialized. Public mstruct ms;  ms.foo(); ok but must use new to init strut if (ref mstrut)
+
+//int[,] is a rectangular array (matrix) while int[][] is an array of arrays (jagged arrays: sub array can have diff length)
+int[,] m1 = new int[10,9];
+int[,] m2 = new int[,] { { 1, 2 }, { 3, 4 } };
+for (int i = 0; i < m1.GetLength(0); i++)
+    for (int j = 0; j < m1.GetLength(1); j++)
+        m1[i,j]=0;
+
+int[][] j1 = new int[10][];
+for(var i=0;i<a.Length;i++)
+    j1[i] = new int[9];
+j1[1] = new int[4] { 2, 4, 6, 8 };
+for (int i = 0; i < j1.Length; i++)
+    for (int j = 0; j < j1[i].Length; j++)
+        j1[1][2] = 0;
+int[][] j2 = new int[][] 
+{
+    new int[] {1,3,5,7,9},
+    new int[] {0,2,4,6},
+};
+
+the NameValueCollection can contain more than one values for a particular key , Get() returns multiple values for one key as a comma separated string, GetValues() returns a string[].whereas Hashtable can contain only one value for a particular key.The Hashtable collection (map, default size 16)is much more faster than NameValueCollection, since it uses the Hashtable algorithm underlying (object element in a Hashtable generate a hash code as key by Object.GetHashCode and compare them by Object.Equal).
+Arraylist size is dynamic while array size is fixed, Arraylist can store mutiple type of data while array not :foreach (object item in myArrayList){if ( item.GetType() == typeof(string) ).... arraylist use less memory than hashtable, but search slower than hashtable because arraylist search is performed sequentially while hashtable use key-value pair with Hashtable algorithm. 
+a hash table is an array T[n] with a hash function h (simple exp: h(x) = x mod n)transforms the information x into an integer 0<h(x)<n-1 and x is stored at T(h(x)), If the T(h(x)) is already in use when insert x, then a collision occurs, and x must be stored elsewhere:
+linear probing: when a collision at T(i), then try sequentially T(i+1), T(i+1), ..., T(n-1), T(0), T(1),.. T(i-1) until reach an empty location or the end, permits very rapid insertions, deletions are difficult.
+public class HashEntry {public int Key;public string Value;} 
+public class HashTable { 
+      private HashEntry[] table; //array 
+      private readonly static int TABLE_SIZE = 128; 
+      HashTable() { table = new HashEntry[TABLE_SIZE]; }//init array
+      public string get(int key) { 
+            int hash = (key % TABLE_SIZE); //mod 0<hash<TABLE_SIZE
+            while (array[hash] != null && array[hash].Key != key) 
+            {hash = (hash + 1) % TABLE_SIZE;} //move to next slot
+            if (table[hash] == null) 
+                  return -1; 
+            else 
+                  return table[hash].Value; 
+      }
+      public void put(int key, string value) { 
+            int hash = (key % TABLE_SIZE); 
+            while (table[hash] != null && table[hash].Key() != key) 
+            {hash = (hash + 1) % TABLE_SIZE;} 
+            table[hash] = new HashEntry(key, value); 
+      }
+Double hashing: Like linear probing, it uses one hash value as a starting point and then repeatedly steps forward an interval decided by another independent hash function. 
+linear probe to resolve Hash collision will easily create cluster (consecutively occupied positions) because keep placing element to the next, result in worst case o(n). that is why use Double hashing to change placing interval each time.
+separate chaining: each entry T(i) is a pointer to the head of a separate linked list, where all collision values are stored , both insertions and deletions are straightforward. 
+System.Collections.Generic
+List<T> (arraylist) LinkedList<T> (linkedlist)
+Dictionary<TKey, TValue> (hashmap) SortedDictionary<TKey, TValue> (treemap) vs SortedList<TKey, TValue> (sort array by key)
+HashSet<T> (hashset) SortedSet<T> (treeset) 
+Stack<T> Queue<T>
+Generic implementation of List =strong typed arraylist. Generic implementation of Dictionary = strong typed hashtable. generic Dictionary enumerator return Generic KeyValuePair objects
+SortedList sort the item (index-key-value) automatically by the unique keys in alphabetic or numeric order, therefore slower than hashtable on insertion/delte because of sorting, new SortedList(new CaseInsensitiveComparer()) to ignore txt case of key. bool ContainsKey/Value(object), object GetByIndex(int), TrimToSize() minimize memory to actual size. SortedList can be access by index but  SortedDictionary not. 
+HybridDictionary is implemented as a ListDictionary (light-weight linked list) for small collections (<10) and a Hashtable for large collections.
+http://blog.bodurov.com/Performance-SortedList-SortedDictionary-Dictionary-Hashtable  :IDictionary
+memory footprint: generic SortedList < Hashtable < generic SortedDictionary < generic Dictionary
+time for insert:generic Dictionary < Hashtable << generic SortedDictionary O(logn)< generic SortedList O(n) (up drastically on large items amount) 
+time for search: Hashtable O(1) < generic Dictionary << generic SortedList O(logn)=generic SortedDictionary O(logn)
+taken for for-each loop: generic SortedList << generic Dictionary < Hashtable << generic SortedDictionary
+IDictionary = IDictionary<TKey, TValue>. Contains(Key),add(key,value), remove(key) /IList= IList<T> IndexOf, Insert,  RemoveAt : ICollection Count, CopyTo(used to copy items to an array) ICollection<T>Add, Remove,Clear, Contains :IEnumerator=IEnumerable<T> GetEnumerator,
+var|List<int>.Enumerator e = list.GetEnumerator(); //IDictionary
+while (e.MoveNext()){ var|int value = e.Current;}
+
+foreach(var item in list) //list.ToList() fix by copy the reference to the collection 
+{   if(item=="m")    {    list.Remove(item);    //error: Collection was modified; 
+equivalent to 
+List<string> items = list.RemoveAll(item=>item=="m");
+What you need to do is to make a copy of the reference to the collection before iterating it, this can be accomplished by calling the .ToList()-method on the collection:
+foreach(var item in list.ToList())
+{    if(item=="m")  { list.Remove(item);    //Will work! }
+}
+
+customer collection Must implement  IEnumerable and GetEnumerator to use foreach, slower than for
+public class Fruits :IEnumerable,IEnumerator
+{Fruit[] fruitArray;
+int position = -1;
+public Fruits()
+{//populate fruitArray}
+//Implement IEnumerable
+public IEnumerator GetEnumerator()
+{return (IEnumerator)this;}
+//Implement IEnumerator
+public bool MoveNext()
+{position++;
+ return (position < fruitArray.Length);}
+public void Reset(){position = -1;}
+public object Current
+{get {return fruitArray[position];}}
+
+List<T> is generic version of ArrayList, both back to back array,
+List[<T>].Sort() check elements type/T that implements the IComparable[<T>], like string does, where sorting logic is placed, otherwise throws an InvalidOperationException. public class comp : IComparable{ public int CompareTo(object other){ ... }}//return 0:=,>0:>,<0:<, List[<T>].Sort(IComparer); int Compare(obj1,obj2) Comparer (default case sensitive for string compare) / CaseInsensitiveComparer : strategy pattern
+array.Sort() and Reverse() based on elements type: IComparable, 
+array.Clone() method returns a new array (a shallow copy) object containing all the elements in the original array. Array.CopyTo() method copies the elements into another existing array. Both perform a shallow copy. A shallow copy means the contents (each array element) contains references to the same object as the elements in the original array. DataSet.Clone() creates an empty class with same structure as original DataSet. A deep copy would create a new instance of each object directly or indirectly referenced by the elements.
+Use clone() from a object that cost  lot to be created and populated (like dataset and xmldocument)
+ICloneable interface is used to create new instance of the class with the same value as an existing instance. 
+class Person : ICloneable
+{public object Clone()
+ {return this.MemberwiseClone();  // shallow copy
+        MemoryStream ms = new MemoryStream();//deep copy: all fields must be serializable
+        BinaryFormatter bf = new BinaryFormatter();
+        bf.Serialize(ms, this);
+        ms.Position = 0;
+        object obj = bf.Deserialize(ms);
+        ms.Close();
+        return obj
+For LinkedList get is O(n),insert is O(1),remove is O(1). allows for constant-time insertions or removals, but only sequential access of elements, Each element has more overhead since pointers to the next and previous elements are also stored. so linked list can be used to manage a dynamically growing/shrinking list of data. advantage: sorting only have to adjust the links (usually a pointer) rather than copying the data. disadvantage: searching have to traverse through all the items preceding the target.
+
+For ArrayList get is O(n) by value O(1) by index, insert is O(1), but O(n) for over-capacity case need to be resized and copied,remove is O(n). allow random access, so you can grab any element in constant time. ArrayLists take up as much memory as is allocated for the capacity that maybe bigger than needed.  Sort([IComparer]) is same as List above.
+
+XML case-sensitive preserves white spaces, welformated XML  must contain at least one element must contain one unique opening and closing tag that contains the whole document A opening MUST MATCH  a closing tag and the tags cannot overlap XML empty Tags <BR/>. Attribute values must always be quoted  <title id="1"
+XML namespaces provide a method for qualifying the names of XML elements and XML attributes in XML documents. A qualified name consists of a prefix and a local name, separated by a colon. The prefix functions only as a placeholder; it is mapped to a URI that specifies a namespace. The combination of the universally managed URI namespace and the local name produces a name that is guaranteed to be universally unique.
+
+Network Socket (System.Net; System.Net.Sockets;)
+server
+m_socListener = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);		
+IPEndPoint m_ipEndPoint = new IPEndPoint ( IPAddress.Any,8221);//System.Net.IPAddress,port
+m_socListener.Bind( m_ipEndPoint );
+m_socListener.Listen (4);//backlog para: number of incoming connections that can be queued for acceptance. 
+m_socListener.BeginAccept(new AsyncCallback ( OnClientConnect ),null);//accept an incoming connection attempt not data
+
+	public void OnClientConnect(IAsyncResult asyn)
+	{       try{(Socket) m_socWorker = m_socListener.EndAccept (asyn);
+	             WaitForData(m_socWorker);
+  	        }
+		catch(ObjectDisposedException)
+		{System.Diagnostics.Debugger.Log("Socket has been closed\n");}
+		catch(SocketException se)
+		{MessageBox.Show ( se.Message );}
+	}
+
+	public void WaitForData(Socket skt)
+	{       try{StateObject so = new StateObject ();
+		    so.curSocket = skt;
+		    skt.BeginReceive (so.buffer,0,StateObject.BUFFER_SIZE,None,new AsyncCallback (OnDataReceived),so);
+		}
+		catch(SocketException se)
+		{MessageBox.Show (se.Message );}
+
+	}
+	public  void OnDataReceived(IAsyncResult asyn)
+	{
+		try
+		{StateObject so = (StateObject)asyn.AsyncState ;
+		 int bytes = so.curSocket.EndReceive (asyn);
+                 if (bytes > 0) {
+                   so.sb.Append(Encoding.ASCII.GetString(so.buffer, 0, bytes));
+                   so.curSocket.BeginReceive (so.buffer,0,StateObject.BUFFER_SIZE,None,new AsyncCallback (OnDataReceived),so);
+                  }
+		 WaitForData(m_socWorker );//repeat
+		 }
+		catch(ObjectDisposedException)
+		{System.Diagnostics.Debugger.Log("Socket has been closed\n");}
+		catch(SocketException se)
+		{MessageBox.Show ( se.Message );}
+         }
+
+public class StateObject{
+     public Socket curSocket = null;
+     public const int BUFFER_SIZE = 1024;
+     public byte[] buffer = new byte[BUFFER_SIZE];
+     public StringBuilder sb = new StringBuilder();
+}
+
+client
+m_socClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+remoteIPAddress	 = System.Net.IPAddress.Parse(strIP)
+IPEndPoint	remoteEndPoint = new System.Net.IPEndPoint(remoteIPAddress, 8221);
+m_socClient.Connect(remoteEndPoint);
+if(m_socClient.Connected)
+{m_socClient.Send(byte[]bytesSend);
+ do {(int) bytes = m_socClient.Receive (byte[]bytesReceived);
+     (string) msg = msg + Encoding.ASCII.GetString(bytesReceived, 0, bytes);
+     }
+ while (bytes > 0);
+
+#FAQ#
+The Basic Object- Oriented Concepts (flexibility, reusability, and maintainability)are Encapsulation ,Polymorphism, Inheritance
+Encapsulation refers to the concept of making an object a "black box."  An object should expose only the absolute necessary information needed to interface with it, by a protective wrapper that prevents code and data from being accessed by external code, like enforce access modifiers, field should be private or internal and only be expose public via property. The separation of interface and implementation.
+ 
+Polymorphism is the ability for classes to provide different implementations of methods that are called by the same name (cast to same base class or interface) regardless what specific implementation it provides.Polymorphism can be of three types:
+inheritance : achieve hierarchical, reusability and extensibility: use inheritance when you want to create baseline functionality that derived classes can extend; several classes that provide a core set of functionality but each must be able to interact with a different set of objects: (core func in base class, each derived class for each specific case)  
+interface : situations where similar functionality needs to be provided by multiple implementations that have little in common. unrelated classes that each exposes a common set of methods: (implement interface  having that set of methods in each class), also easy to add features to component incrementally by implementing additional multiple interfaces, new versions of a component is backward compatible because still support client ref by old interfaces   
+abstract classes : provide features of both inheritance and interface implementation.
+static Polymorphism (operator and function overloading) Which Overload method is to be called is decided at compile-time
+dynamic Polymorphism (method overriding/hiding by inheritance| interface) call to an overridden function is resolved at a Run-Time.
+
+S.O.L.I.D.  http://www.lostechies.com/blogs/chad_myers/archive/2008/03/07/pablo-s-topic-of-the-month-march-solid-principles.aspx
+Single Responsibility Principle:a class assumes only one responsibility or should have only one reason to change, otherwise,Changes to one responsibility may impair others
+interface Modem{
+public void dial(String pno);//responsibility of connection management
+public void hangup();
+public void send(char c);//responsibility of data communication
+public char recv();}
+2 responsibility should be put into two separate interfaces
+class Modem: Iconnection, Icommunication
+
+public abstract class BankAccount
+{double Balance { get; }
+ //void AddInterest(double amount) {} cause more than two reasons to change because interest only apply to Savings not Checking, instead, move it to concret class SavingsAccount
+public class CheckingAccount : BankAccount{}
+public class SavingsAccount : BankAccount { public void AddInterest(double amount);{..}}
+
+Open/Closed Principle : Software entities (classes, modules, functions, etc.) should be open for extension (to be extended for new behaviors) but closed for modification (source abstraction won't be changed by extending the behavior in derivative classes).Strategy patterns represent a clear separation of generic functionality from the detailed implementation by ABSTRACTION
+public interface IShape//or abstract class   
+{void Draw();
+public class Square : IShape 
+{public void Draw() {// draw a square
+public class Circle : IShape 
+{public void Draw() {// draw a circle
+The advantage of polymorphism is that the consumer only need aware an abstract/interface like IShape.Draw(), without knowing the specific subtype, they will be handled  differently based on their runtime type
+public class Brush
+{private IShape contextShape;//set to an instance of Square/Circle 
+ public void DrawShape()
+ {contextShape.Draw();
+ public void DrawShape(IShape shape)//pass an instance of Square/Circle 
+ {shape.Draw();
+to draw a new kind of shape,only need add a new derivative of the Shape class. The DrawShape function does not need to change.
+
+Liskov Substitution Principle: func refer to a base class must be able to use its derived class without knowing it.
+class Rectangle{
+public [virtual] void SetWidth(double w) {width=w;}
+public [virtual] void SetHeight(double h) {height=h;}
+class Square : Rectangle //directly SetWidth/SetHeight are inappropriate for a Square (width=height)
+{[public override void SetWidth|Height(double wh) {base.SetWidth(wh);base.SetHeight(wh);}]//always set both to the same value
+
+void f(Rectangle r)
+{r.SetWidth(32); r.SetHeight(30);}//if pass a square object it will be corrupted, solution is [..] part
+
+Interface Segregation Principle: clients should not depend on interfaces that they do not use, otherwise (fat/polluted interface) those clients are subject to changes to irrelvant interfaces. solution: implement mutiple interfaces or adapter pattern
+
+The Dependency Inversion Principle: high level module should not depend on low level module, both should depend on abstractions. abstraction should not depend on details, detail should depend on abstraction.
+
+Dependency injection (pass the instance variable (dependency) to the constructor or property setter rather than creating one in the constructor to decouple classes, also known as inversion of control design pattern) 
+DI framework: StructureMap, Spring.NET or Castle Windsor
+public class A
+ {private IB _b;
+  public A()
+  {IB _b=new B();}
+  public A(IB b) //constructor dependency injection 
+  {_b=b;}
+  public IB b //setter dependency injection
+  {get{return _b;}
+   set{_b=value;}
+  }
+  public void SetB(IB b){_b = b;} //interface dependency injection
+public class B1/B2 :IB > IB b1/b2 = new B()> A.SetB(b1/b2)
+
+//CustomerDataAccess already have appropriate unit tests for the CustomerDataAccess.InsertCustomer() method, so in our CustomerServices tests we can remove this dependency as it has already been tested,  implement CustomerDataAccess : ICustomerDataAccess, use mock<ICustomerDataAccess> in test CustomerServices instead of making a real CustomerDataAccess instance result in a  unnecessary long database lookup.
+public interface ICustomerDataAccess 
+{
+      public void InsertCustomer(string name) 
+
+      public int InsertCustomerCount 
+}
+public class CustomerServices {
+        private readonly ICustomerDataAccess _customerDataAccess;
+//inject dependency/variable customerDataAccess loose coupled interface
+        public CustomerServices(ICustomerDataAccess customerDataAccess)
+        {
+            _customerDataAccess = customerDataAccess;
+        }
+//dependency/variable CustomerDataAccess
+        public CustomerServices()
+        {
+            IcustomerDataAccess _customerDataAccess = new CustomerDataAccess();
+        }
+
+        public void AddCustomer(Customer customer) {
+             _customerDataAccess.InsertCustomer(customer.Name);
+        }
+
+Java is a single language  compiled to Java bytecode on multiple platforms. .NET is a single platform shared by multiple languages compiled to MSIL.
+ADO.NET has disconnected data access by which data functions can be completed in-memory, JDBC always require a round trip to the database 
+Java runtime will simply load the first class it finds on the classpath, ignoring the version. .NET support side-by-side execution on two or more different versions of the same class.
+
+Service orientation architecture for the development of loosely coupled distributed applications based on self-contained, stateless and discoverable service that can be interacted with through message interface defined by WSDL across platform.
+
+Big O notation: measure the time and memory needed at a given problem size f(n)
+A linear search list from begin to end one by one.
+A binary search is start with the middle of a sorted list, and search into a half of the list recursively,
+•Binary search requires the list to be sorted; linear search doesn't
+•Binary search requires an ordering comparison; linear search only requires equality comparisons
+•Binary search has complexity O(log n); linear search has complexity O(n) as discussed earlier
+•Binary search requires random access to the data; linear search only requires sequential access (this can be very important - it means a linear search can stream data of arbitrary size)
+Sort algo order by speed (http://en.csharp-online.net/Bubble_Sort):
+Bubble Sort:comparing each item with the next, and swapping them if >. repeats until it pass through without swapping any items.  most inefficient/slowest  O(n^2)
+  for( i = (len - 1); i >= 0; i-- )
+  { for( j = 1; j <= i; j++ )
+    { if( a[j-1] > a[j] ) 
+          swap a[j-1] and a[j]
+
+Selection Sort:selecting the smallest unsorted item remaining in the list, and then swapping it with the item in the next position to be filled,good for one thousand items or less. should use the Insertion Sort instead.
+  for( i = 0; i < x-1; i++ )
+  { min = i;
+    for( j = i+1; j < x; j++ )
+    { if( a[j] < a[min] )
+      { min = j;}
+    }
+    swap a[i] and a[min]
+
+Insertion Sort:inserts each item from orignal list into its proper place in the final list, basicaly requires two list, or with one list use an in-place sort by moving the current item past the already sorted items and repeatedly swapping it with the preceding item until it is in place.significantly simpler even than Shell Sort, over twice as fast as the Bubble Sort and almost 40% faster than the Selection Sort.good for a few thousand items or less.
+  for( i = 1; i < len; i++ )
+  { index = a[i];
+    j = i;
+    while( (j > 0) && (a[j-1] > index) )
+    { a[j] = a[j-1];
+      j = j - 1;
+    } 
+    a[j] = index;
+
+Shell Sort: each time sorts a number of equally sized sets using the Insertion Sort. The size of the set grow each time until itconsists of the entire list. simple and twice as fast as the Insertion Sort, good for less than 5000 items.
+ 
+Heap Sort: building a heap out of the original array, and moving the largest/smallest item to the end of the sorted array. repeated until there are no items left in the heap. no massive recursion, take two arrays but they can be put in one with in-place sort, better choice for very large sets.
+   
+Merge Sort:splits into two equal halves arrays, recursively sort each array, and then merged back together. twice the memory because of the second array. 
+Quick sort faster than merge sort when data can fit in memory (Constant). merge sort requires O(n) extra space, both  O(n*log(n)) on average, O(n^2 : n squared) worst case for Quick sort, a million numbers(ints) would be 4million bytes, an int is 4bytes	
+
+Quick Sort: Pick an element (normally the first one) as pivot, Split into two arrays, with elements larger/smaller than the pivot. Recursively repeat on both halves, return if there is only one element. fastest, Quicksort implemented with an in-place partitioning algorithm  can be done with only O(log n) instead of O(n) additional space used by the stack during the recursion.
+IPPA partitions the portion of the array between indexes left and right by moving all elements < array[pivotIndex] before the pivot, and elements >= after it.  It temporarily moves the pivot element to the end of the subarray and returns it, so that it doesn't get in the way. Because it only uses exchanges, the final list has the same elements as the original list.
+public void q_sort( int left, int right )
+{ l_hold = left;
+  r_hold = right;
+  pivot = a[left];
+  while( left < right )
+  { while( (a[right] >= pivot) && (left < right) )
+    { right--; }
+    if( left != right )
+    { a[left] = a[right];
+      left++; }
+    while( (a[left] <= pivot) && (left < right) )
+    {left++; }
+     if( left != right )
+    {a[right] = a[left];
+      right--;}
+  }
+  a[left] = pivot;
+  pivot = left;
+  left = l_hold;
+  right = r_hold;
+  if( left < pivot )
+  { q_sort( left, pivot-1 );}
+   if( right > pivot )
+  { q_sort( pivot+1, right );}
+}
+
+bool Binarytree::search (int val)
+{node * cur = this->root;
+  While(cur!=null)
+  {if(cur->data==val){return true;}
+    else if (cur->data < val) {cur = cur->left;}
+    else(cur->data>val){cur=cur->right;}
+  }
+ return false;
+}
+
+UML 
+Class diagrams describe the static structure of classes/interfaces and relation among them in system. 
+Object diagrams describe the static structure of a system at a particular time. 
+Use case diagrams describes the functionality and interaction between the system and users by using actors and use cases.
+Activity diagrams are used to model workflow or business processes based on activities that represents an operation on some class results in a state change.
+Sequence diagrams describe sequence of interactions among classes.
+State charts diagrams describe the states or conditions that classes assume over time. 
+Component diagrams describe the organization of physical software components that make up the system, including source code, run-time (binary) code, and executables. 
+Deployment diagrams describes the physical architecture and the deployment of components on that hardware architecture. including server, components, and connections
+Package diagrams are a subset of class diagrams, organize elements of a system into related groups to minimize dependencies between packages.
+Collaboration diagrams represent interactions between objects as a series of sequenced messages. Collaboration diagrams describe both the static structure and the dynamic behavior of a system.
+
+
+Design patterns (http://www.dofactory.com/Patterns/Patterns.aspx)( http://www.go4expert.com/forums/showthread.php?t=5127#state design pattern in simple examples)
+Creational Patterns
+Singleton: only one instance exist, lazy instantiation until an instance is refered, possible thread safety issue
+public sealed class Singleton
+{ private static volatile Singleton instance;//thread safe field by volatile
+   private static object syncRoot = new Object();
+   private Singleton() {}
+   public static Singleton Instance
+   {  get 
+      {  if (instance == null) 
+         {  lock (syncRoot) 
+            {     if (instance == null) //double check under multithread
+                  instance = new Singleton();
+            }
+         }
+         return instance;
+      }
+   }
+}
+public sealed class Singleton
+{  //thread-safe, static constructor auto execute only once per AppDomain before the instance contructor or any static members are accessed 
+    static readonly Singleton instance[=new Singleton()];//[opt1]
+    --mutex = new System.Threading.Mutex();//to synchronise use of the instance
+    [static Singleton()
+    { --mutex.WaitOne();
+       instance = new Singleton(); }] //[opt2]
+    Singleton(){}//private constructor
+    public static Singleton Instance { get{ return instance;}} //lazy instantiation ref wpf interlock 
+    --public static void Release(){mutex.ReleaseMutex();}//required after each call Instance
+
+an anti-pattern is solution that looks good,  but backfires badly when applied: 
+Singletons, like a global variable, hidden dependencies inside the code, invisible in the interfaces of your classes and methods, it mix creation and business responsibilities into the same class, violating Single Responsibility Principle. instead, use a factory to encapsulates creation away from the responsibilities of the business entity,  
+it tightly couple to the exact type of the singleton object, but testable code should be loosely coupled to its surroundings to allow substituting alternate mock implementations, it persist state, which is the enemy of unit testing because each test should be independent of all the others, otherwise the order in which the tests run affects the outcome of the tests.  Instead, inject dependency( pass reference) of sinleton/static to classes and methods instead of creating within.
+
+Singleton Class (heap) instance can be passed as a parameter to another method| implement/extend the interfaces/base | maynot sealed| lazy initialize whereas static class (stack faster) not
+
+Abstract Factory:Provide an interface for creating families of related or dependent objects without specifying their concrete classes. Frequency:5
+
+
+   
+             public abstract class FinancialToolsFactory {
+		public abstract TaxProcessor createTaxProcessor();
+		public abstract ShipFeeProcessor createShipFeeProcessor();
+	}
+	public class CanadaFinancialToolsFactory : FinancialToolsFactory {
+		public TaxProcessor createTaxProcessor() {return new CanadaTaxProcessor();}
+		public ShipFeeProcessor createShipFeeProcessor() {return new CanadaShipFeeProcessor();}
+	}
+	public class EuropeFinancialToolsFactory : FinancialToolsFactory {
+		public TaxProcessor createTaxProcessor() {return new EuropeTaxProcessor();}
+		public ShipFeeProcessor createShipFeeProcessor() {return new EuropeShipFeeProcessor();}
+	}
+	public abstract class ShipFeeProcessor {abstract void calculateShipFee(Order order);}
+	public abstract class TaxProcessor {abstract void calculateTaxes(Order order);	}
+	public class EuropeShipFeeProcessor : ShipFeeProcessor {
+		public void calculateShipFee(Order order) {//Europe ship fee calculation}
+	}	
+	public class CanadaShipFeeProcessor : ShipFeeProcessor {
+		public void calculateShipFee(Order order) {//Canada ship fee calculation}
+	}
+	public class EuropeTaxProcessor : TaxProcessor {
+		public void calculateTaxes(Order order) {//Europe tax calculation}
+	}
+	public class CanadaTaxProcessor : TaxProcessor {
+		public void calculateTaxes(Order order) {//Canada specific tax calculation}
+	}
+	// Client
+	public class OrderProcessor {
+		private TaxProcessor taxProcessor;
+		private ShipFeeProcessor shipFeeProcessor;
+
+		public OrderProcessor(FinancialToolsFactory factory) {
+			taxProcessor = factory.createTaxProcessor();
+			shipFeeProcessor = factory.createShipFeeProcessor();	
+		}
+		public void processOrder (Order order)	{
+			// ....
+			taxProcessor.calculateTaxes(order);
+			shipFeeProcessor.calculateShipFee(order);
+			// ....
+		}
+	}
+
+             public static void main(String[] args) {
+			FinancialToolsFactory factory = null;
+			switch(area)
+			{case(EnumArea.EU)
+				factory = new EuropeFinancialToolsFactory();break;
+			 case(EnumArea.CA)
+				factory = new CanadaFinancialToolsFactory();break;
+			}
+			orderProcessor = new OrderProcessor(factory);
+			orderProcessor.processOrder(order);
+		}
+
+Factory Method:Factory Method pattern is a simplified version of Abstract Factory pattern. Factory Method pattern is responsible of creating products that belong to one family, while Abstract Factory pattern encapsulate multiple families of products. When a class cannot anticipate the class of objects it must create, Define an interface for creating an object, but let subclasses decide which class to instantiate. Frequency:5
+
+
+
+
+ConcreteProduct implement interface defined by Product, client refer to that Interface instead of concreteproduct.
+public Interface IAccount{double CaculateInterest() ;}  
+public Class CommercialAccount:IAccount
+{internal/private CommercialAccount(){//only called by factory, not directly by external client}
+  Public double CaculateInterest(){//for commercial user}
+}
+public Class lndividualAccount:IAccount
+{internal/private lndividualAccount(){//only called by factory, not directly by external client}
+  Public double CaculateInterest(){//for lndividual user}
+}
+public Enum AccountType {Commercial,Individual}
+Public class AccountFactory
+{static AccountFactory(){}//auto only once
+  Public static IAccount CreateAccount(AccountType at)
+ {switch(at)
+   {case AccountType.Commercial 
+             Return new  CommercialAccount():
+     case AccountType. Individual 
+             Return new  IndividualAccount():
+   }
+Client:
+IAccount ac = AccountFactory. CreateAccount(AccountType.Commercial);
+double I = ac. CaculateInterest();            
+
+Builder:Separate the construction of a complex object from its representation so that the same construction process can create different representations Frequency:2
+builder pattern is useful when need to do lots of things to build an object (many fields>5). 
+instead of creat many overloaded constructor on all comb of optional paras or call set field many times that may result in inconsistent state in between
+public class Instrument{
+private String cusip;
+private String sym;
+private String ccy;
+  Public static class Builder{
+  private final String cusip;//required
+  private String sym="";
+  private String ccy="";
+  public Builder(String Cusip){ this.cusip=Cusip;}//required field (final) in constructor
+  public Builder Sym(String value){sym=value; return this;}
+  public Builder Ccy(String value){ccy=value; return this;}
+  public build(){return new Instrument(this);}
+  }
+  private Instrument(Builder builder){this.cusip=builder.cusip;this.ccy=builder.ccy;this.sym=builder.sym;}   
+//immutable and thread safe because parameter values are set chained at one place,easy to add more para in the future
+Instrument inst=new Instrument.Builder("008000AA7").ccy("USD").build();
+
+Prototype: clone the existing object of the same prototype and change its state accordingly instead of create a new objects when the creation is costlyFrequency:3
+
+
+Prototype pattern is used when creation of object directly is costly (fxp database query), cache the object, returns its clone on request
+public abstract class Account implements Cloneable {
+  protected String type;
+  abstract double CalculateInterest();
+  public Object clone() throws CloneNotSupportedException{return super.clone();}
+  }
+public class Saving|Checking extends Account {
+   @Override
+   public double CalculateInterest() {... }
+}
+public class AccountCache {
+   private static Hashtable<String, Account> accountMap  = new Hashtable<String, Account>();
+   public static Account getAccount(String accountType) {
+      Account cachedAccount = accountMap.get(accountType);
+      return (Account) cachedAccount.clone();
+   }
+   public static void LoadCache() {
+   Saving|Checking acct = new Saving|Checking();
+   accountMap.put("Saving|Checking",acct);
+   }
+
+AccountCache.LoadCache();
+Saving|Checking acct = AccountCache.getAccount("Saving|Checking"); 
+
+Structural Patterns
+Bridge:Decouple an abstraction from its implementation so that the two can vary independently. subclasses change implementations in abstraction can be problematic when refined abstractions are included also through inheritance, The number of required classes can grow exponentially as new abstractions and implementations are added to a system. strategy pattern decouple the behavior but Bridge decouple the abstraction Frequency:3
+
+
+
+public abstract class MessageSenderBase//ImplementationBase
+{    public abstract void SendMessage(string text);}
+public class EmailSender : MessageSenderBase//ConcreteImplementation
+{    public override void SendMessage(string text){//send via email}
+}
+public class MsmqSender : MessageSenderBase//ConcreteImplementation
+{    public override void SendMessage(string text){//send via msmq}
+}
+public class Message//Abstraction
+{   public MessageSenderBase MessageSender { get; set; }//hold no implementation detail
+    public string Text { get; set; }
+    public virtual void Send()
+    {      MessageSender.SendMessage(Text);   }
+}
+public class UserEditedMessage : Message //RefinedAbstraction
+{   public string UserComments { get; set; }
+    public override void Send()
+    {   string fullBody = Text+UserComments;
+        MessageSender.SendMessage(fullBody);
+    }
+}
+Client;
+MessageSenderBase email|msmq = new Email|MsmqSender();
+UserEdited|Message msg = new UserEdited|Message();
+msg.MessageSender = email|msmq;//can switch implementation run time
+msg.Send();
+Adapter: maps the interface of one class (client) onto another (adaptee) so that they can work together. These incompatible classes may come from different libraries or frameworks. If you want to make your class work with a third party class and your mock class for it   Frequency:3
+
+class Adaptee // Existing class:unchangable legacy code or third party code
+{   public bool IsEmail(string email){ ..  }}
+
+interface ITarget//standard interface that existing client is expecting
+{   bool ValidateEmail(string email);}
+class Adapter : Adaptee, ITarget
+{  [private  Adaptee adaptee=new Adaptee();]//proxy pattern
+    public bool ValidateEmail(string email)
+    {return this[adaptee].IsEmail(email);}
+}
+client:
+static void Main()
+{   ITarget o = new Adapter();
+    bool ret= o.ValidateEmail("anyemail@gmail.com"));//route to IsEmail
+} 
+Decorator: wraps the original class and provides additional functionality with same class methods signature.
+
+	public interface Pizza { public String bakePizza();}
+	public class BasicPizza implements Pizza {
+		public String bakePizza() {return 'Basic Pizza';}
+	}
+	public abstract class PizzaDecorator implements Pizza {
+	    Pizza pizza;
+	    public PizzaDecorator(Pizza newPizza) {this.pizza = newPizza;}
+	    @Override
+	    public String bakePizza() {return pizza.bakePizza();}
+	}
+	public class ChickenPizza extends PizzaDecorator {
+	    public ChickenPizza(Pizza newPizza) {super(newPizza);}
+	    public String bakePizza() {return pizza.bakePizza() + ' with Chicken';}
+	}
+	        Pizza chickenPizza = new ChickenPizza(new BasicPizza());
+	        chickenPizza.bakePizza());
+
+Decorator Pattern wraps the original class and provides additional functionality with same class methods signature.
+public abstract class AccountDecorator implements Account {//public interface Account {void get|setBalance(); double CalculateInterest();
+   protected Account decoratedAccount;
+   public AccountDecorator(Account decoratedAccount){ this.decoratedAccount = decoratedAccount;}
+   public double CalculateInterest(){ decoratedAccount.CalculateInterest();}	
+}
+public class CompoundAccountDecorator extends AccountDecorator {
+   public CompoundAccountDecorator(Account decoratedAccount) { super(decoratedAccount);}
+   @Override
+   public double CalculateInterest(){
+      double interest = decoratedAccount.CalculateInterest();	
+      Compound(interest);	       
+   private void Compound(double newInterest)
+      decoratedAccount.setBalance(decoratedAccount.getBalance +newInterest);
+      
+Account acct= new CompoundAccountDecorator(new Saving|Checking());
+double ir = acct.CalculateInterest();
+
+Facade:Provide a unified interface to a set of interfaces in a subsystem.A single class that represents an entire subsystem Frequency:5
+Similar to prototype,  Facade Pattern use a single class which provides unified methods and delegates calls to methods of proper existing classes.
+public class AccountMaker {
+   private Saving|Checking saving|checking =  new Saving|Checking();
+   public double CalculateSaving|CheckingInterest(){return saving|checking.CalculateInterest();}
+
+Composite:Compose objects into tree structures to represent part-whole hierarchies Frequency:4
+Proxy:An object representing another object that controls access to it. Frequency:4
+
+ 
+  public interface IMath
+  {double Add(double x, double y);  }
+  class MathProxy : IMath
+  {private Math _math = new Math();//:IMath
+    public double Add(double x, double y)
+    {return _math.Add(x, y);
+    
+Behavioral Patterns
+Observer:Define a one-to-many dependency between objects so that when one object changes state, all observable/subject’s dependents observers are notified and updated automatically. Frequency:5
+
+Subject  (Stock) ConcreteSubject  (IBM) Observer  (IInvestor)  ConcreteObserver  (Investor) State (Price)
+ abstract class Stock
+  {private string _symbol;
+    private double _price;
+    private List<IInvestor> _investors = new List<IInvestor>();
+    public Stock(string symbol, double price) {this._symbol = symbol; this._price = price; }
+    public void Attach(IInvestor investor) { _investors.Add(investor); }
+    public void Notify()
+    {  foreach (IInvestor investor in _investors) { investor.Update(this); } }
+    public double Price
+    { get { return _price; }
+       set  { if (_price != value) { _price = value; Notify(); }  }
+    }
+    public string Symbol { get { return _symbol; } }
+  class IBM : Stock
+  { public IBM(string symbol, double price) : base(symbol, price) { }  }
+
+  interface IInvestor { void Update(Stock stock);  }
+  class Investor : IInvestor
+  { private string _name;
+    private List<Stock> stocks;
+    public Investor(string name){   this._name = name;  }
+    public void Update(Stock stock) { stocks[stock.Symbol].price= stock.Price);   }
+   
+Command:Encapsulate a request as an object, parameterize clients with different requests, queue or log requests. Frequency:4
+
+http://www.tutorialspoint.com/design_pattern/command_pattern.htm
+A request is wrapped under an object (BuyStock ) as command and passed to invoker object (Broker) that passes the command to the appropriate object (Stock) which executes the 
+command.
+public class BuyStock implements Order {//public interface Order {   void execute();}
+   private Stock stock;
+   private int quantity;
+   public BuyStock(Stock stk,int qty){ stock = stk; quantity=qty;}
+   public void execute() { stock.buy(quantity); }
+}
+public class Stock {
+   private String name;
+   public Stock(string name){this.name=name;} 
+   public void buy(int qty){exchangeSvc.Buy(name,qty);}
+}
+public class Broker {
+   private List<Order> orderList = new ArrayList<Order>(); 
+   public void takeOrder(Order order){  orderList.add(order);  }
+   public void placeOrders(){   
+      for (Order order : orderList) {  order.execute(); }
+      orderList.clear();
+   }
+
+      Stock abcStock = new Stock("ABC");
+      BuyStock buyStockOrder = new BuyStock(abcStock,100);
+      Broker broker = new Broker();
+      broker.takeOrder(buyStockOrder);
+      broker.placeOrders();
+
+Iterator: access the elements of an collection sequentially without exposing its underlying representation. Frequency:5
+    interface IAbstractCollection
+    {
+        Iterator CreateIterator();
+    }
+
+    class Collection : IAbstractCollection
+    {
+        private ArrayList _items = new ArrayList();
+        public Iterator CreateIterator()
+        {
+            return new Iterator(this);
+        }
+        public int Count
+        {
+            get { return _items.Count; }
+        }
+        public object this[int index]
+        {
+            get { return _items[index]; }
+           set { _items.Add(value); }
+        }
+    }
+interface IAbstractIterator
+    {
+        Item First();
+        Item Next();
+        bool IsDone { get; }
+        Item CurrentItem { get; }
+    }
+
+    class Iterator : IAbstractIterator
+    {
+        private Collection _collection;
+        private int _current = 0;
+        private int _step = 1;
+        public Iterator(Collection collection)
+        {
+            this._collection = collection;
+        }
+        public Item First()
+        {
+            _current = 0;
+            return _collection[_current] as Item;
+        }
+        public Item Next()
+        {
+            _current += _step;
+            if (!IsDone)
+                return _collection[_current] as Item;
+            else
+                return null;
+        }
+        public int Step
+        {
+            get { return _step; }
+            set { _step = value; }
+        }
+        public Item CurrentItem
+        {
+            get { return _collection[_current] as Item; }
+        }
+        public bool IsDone
+        {
+           get { return _current >= _collection.Count; }
+        }
+    }
+
+State:Alter an object's behavior when its state changes Frequency:5
+class Account
+{private State _state; 
+ public Account(State mstate)
+ {mstate.Account = this;
+  this._state = mstate;}
+ public State MState {set{mstate=value;}} 
+ public void Withdraw(double amount)
+ {_state.Withdraw(amount);}
+}
+abstract class State
+{protected Account account;
+ Protected readonly double minBalance;
+ protected State(Account maccount){this.account = maccount;} 
+ public abstract void Withdraw(double amount);
+}
+class GoldState : State
+{public GoldState(Account maccount):base(maccount) { minBalance = 500;}
+  public override void Withdraw(double amount) 
+ {if (amount > account.balance - minBalance) {throw new exception;}
+  account.balance = account.balance - amount;
+  if (balance > 10000) {account.MState = new PlatinumState(account);  
+ }
+}
+class PlatinumState : State
+{public PlatinumState(Account maccount):base(maccount) { minBalance = 1000;}
+ public override void Withdraw(double amount) 
+ {if (amount > account.balance - minBalance) {throw new exception;}
+  account.balance = account.balance - amount;
+  if (balance < 10000) {account.MState = new GoldState(account);  
+ }
+}
+Strategy: Encapsulates an family of algorithm that can be switched without changing client/context. Frequency:4
+Strategy  (SortStrategy) ConcreteStrategy  (QuickSort, ShellSort) Context  (SortedList)
+
+ static void Main()
+ { SortedList studentRecords = new SortedList();
+      studentRecords.MSortStrategy =new QuickSort();
+      studentRecords.Sort();
+      studentRecords.MSortStrategy =new ShellSort();
+      studentRecords.Sort();
+}
+  abstract class SortStrategy//strategy, can be interface
+  {public abstract void Sort(List<string> list);  }
+  class QuickSort : SortStrategy//concrete strategy
+  {public override void Sort(List<string> list)
+    {list.Sort();}
+   }
+  class ShellSort : SortStrategy
+  { public override void Sort(List<string> list)
+    {list.ShellSort();}
+  }
+  class SortedList //context
+  {private List<string> _list = new List<string>();
+    private SortStrategy msortstrategy;
+    public SortStrategy  MSortStrategy//through prop or ctor
+    {set { this.msortstrategy = value; }}
+    public void Sort()
+    { msortstrategy.Sort(_list); }
+   }
+
+Object pool: factory attampt to get existing recycled instance from queue before creating a new, avoid creation cost and avoid garbage collection 
+public static class Pool
+{
+    private static Queue<PooledObject> _available = new Queue <PooledObject>();
+    private static Queue <PooledObject> _inUse = new Queue <PooledObject>();
+ 
+    public static PooledObject GetObject()
+    {
+        lock(_available)
+        {
+            if (_available.Count != 0)
+            {
+                PooledObject po = _available.dequeue();
+                _inUse.enqueue(po);
+                return po;
+            }
+            else
+            {
+                PooledObject po = new PooledObject();
+                _inUse. enqueue (po);
+                return po;
+            }
+        }
+    }
+ 
+    public static void ReleaseObject(PooledObject po)
+    {
+        po.Data = null;//clean up state data
+ 
+        lock (_available)
+        {
+            _available. enqueue (po);
+            _inUse. dequeue (po);
+        }
+    }
+}
+}
+
+SDLC deliverable  documents:
+Technical Assessment (by Architect during analyze phrase)
+During the PMLC Initiate Phase, approve Section 1.0 in preparing the initial cost estimate; During the PMLC Plan phase, approve the remainder of the document to arrive at a more accurate approach cost.
+•	During the PMLC Initiate Phase, prepare the initial cost estimate section of the form for your project. 
+•	During the PMLC Plan Phase, using the Requirements Package, complete the remainder of the form to arrive at a more accurate approach cost. 
+•	During the SDLC Analyze Phase, using the PMLC Requirements Package and other requirements documentation, come up with your most accurate project cost. 
+•	During the SDLC Analyze Phase, develops one or more technical approaches and recommends the optimal approach. Also identify, document and update the technical risks associated with the approach in the PMLC Risk Assessment form. 
+Functional Specification (by BA during analyze phrase)
+Describe detail the functionality of the product, can bee expanded into several detailed specs covering different scopes.
+Technical test plan (by QA during analyze phrase)
+Includes the test approach, scope, success criteria, test milestones, staff, and test data and methods. and supporting scaffolding (such as test environments, defect management tool). it is started during the Analyze Phase and must be completed and approved before the Test Phase begins.
+Design Specification (by Architect during design phrase)
+Describe the solution that would implement the product requirements and comply with applicable policies and standards. It can bee expanded into several detailed specs. ideally it would be completed prior to the beginning of building the system.
+Technical test cases (by QA during build phrase)
+use manual template or Test Director tool to create test cases steps to execute and record test case results. 
+Test Coverage Matrix (by QA during build phrase)
+Map between requirements and test cases. Every requirement must be covered by at least one test case.
+Code reviews report (by developer during build phrase)
+Product build and install guide (by Architect during test phrase)
+For developing build, packaging, and deployment processes for the project.
+Technical Test Results Report (by QA during test phrase)
+
+Unit test
+1.       Positive test cases (correct data, correct output).
+2.       Negative test cases (broken or missing data, proper handling).
+3.       Exception test cases (exceptions are thrown and caught properly).
+
+Download NUnit-2.4.7-net-2.0.zip and extract it at any location or .msi to install in GAC, in vs2005 create a class lib project and add reference to nunit.framework.dll from the extracted folder, create class as below and complie, run nunit.exe (gui tool) from the extracted folder which is win app, file->open project->this test project’s bin\debug\ proj.dll/exe->proj and all test fixtures are auto loaded on the left panel based on namespace\testfixture\test, select any test/testfixture(run all tests within it)/project namespace(run all test fixtures within it) and click run, err will display at err/fail panel, console write result  will display at console out panel 
+Project->edit->config file : proj.all.config by default in bin\debug\, put config into this file (the same syntax as .net config file)
+NUnit can be run from the nunit-console.exe (command-line tool) , added it to the enviorment path, 
+nunit-console mytests.dll or mytests.csproj to run all tests within the dll or project
+nunit-console /fixture: mytests.mytestfixture1 mytests.dll to run specific testfixture
+nunit-console /run: mytests.mytestfixture1.test1    mytests.dll to run specific test
+can include unit test case running in application's build process.       
+using NUnit.Framework;
+ 
+namespace UnitTestApplication.UnitTests
+{	[TestFixture()]//a class sttribute use a separate fixture for every test topic
+	publicclass Calculator_UnitTest
+	{ 	private UnitTestApplication.Calculator calculator = new Calculator();
+ 		[SetUp()]
+		publicvoid Init()
+		{	//code need to be run at the start of every [test] case.	}
+ 		[TearDown()]
+		publicvoid Dispose()
+		{	// code that will be called after each [Test] case
+System.Reflection.FieldInfo fi =     typeof(MSingleton).GetField("m_Instance",    System.Reflection.BindingFlags.Static |                                                                            System.Reflection.BindingFlags.NonPublic);
+ Assert.IsNotNull(fi);  fi.SetValue(null, null);
+//use reflection to access singleton object being tested and nullify it otherwise the same instance will be used by the next test  
+		}
+
+many Assert statements can be in a method . but the method  fail if even a single assertion fails,  and next assertion will not be evaluated, Therefore it is recommended that there should only be one Assertion statement per test method.
+[Test]
+publicvoid Test_Add()//success case
+{
+	int result = calculator.Add(2, 2);
+	Assertion.AssertEquals(4, result);
+       Assert.IsNotNull/IsNull(customer);
+       Assert.IsTrue/ IsFalse (customer.FirstName.Length > 1);
+       Assert.Greater(customer.Orders.Count, 0);
+       Regex r = new Regex("<(.*)>(.*)</(.*)>");
+       Match m = r.Match("<p>this is a para</p>");
+       Assert(m.Success);
+if (creditCardAccount == null)
+ {     Assert.Fail("no cardnum”); }
+       Assert.AreEqual(100, cal.CalculateBonusByMonths(5));
+	Assert.AreSame(obj1,obj2);
+AssertSame()
+Fail()
+}
+[Test]
+[Ignore("Ignore a test")]
+publicvoid Test_AddFailure()//failure case
+{
+	int result = calculator.Add(2, 2);
+	Assertion.Assert(result != 1);
+}
+
+[Test]
+[ExpectedException(typeof(DivideByZeroException))
+publicvoid Test_DivideByZero()//exception case
+{
+	int result = calculator.Divide(1, 0);
+	
+}
+
+load test is to test performance and see resource contention/database lock at the highest possible traffic while stress test is to find out  the break point traffic and the cause of bottle neck.  
+
+Integration test touch dependencies like related component, database and web service that unit test does not. Continuous integration  is a software development practice where members of a team integrate their work frequently, each person integrates at least daily - leading to multiple integrations per day. 
+Continuous integration with CruiseControl (CruiseControl.NET for .net) is a framework/tool for monitoring the source control (vss/perforce) and launch continuous build process If checked-in changes are detected, it is a windows servie installed on build server which also has src control provider (CruiseControl dev for specific src ctrl) and client (from src ctrl vendor) installed. All config are defined in config file that can be access from dashboard>proj config (samp: CruisectrlConfig.txt defining target src files loacation/polling interval/nant build file to exe). Each time it pull the lateset code from src ctrl server to local build server, launch the .build. also a web dashboard can be install for admin the cruise control (a port need to be set for comm.)  
+NAnt is used to automate the entire build process by defining .build file CBBS\Deployment\mainline\scripts\ cbbs.apps.deploy.build, in which nunit testcases can be runned as part of  build process. also can add below to vs proj prop> build event >postbuild to move all alls to a centralized location ($(##) are marco>> variables.)>save to take effect   
+copy"$(SolutionDir)CBBS.DataAccess\bin\$(ConfigurationName)\*.dll.config" "$(TargetDir)*"
+
+Black box test is focus on external functionality (system and fuctional test) , white box is focus internal logic path.
+
+Regressional test to verify previous func is working after adding new feature.
+
+Agile
+In Scrum, one subset of agile methodology, projects are divided into sprints, which are typically one week, two weeks, or three weeks in duration. At the end of each sprint, stakeholders and team members meet to assess the progress of a project and plan its next steps. This allows a project’s direction to be adjusted or reoriented based on completed work, not speculation or predictions.
+Frequent small release: release small units of functionality to the customer's environment early in the project to getting valuable feedback and more time to fix defects.
+The daily stand up meeting among the entire team is used to communicate problems, solutions, and promote team focus, Every developer speak briefly in a order. 
+Constant code Refactoring saves time and increases quality  by  remove redundancy, eliminate unused functionality, and rejuvenate obsolete designs
+Having customers involved during development,
+Code must be formatted to agreed coding standards. Coding standards keep the code consistent and easy for the entire team to read and refactor.
+Create spike solutions, a simple program to explore potential solutions only addresses the target tough technical or design problems. When a technical difficulty hold up the development, designate a pair of developers on the problem for a week or two.
+Leave optimize till last, do not try to analyze performance issue at earlier stage where a lot of issue, most of them will be automate fixed during later stage, would contribute to it. first Make it work, make it right, then make it fast.
+Collective Code Ownership (pair programming and peer code review) encourages everyone to contribute by change/optimize code, add functionality, fix bugs, or refactor. every  developer’s code is subject to other’s review, which bring higher sense of responsibility. It also benefit the situation where a person is absent or leave the project.   
+test-driven development:Creating a unit test before the code helps a developer to really understand Requirements  needs to be done. Automate Unit tests code must be created and released to source code repository with every code/class.
+Integration often and releasing changes into the code repository (every few hours, never hold onto changes for more than a day) makes everyone work with the latest version instead of obsolete code. Continuous integration avoids or detects compatibility problems among components earlier, which are much harder to be identified and solved in later stage.
+During an iteration the user stories selected during the iteration planning meeting will be translated into acceptance tests, formerly known as functional tests, new acceptance tests with scenarios specified by customer must be created each iteration to determine if it is correctly and completely  implemented. Acceptance tests are black box system tests, are also used as regression tests prior to a production release. It should be made automate to be run often and test score is published to the team.
+
