@@ -1,0 +1,1507 @@
+#T-SQL query#
+*Delete duplicate records with only one =max(id) left, must have identity column: 
+*DELETE FROM MyTable WHERE ID NOT IN
+(SELECT MAX(ID) FROM MyTable GROUP BY DuplicateColumn1, DuplicateColumn2, DuplicateColumn2 HAVING COUNT(*) >1)
+DELETE x FROM MyTable x JOIN MyTable y ON y.field1= x.field1 AND y.field2 = x.field2 AND y.id < x.id;
+select ROW_NUMBER() OVER (PARTITION BY BOCoperId Order by BAMLEntity asc ) as Seq
+/* Delete Duplicate records */
+WITH CTE (COl1,Col2, DuplicateCount)
+AS
+(
+SELECT COl1,Col2,
+ROW_NUMBER() OVER(PARTITION BY COl1,Col2 ORDER BY Col1) AS DuplicateCount
+FROM DuplicateRcordTable
+)
+DELETE
+FROM CTE
+WHERE DuplicateCount > 1
+GO
+//find duplicate records (*) will count null, (column) counts non-NULLs only, selfjoin to include other column out group by
+SELECT t1.column1, count(*)/(column1)[,t2.column2]  FROM dbo.table t1 GROUP BY t1.column1 HAVING count(*)/(column1)  > 1 
+                                                                                                   [JOIN dbo.table t2 ON t1.id = t2.id]
+*SELECT * FROM employee WHERE (empid IN (SELECT empid FROM phone GROUP BY empid HAVING COUNT(emid)>=2//select all column without being limited by group by
+*Select ID,(Select Name From Dept Where Dept.ID = Emp.Dept_ID) as Dept From Emp //same Emp Left Outer Join Dept
+*select min(A.Price) from(select top 4 price from title order by price desc)// select the 4th highest
+*select max(freq) from (select count(*) as freq from order group by symbol)
+*select c.custid, sum(od.qty*od.price) as ordertotal from customer c  join orders o on c.custid=o.custid
+                                                                                                                           join orderdetail on o.custid=od.custid
+                                                                                             where datediff(day,o.orderdate,getdate())<30
+                                                                                             group by c.custid 
+                                                                                             having sum(od.qty*od.price) >300 and count(distinct orderid +prodid)>5 
+// can not use alias specified in select in group or having because select is executed after group or having
+*delete from orderdetail  where not exist (select * from orders where orderdetail.orderid=order.orderid) >left join>NOT IN
+*delete from orderdetail od  join orders o on od.id=o.id and /where datediff(day,od.date,getdate())>o.retentionperiod
+*update titles set saleqty=t.saleqty + s.qty from titles t  join sales s on t.titleid = s.titleid//alia t specified in from can not be used in set
+                                                                                      [titles t ,  sales s where  t.titleid = s.titleid]
+                                                                                                                       and s.date = (select max(sales.date) from sales) 
+*update authors set state=’popular’ from (select top 10 * from authors ordered by saleqty) as a where authors.id=a.id
+                                                                  from authors join (select top 10 * from authors ordered by saleqty) as a on authors.id=a.id
+                                                                  from authors where id in (select top id from authors ordered by saleqty)
+*select * from  t1 where  col1 <=> (select max/avg/min(col2) from t2)//sub select can be embed as long as single or multi value match 
+  update  t1 set col1 = col1-(select col2 from t2 inner join t1 on t2.id=t1.id)
+ *sum/avg/count(distinct col1), max/min no distinct, + [group by col2]
+*SELECT col from tbl GROUP BY col return distinct col as well
+* SELECT DISTINCT pv1.ProductID, pv1.VendorID FROM ProductVendor pv1 INNER JOIN ProductVendor pv2
+ ON pv1.ProductID = pv2.ProductID AND pv1.VendorID <> pv2.VendorID ORDER BY pv1.VendorID , pv1.ProductID
+// products supplied by more than one vendor, multiple prod rows from the same vendor are returned together  <>group by  vendor  return one row per vendor
+*SELECT e1.empname AS EmpName, e2.empname AS ManagerName FROM Employee e1 LEFT OUTER JOIN Employee e2 ON e1.mgrid=e2.empid// self join, leftout will display top employee with manager col = NULL , similarly table filesys(id,title,type,parentid) to store a folder/file tree, mgr =folder while emp = file.   
+*select SYM, sum( QTY*(case when SIDE = 'BUY' then 1 else -1 end)) from dbo.TRADES group by SYM
+*select
+    t1.date,
+    t1.sym,
+    t1.price - t2.price as day_change
+from price_table t1
+left join price_table t2 
+    on  t2.sym = t1.sym	
+    and t2.date = t1.date-1 //DATEADD(day, -1, t1.date) or
+   [and t2.date = (
+            SELECT MAX(t3.Date)
+            FROM price_table t3
+            WHERE 
+                t3.sym = t1.sym	
+                AND t3.Date < t1.Date //skip weekends & holiday
+            )]
+
+DayId(INT) | Date(DATE) | Temp(INT)   //find date having rising temp
+select T1.date from temperature T1 , temperature T2 where T1.temp>T2.temp and T1.date-T2.date=1
+
+a correlated subquery (repeating subquery), the subquery depends on a value (e.UnityID) from the outer query, this value changes per row from outer query, so subquery is executed repeatedly, once for each row that selected by the outer query.
+SELECT DISTINCT p.Name, e.UnityID 
+FROM Person AS p JOIN Employee AS e
+ON e.UnityID = p.UnityID 
+WHERE 5000.00 IN
+    (SELECT Bonus FROM Sales s
+    WHERE e.UnityID = s.UnityID) ;
+
+SELECT
+  empId [COUNT(empId)],
+  CASE
+    WHEN [Salary] >= 75000  THEN'High'
+    WHEN [Salary] >= 60000  THEN 'Middle'
+    ELSE 'Low'
+  END as SalaryRange
+FROM  Employees 
+[GROUP BY 
+  CASE
+    WHEN [Salary] >= 75000  THEN'High'
+    WHEN [Salary] >= 60000  THEN 'Middle'
+    ELSE 'Low'
+  END]
+UNION only selects distinct values, UNION ALL selects all values (including duplicates)
+UNION is row based, JOIN is column based
+
+Table has 5 rows,2 rows have fname ="a" : select count(*)|count(fname) where fname <> 'a' return 3|<=3 because fname=null rows SELECT COUNT(*) - COUNT(fname)
+COUNT(*) include null values and duplicates, use index on any col; COUNT(column) only include nonnull values and duplicates, use index on the column if exists. COUNT(DISTINCT column) include unique and nonnull values. no COUNT(DISTINCT *)
+
+SELECT Name, COALESCE (Business_Phone, Cell_Phone, Home_Phone) Contact_Phone  FROM Contact_Info //case Business_Phone is null then Cell_Phone
+
+CREATE FUNCTION dbo.GetReports(@IncludeParent bit, @EmployeeID int)
+RETURNS @retFindReports TABLE (EmployeeID int, Name varchar(50), BossID int)
+AS  
+BEGIN 
+	IF (@IncludeParent=1) 
+	BEGIN
+		INSERT INTO @retFindReports
+		SELECT * FROM Employees WHERE EmployeeID=@EmployeeID
+ 	END
+	DECLARE @Report_ID int, @Report_Name varchar(50), @Report_BossID int
+	DECLARE RetrieveReports CURSOR STATIC LOCAL FOR
+	SELECT empid,empname,bossid FROM Employees WHERE BossID=@EmployeeID
+	OPEN RetrieveReports
+	FETCH NEXT FROM RetrieveReports
+	INTO @Report_ID, @Report_Name, @Report_BossID
+	WHILE (@@FETCH_STATUS = 0) 
+	BEGIN
+		INSERT INTO @retFindReports
+		SELECT * FROM dbo.GetReports(0,@Report_ID)//invoke recursive
+  		INSERT INTO @retFindReports //actual insert
+		VALUES(@Report_ID,@Report_Name, @Report_BossID)
+   		FETCH NEXT FROM RetrieveReports
+		INTO @Report_ID, @Report_Name, @Report_BossID
+	END
+	CLOSE RetrieveReports
+	DEALLOCATE RetrieveReports
+	RETURN
+END
+
+ORACLE SQL
+DML stands for "Data Manipulation Language". A DML operation includes SELECT, INSERT, UPDATE, and DELETE statements.
+DDL stands for "Data Definition Language". A DDL operation includes CREATE TABLE, CREATE INDEX, among other operations.
+When you execute a DDL operation, there is an implied commit after the DDL. The save point is then changed to the position following the DDL operation. 
+Therefore, any rollbacks will only undo changes to the new save point - which is after the last DDL operation.
+implicit commit after truncate table 
+
+using Optiimistic Concurrency (CAS) to update data currently being used
+
+select c1 from tbl where c2=x and c3=y, cluster index on c1+c2, non-cluster index on c2,c3 : index c3 is used  
+
+Bitmap (more deadlock on update, better for unique value) vs B-tree (default) index
+
+Max 249 of noncluster index per table
+
+Dual dummy table for select 2*4 | sysdate from dual
+
+CHAR|VARCHAR[2] is used to store fixed|variable length character strings
+
+DML database write to both table and index (redundancies) http://use-the-index-luke.com/sql/dml 
+The more indexes the slower insert. it is the only operation that cannot directly benefit from indexing because no where clause, and the new entry need to be add to each index
+delete has where clause can benefit directly from indexes.
+update remove the old entry (delete) and add the new one (insert), however only on indexes that contain updated columns
+#DEV#
+Executing order: Where >order by> group by > having, each operates on result produced by previous op,  so that the WHERE clause does most of the work (removing undesired rows) to reduce load,  and HAVING clause only apply  to columns that also appear in the GROUP BY clause or in an aggregate function. All select cols except aggregate func must included in GROUP BY. Order  can be on  multi columns  from left most,  group by too but return only one record for each value of the specified right most column.
+
+SET @val = 'some sql stmt… ' /'dbo.my_proc'; 
+EXEC(@val)/ EXEC @val;  
+//exec generally looks the next argument as a stored procedure so use exec() function to execute the variable/string with embedded @ variable: EXEC ('ALTER INDEX ALL ON ' + @schemaname + '.' + @tablename + ' REBUILD;');
+EXECUTE @result = dbo.my_proc;
+store proc always returns one int value. 0 meaning success, otherwise exception should be handled by ref to @@ERROR, also can Use store proc’s Returned Value to return one int like latest added identity column value  RETURN SCOPE_IDENTITY() (if SELECT then return a resultset with a single cell which is overkill)  by myCommand.ExecuteScalar() or retValParam.Direction = ParameterDirection.ReturnValue
+
+table variable vs temp table: A is instantiated in memory and B is stored in tempdb. Table variables are often faster,  can be return by Function, table variables found in stored procedures result in fewer compilations (than when using temporary tables), and transactions using table variables only last as long as the duration of an update on the table variable, requiring less locking and logging resources.
+CREATE FUNCTION foo ( @p money )
+RETURNS @OrderTab TABLE
+[DECLARE @OrderTab TABLE]
+   (OrderID     int,
+    …
+    Freight       money )
+CREATE TABLE #MyTempTable (ID INT PRIMARY KEY)
+do not create temp table from within a transaction. If you do, then it will lock some system tables (syscolumns, sysindexes, and syscomments) and prevent others from executing the same query, greatly hurting concurrency and performance. 
+Do not use SELECT INTO to create your temp table, as it places locks on system objects. Instead, create the table and then use INSERT INTO to populate the table. 
+Consider using clustered and non-clustered indexes on your large temp tables. No non-clustered index on a table variable
+When you are done with your temp table, delete it (DROP TABLE #MyTempTable) to free up tempdb resources. Do not wait for the table to be automatically deleted when the connection is ended. 
+isolating the tempdb database on its own disk
+temp tables & cursors are both materialised on disk in the tempdb, forcing the output of your query to be spooled to disk in the temp before being read back to the client. the performance hit gets worse as the amount of data increases. 
+instead of using row-based fetchingand and processing, prefer set-based processing in which one SQL statement affects many rows. cursor to loop thru each row at a time<> join to op on all the rows at once
+#temp is connection based, ##temp is global shared by multi-app 
+
+View vs store proc: view :reusable as table in stmt , a extra layer of data filter & representation with access control, like stored procedures, once views are run the first time, are optimized and their execution plan is stored in cache in case they need to be reused.  the first time SELECT query  from table directly is faster than view , although the execution plan for both of them will be the same. This is because it takes longer for SQL Server extra work (such as looking up data in the system tables) to execute the view. stored procedures  can have parameter but view can not, they are Inflexible Unused data columns unnecessary JOIN or UNION cost performance.  instead of running the view's underlying SELECT statement and creating the view's result set on the fly, indexed views 05, which is the equivalent of a clustered index,  uses the unique clustered index to display the results of the view almost immediately.  It suits for : Readonly data or a lower percentage of INSERTS, UPDATES, and DELETES, join or aggregate data.
+Simulate parameterized view by Inline Table Valued function:
+CREATE FUNCTION dbo.inlineTable (@Para INTEGER)
+RETURNS TABLE
+AS
+RETURN
+(INSERT @Results    
+ SELECT Field1, Field2    FROM SomeTable    WHERE Field3 = @Para
+)
+SELECT * FROM dbo.paraView (1)
+statistics on underlying tables will be used when generating an execution plan for the query.
+But underlying table statistics will not be used in below multi-statement table valued function
+CREATE FUNCTION dbo. multiTable (@Para INTEGER)
+    RETURNS @Results TABLE(Field1 VARCHAR(10), Field2 VARCHAR(10))
+AS
+BEGIN
+    INSERT @Results
+    SELECT Field1, Field2    FROM SomeTable    WHERE Field3 = @Para
+    RETURN
+END
+
+UDF vs Store Proc: 
+1. Stored Procedure supports deferred name resolution: creating stored procedure uses table name that  does actually not exists in database.
+2. Stored procedure returns one integer type by default zero, optional resultset with multiple values and optional multiple OUT paras . where as function MUST return only one value (can be a table variable), Aggregate or Scalar. Function parameters are always IN. Function do not return the images,text whereas sp returns all.
+3. Stored Procedure is pre compiled exuction plan where as functions are not. Note: no execute plan created for insert, which create index instead of use index, so put insert in stor proc won’t help perf.  WHERE MyDate < GETDATE() eval multiple times, SET @Today = GETDATE() …WHERE MyDate < @Today eval one time> better perf.
+4. Functions can be, excepts those having DML(insert, update, delete), embed in sql statements. Stored procedures  use EXECUTE to run.  SP can call UDF but UDF can't call SP. UDF accept Parameters but views don't.
+5. when T-SQL encounters an error the function stops, while T-SQL will ignore an error in a SPROC and proceed to the next statement in your code (provided you've included error handling support).
+6. UDF can NOT INSERT, UPDATE, DELETE statement upon tables or views (local table variables are ok), can NOT call Built-in nondeterministic functions such as GetDate()
+
+Trigger is a special kind of stored procedure that executes automatically ( Instead Of and After/For ) when a user attempts the specified data-modification statement on the specified table or view. Using WITH ENCRYPTION (SQL Server encrypts the system table columns containing the text of the CREATE VIEW/trigger statement )prevents the trigger/view from being published as part of SQL Server replication. Using NOT FOR REPLICATION indicates that the trigger should not be executed when a replication process modifies the table involved in the trigger. constraints are checked after the INSTEAD OF trigger execution and prior to the AFTER trigger execution. If the constraints are violated, the INSTEAD OF trigger actions are rolled back and the AFTER trigger is not executed (fired). If any of the triggers do a ROLLBACK TRANSACTION, regardless of the nesting level, no further triggers are executed. AFTER triggers cannot be defined on views, SQL Server allows multiple triggers to be created for each data modification event (DELETE, INSERT, or UPDATE), but  only one INSTEAD OF trigger / multiple AFTER triggers per INSERT, UPDATE, or DELETE statement can be defined on a table or view. If INSTEAD OF INSERT trigger executes another INSERT statement on the same table, the trigger  won’t fire again. For INSTEAD OF triggers, the ON DELETE/UPDATE option is not allowed on tables that have a referential relationship specifying a cascade action ON DELETE/UPDATE.
+Performance: If you have an INSERT, UPDATE, or DELETE taking longer to run that you would expect, check to see if there is a trigger associated with that table. appropriate index can be used by trigger having WHERE clause,  run your trigger code from Query Analyzer and then check the resulting execution plan. if multiple triggers specify that the one most likely to rollback as the first trigger.
+CREATE TRIGGER employee_insupd ON employee
+FOR INSERT, UPDATE AS// one trigger can handle multiple events
+SELECT FROM employee e INNER JOIN inserted i ON e.emp_id = i.emp_id 
+   JOIN jobs j ON j.job_id = i.job_id
+IF (@job_id = 1) and (@emp_lvl <> 10) 
+BEGIN
+   RAISERROR ('Job id 1 expects the default level of 10.', 16, 1)
+   ROLLBACK TRANSACTION—trigger auto in context transaction
+END
+ELSE
+IF NOT (@emp_lvl BETWEEN @min_lvl AND @max_lvl)
+BEGIN
+   RAISERROR ('The level for job_id:%d should be between %d and %d.',
+      16, 1, @job_id, @min_lvl, @max_lvl)
+   ROLLBACK TRANSACTION
+END
+
+CREATE TRIGGER [Production].[uTransactionHistory] ON [Production].[TransactionHistory] 
+AFTER UPDATE NOT FOR REPLICATION AS 
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        UPDATE [Production].[TransactionHistory]
+        SET [Production].[TransactionHistory].[ModifiedDate] = GETDATE()
+-- Without this trigger, modified date is set only when a new row is initially insert, won’t reset upon update (delete-insert) even having default=getdate() 
+        FROM inserted
+        WHERE inserted.[TransactionID] = [Production].[TransactionHistory].[TransactionID];
+    END TRY
+    BEGIN CATCH
+        EXECUTE [dbo].[uspPrintError];
+        -- Rollback any active or uncommittable transactions before
+        -- inserting information in the ErrorLog
+        IF @@TRANCOUNT > 0
+        BEGIN
+            ROLLBACK TRANSACTION;
+// A trigger is implicitly part of the transaction that causes the data modification, roll back entire context tran including original op. unless specify RETURN, it continues executing any remaining statements which result will stay. 
+        END
+        EXECUTE [dbo].[uspLogError];
+    END CATCH;
+END;
+(deleted and inserted are temporary, memory-resident tables automatically created and managed by SQL Server, cannot alter the data in the tables,  does not allow text, ntext, or image column references in the inserted and deleted tables for AFTER triggers; Both AFTER and INSTEAD OF triggers support varchar(max), nvarchar(max), and varbinary(max) data.)
+
+CREATE TRIGGER  XXX ON DATABASE|ALL SERVER FOR CREATE_TABLE|CREATE_DATABASE AS..
+
+SELECT ISNULL(AVG(Price), 0.0) to avoid return DBNull.Value 
+Make a para as optional by setting default value @para int = NULL
+RESETS the IDENTITY Column DBCC CHECKIDENT(Customers,RESEED, 0)
+Use [dbo].[databaseobject] or dbo.databaseobject instead of [dbo.databaseobject] which take dbo.databaseobject as a name
+WAITFOR DELAY|TIME '00:00:02'|'22:00';// wait for|until two seconds|22:00
+Sqlstmt
+IF (SELECT COUNT(*) FROM table_name WHERE column_name = 'xxx')
+IF EXISTS (SELECT * FROM table_name WHERE column_name = 'xxx')
+The reason IF EXISTS is faster than COUNT(*) is because the query can end immediately when the text is proven true, while COUNT(*) must count go through every record.
+SET ROWCOUNT  Like the TOP operator to limit how many rows are returned from a SELECT statement.
+Open any table>  click show sql panel> paster complex unformated query> right click- verify sql syntax> auto format the query to be more readable.
+Best way to find row count of a table is Select count form sys.objects table which has row count for each table, but it can not be filtered by where clause, or via table'prop,  not using count(*) on table
+
+Extended stored procedures are created in C/C++ and loaded using DLL's (C:\Program Files\Microsoft SQL Server\MSSQL\Binn \xp_.dll),run under different spid from the current transaction, (such as access to the Win32 API, registry: xp_regread/Write, eventlog: xp_logevent ,etc)
+BEGIN TRANS 
+update …
+if @@ERROR <> 0 
+   exec master..xp_logevent 65000, "something is wrong", ERROR
+   ROLLBACK TRANS
+xp_logevent {error_num>50000, 'msg'} [, 'severity: INFORMATIONAL/ WARNING/ ERROR '] write to Event Viewer on the application log MSSQLSERVER source
+Because xp runs under different sp from the context transaction, the xp won’t be roll back.
+
+Enable xp_cmdshell : Surface Configuration Area for Features>database engine >check the box for "xp_cmdshell" (= sp_configure 'xp_cmdshell', '1' ) to execute an operating-system command shell from T-SQL:  EXEC master..xp_cmdshell 'copy c:\SQLbcks\AdvWorks.bck \\server2\backups\SQLbcks, NO_OUTPUT';
+
+DELETE statement removes rows one at a time and records an entry in the transaction log for each deleted row, deleted datarows can be recovered from the log, use more memory than TRUNCATE TABLE removes the data by deallocating the data pages used to store the table data and records only the page deallocations in the transaction log. DELETE statement is executed using a row lock. TRUNCATE TABLE always locks the table and page.We cannot use Truncate command on a table with Foreign Key because of referential integrity. After truncating, the statistics will be auto updated next time they are accessed. delete |TRUNCATE will |not invoke trigger, reset identity colmn. 
+
+Sql injection: hacker types the following string in the SSN text box ' ; DROP DATABASE pubs  -- (ignore the rest of the text) to dynamic SQL WHERE au_id = '" + SSN.Text + "'", , instead use sqlpara WHERE au_id =@ssn 
+
+Inner join return only rows matching join condition from both table, left [outer] join includes all the rows from the left table and rows matching join condition from right table, When a row in the left table has no matching rows in the right table, NULL will be returned. cross join produce every possible combination. SELECT * FROM A CROSS JOIN B or SELECT * FROM A, B (return 6 rows if A has 2 rows and B has 3 rows)
+
+subquery  vs join: subquery is faster when we have to retrieve data from large number of tables. Because it becomes tedious to join more tables. join is faster to retrieve data from database when we have less number of tables. usually no performance difference between them, but when existence must be checked, a join yields better performance. Otherwise, the nested query must be processed for each result of the outer query to ensure elimination of duplicates.  Subquery= inner query that can be think of as  placeholder for recordset nested (max 32 levels) in SELECT/FROM/WHERE (IN/NOTIN, =<>><, ANY/ALL/SOME, EXISTS/NOTEXISTS) /HAVING
+SELECT ProductName FROM Northwind.dbo.Products
+WHERE UnitPrice = (SELECT UnitPrice FROM Northwind.dbo.Products WHERE ProductName = 'pp')
+<
+SELECT Prd1.ProductName FROM Northwind.dbo.Products AS Prd1 JOIN Northwind.dbo.Products AS Prd2 
+ON (Prd1.UnitPrice = Prd2.UnitPrice) WHERE Prd2.ProductName = 'PP'
+in most case subquery can be replaced by join except when using group by
+select a.AccountID, a.ClientID, c.[Name] from Account a
+join Client c on  a.ClientID = c.ClientID   
+group by a.ClientID
+having count(a.AccountID) >= 2
+this won’t work because only group col and aggreg func can be in selected cols when using group by, if we want to select other col must use subquery (grey potion is optional) 
+select c.[name], a.AccountID, a.CoreNumber from client c
+join account a on  a.ClientID = c.ClientID
+where c.clientid 
+in (  select ClientID  from Account group by ClientID having count(AccountID) >= 2)
+
+insert into corebalance (AccountNumber,EffectiveDate,Balance) 
+select AccountNumber,'12/6/2007',Balance from CoreAccount [join…]
+is equivalent to
+select AccountNumber,'12/6/2007' as EffectiveDate ,Balance into CoreBalance from CoreAccount [join…]
+BUT select into create a new table, and can not populate existing table, it lock system tables.
+
+2005 The PIVOT operator rotates rows into columns, optionally performing aggregations or other mathematical calculations along the way. It widens the input table expression based on a given pivot column and generates an output table with a column for each unique value in the pivot column. The UNPIVOT rotates columns into rows. The UNPIVOT operator narrows the input table expression based on a pivot column.
+Country 		Variable 	VariableValue 
+North America 	Sales 		2000000 
+North America 	Expenses 	1250000 
+North America 	Taxes    		250000 
+North America 	Profit   		500000 
+Europe        		Sales    		2500000 
+Europe        		Expenses	 1250000 
+Europe        		Taxes    		500000 
+Europe        		Profit   		750000 
+Asia          		Sales    		800000 
+Asia          		Expenses 	350000 
+Asia          		Taxes    		100000
+SELECT * FROM tbl
+PIVOT
+( SUM(VaribleValue)
+  FOR [Variable] IN ([Sales],[Expenses],[Profit])
+) AS p 
+Country 		Sales 		Expenses  	Profit 
+North America 	2000000 	1250000  	500000 
+Europe  		2500000 	1250000  	750000 
+Asia  			800000 		350000  	null
+
+SELECT c.FirstName, c.LastName, ROW_NUMBER() OVER(ORDER BY EmpID DESC) AS 'Row ID'
+Returns the sequential number of a row within a partition of a result set, starting at 1
+
+Regular expression in 2005
+where dbo.RegexMatch( COL_NAME, N'..REGEXP..' ) = 0
+CREATE TABLE [Account]
+(
+    [PhoneNumber] nchar(13) CHECK (dbo.RegexMatch( 
+        [PhoneNumber], '^\(\d{3}\)\d{3}-\d{4}$' ) = 1),
+    [ZipCode] nvarchar(10) CHECK (dbo.RegexMatch( 
+        [ZipCode], '^\d{5}(\-\d{4})?$' ) = 1)
+)
+use the RegexGroup function within a SELECT list to extract specific pieces of information from some other piece of data.
+This query uses grouping to determine every distinct server
+select distinct dbo.RegexGroup( [Url], N'https?://(?<server>([\w-]+\.)*[\w-]+)', N'server' ) from [UrlTable]
+CREATE TABLE [Email]// computed columns 
+(   [Mailbox] as dbo.RegexGroup( [Address], N'(?<mailbox>[^@]*)@', N'mailbox' )}
+
+Global variables Scalar functions: @@identity,@@error and @@rowcount @@FETCH_STATUS @@SPID @@TRANCOUNT
+@@servername: srv\inst SYSTEM_USER: domain\winacct, USER: sqlusr like dbo
+
+Error handled by TRY...CATCH in Transact-SQL 
+When the first error occur  inside a TRY block, control is passed to associated CATCH, Transact-SQL statements in the TRY block following the statement that generates an error will not be executed. 
+After the CATCH block handles the exception, control is then transferred to the first Transact-SQL statement that follows the END CATCH statement. If there are no errors inside the TRY block, control passes to the statement immediately after the associated END CATCH statement. If the END CATCH statement is the last statement in a stored procedure or trigger, control is returned to the code that invoked the stored procedure or trigger.
+A TRY block must be immediately followed by a CATCH block, it can be nested.
+•	Errors that have a severity of 20 or higher that cause the Database Engine to close the connection will not be handled by the TRY…CATCH block. However, TRY…CATCH will handle errors with a severity of 20 or higher as long as the connection is not closed.•	Errors that have a severity of 10 or lower are considered warnings or informational messages, and are not handled by TRY…CATCH blocks. 
+•	Compile errors, such as syntax errors are not handled by TRY…CATCH blocks.
+BEGIN TRY 
+…
+END TRY 
+BEGIN CATCH
+SELECT ERROR_NUMBER() AS ErrorNumber, ERROR_SEVERITY() AS ErrorSeverity, ERROR_STATE() as ErrorState, ERROR_PROCEDURE() as ErrorProcedure, ERROR_LINE() as ErrorLine, ERROR_MESSAGE() as ErrorMessage;
+END CATCH;
+
+the XACT_ABORT setting needs to be on (if a Transact-SQL statement raises a run-time error, the entire transaction is terminated and rolled back. When OFF  in some cases only the Transact-SQL statement that raised the error is rolled back and the transaction continues processing. Depending upon the severity of the error) in order for any errors with a severity level less than 21 to be handled as transaction abort errors. Errors with a severity level of 21 or higher are considered fatal and cause SQL Server to stop
+SET XACT_ABORT ON
+XACT_STATE function returns a value of -1 if a transaction has been classified as an uncommittable transaction, which can only perform read operations or a ROLLBACK TRANSACTION. So the first statement in the CATCH block MUST be the ROLLBACK prior to  write to the transaction log (otherwise error 3930.When a batch finishes, the Database Engine rolls back any active transaction.
+If implement try cacth rollback on sql store proc, the sql exception won’t be thrown to .net client, so sp need to return errorcode, and net client should check return value para, if <> 0 then throw a exception.   
+BEGIN TRY BEGIN TRANSACTION;
+COMMIT TRANSACTION; 
+END TRY
+ BEGIN CATCH 
+-- IF (ERROR_NUMBER() = 1205) check if deadlock
+-- Roll back any active (XACT_STATE() =1) or uncommittable transactions (XACT_STATE() =-1) before -- inserting information in the ErrorLog. 
+IF XACT_STATE() <> 0 
+BEGIN
+ ROLLBACK TRANSACTION; //MUST excplictly rollback with err handling for transaction including multiple stmt that MUST be defined by begin/commit tran, otherwise even one stmt fail, another stmt will still be commited, if not being enclosed with  begin/commit tran, each stmt is treated as independent transaction.
+END
+-- AFTER roll back current trans, otherwise logging will be rollback as part of current trans, then call dbo.uspLogError to enters the error information in the ErrorLog table and returns the ErrorLogID
+EXECUTE dbo.uspLogError @ErrorLogID = @ErrorLogID OUTPUT; 
+END CATCH;
+dbo.uspLogError in AdventureWorks sample database, log error info under the context to error_log table 
+PROCEDURE [dbo].[uspLogError] 
+    @ErrorLogID [int] = 0 OUTPUT
+    SET @ErrorLogID = 0;
+    BEGIN TRY
+       IF ERROR_NUMBER() IS NULL
+        RETURN;
+        -- Return if inside an uncommittable transaction.
+        -- Data insertion/modification is not allowed when 
+        -- a transaction is in an uncommittable state.
+        IF XACT_STATE() = -1
+           RETURN;
+
+INSERT [dbo].[ErrorLog] ( [UserName], [ErrorNumber], [ErrorSeverity], [ErrorState], [ErrorProcedure], [ErrorLine], [ErrorMessage] ) VALUES ( CONVERT(sysname, CURRENT_USER), ERROR_NUMBER(), ERROR_SEVERITY(), ERROR_STATE(), ERROR_PROCEDURE(), ERROR_LINE(), ERROR_MESSAGE() );
+        SET @ErrorLogID = @@IDENTITY;
+    END TRY
+    BEGIN CATCH
+-- if log failed print it
+        EXECUTE [dbo].[uspPrintError];
+        RETURN -1;
+    END CATCH
+
+nested transaction:BEGIN TRANSACTION >@@TRANCOUNT +1 COMMIT TRANSACTION >@@TRANCOUNT -1, Committing inner transactions won’t be exed until the outermost transaction is commited. But A  ROLLBACK  TRANSACTION statement without  a transaction name or saving point name in any inner trans rolls back to the outermost transactions and decrements @@TRANCOUNT to 0. 
+rollback by specifying trans name to begin of the current trans or save point to middle of current/outer tran, rollback a outer trans roll back all its inner trans  
+CREATE TABLE InvCtrl
+    (…
+    PartNmbr      int,
+    QtyInStk      int,
+    CONSTRAINT QtyStkCheck CHECK (QtyInStk > 0) );
+GO
+CREATE PROCEDURE OrderStock
+    @PartNmbr int,
+    @OrderQty int
+AS
+    DECLARE @ErrorVar int;
+    DECLARE @CurQty int;
+    SAVE TRANSACTION StkOrdTrn;
+    UPDATE InvCtrl SET QtyInStk = QtyInStk - @OrderQty
+        WHERE PartNmbr = @PartNmbr;
+    SELECT @ErrorVar = @@error;
+    IF (@ErrorVar = 547)
+    BEGIN
+        ROLLBACK TRANSACTION StkOrdTrn;
+        SELECT @CurQty = QtyInStk
+                FROM InvCtrl
+                WHERE PartNmbr = @PartNmbr
+	UPDATE InvCtrl SET QtyInStk = 0
+        RETURN (@CurQty);
+    END
+    ELSE
+        RETURN 0;
+GO
+A ROLLBACK TRANSACTION statement specifying a savepoint_name does not free any locks does not decrement @@TRANCOUNT
+Executing a ROLLBACK TRANSACTION inside a stored procedure or trigger
+The system treats a trigger as an implied nested transaction, @@TRANCOUNT is incremented by one when entering a trigger, so a ROLLBACK TRANSACTION (no way to have trans/savepoint name) in a trigger will roll back to the outermost transaction that is  initialized in the calling batch, also including any made by the trigger prior to the rollback stmt , subsequent statements in the calling batch after the statement that fired the trigger are not executed.  but trigger continues executing any remaining statements after the ROLLBACK statement. If any of these statements modify data, the modifications are not rolled back, that is where the error logging logic is normally implemented. See the sample in trigger section.
+Same in stored procedures, but subsequent statements in the calling batch are executed
+
+TEXTPTR ( column )Returns the text-pointer value that corresponds to a text, ntext, or image column in varbinary format. The retrieved text pointer value can be used in READTEXT, WRITETEXT, and UPDATETEXT statements.
+DECLARE @ptrval binary(16)
+SELECT @ptrval = TEXTPTR(picture)  FROM WEBUSER WHERE DLRNO = @DLRNO and LogonID = @LogonID
+UPDATETEXT WEBUSER.picture @ptrval null 0 @img
+Updates an existing text, ntext, or image field. Use UPDATETEXT to change only a portion of a text, ntext, or image column in place. Use WRITETEXT to update and replace an entire text, ntext, or image field.
+
+Sql2005 COMMON TABLE EXPRESSION :temporary result set within the execution scope of a single statement. a CTE can be self-referencing in recursive query:
+WITH CTE_Example (EmployeeID, FullName, BossID, Depth)
+AS
+(
+	SELECT EmployeeID, FullName, BossID, 0 AS Depth
+	FROM Employees WHERE EmployeeID = @boss_id
+	UNION ALL
+	SELECT Employees.EmployeeID, Employees.FullName, Employees.BossID, CTE_Example.Depth + 1 AS Depth FROM Employees
+	JOIN CTE_Example ON Employees.BossID = CTE_Example.EmployeeID
+)
+SELECT * FROM CTE_Example
+derived table (inline view) FROM ( SELECT statement ) only accessible within the statement in which they exist
+INNER JOIN (SELECT EmployeeID, COUNT(*), MAX(OrderDate)
+             FROM Orders  GROUP BY EmployeeID) AS oe(EmployeeID, NumOrders, MaxDate)
+ON e.EmployeeID = oe.EmployeeID
+
+
+cmd.CommandText = Select * from tbl WHERE 1=1
+//select will always be valid with or without extra conditions
+If (..){cmd.CommandText += " and " + ..
+If you want a table structure to be replicated but no rows to be included in the replica, WHERE 1=2 is the row filter clause that you want to use.
+
+XML datatype easy search and modify by xquery and  must conform to well-formed XML criteria (untyped) and optionally additional conformance criteria by creating and specifying programmablity\types\xml schema collections\A Schema collection to your XML datatype (typed). And SQL Server will validate xml against the schema (data type and contrains) on insert/update, no conversion on xquery lookup.
+XML datatype can be a XML document based on a single Schema, multiple Schemas, or fragments of XML. Selecting yes for the "Is XML Document" option in the datatype configuration dialog sets the field to accept a single XML document associated with a single Schema, ref paper.
+prefer Attribute centric<BOOK TITLE=’..’> 2 row in XML index to element centric <BOOK><TITLE>.. 3 row in XML index 
+pass multiple value by xml type para to avoid round trip 
+Xmlcol.query|value|exist(xquery) returns xml fragment|scalar sqltype|bit bool, node/data|text|string()//value of node
+Insert
+UPDATE Production.ProductModel
+SET Instructions.modify('
+  declare namespace Inst="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions";
+    insert element Inst:tool { "NewOne" } as last into
+        (/Inst:root/Inst:Location[1]/Inst:step)[1]
+')
+Delete
+UPDATE Production.ProductModel
+SET Instructions.modify('
+  declare namespace Inst="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions";
+    delete
+        (/Inst:root/Inst:Location[1]/Inst:step[1]/Inst:tool)[.="NewOne"]
+')
+Update
+UPDATE Production.ProductModel
+SET Instructions.modify('
+  declare namespace Inst="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions";
+    replace value of
+        (/Inst:root/Inst:Location[1]/Inst:step[1]/Inst:tool[.="NewOne"])[1]
+with "Old One"
+')
+associate a collection of XML schemas, which ca only be created by sql stmt, with a variable, parameter, or column of xml type. In this case, the xml data type instance is called typed.
+CREATE XML SCHEMA COLLECTION ManuInstructionsSchemaCollection AS N'<?xml version="1.0" encoding="UTF-16"?> <xsd:
+-- Use it. Create a typed xml variable. Note collection name specified. 
+DECLARE @x xml (ManuInstructionsSchemaCollection) GO 
+--Or create a typed xml column. 
+CREATE TABLE T ( i int primary key, x xml (ManuInstructionsSchemaCollection))
+pass xml datatype containing multiple data (collection of orders,transactions) as parameter to store proc once to avoid calling the store proc multiple times. 
+XML Index
+sys.xml_indexes view has all info about existing xml idx on table T. 
+SELECT * FROM sys.xml_indexes WHERE object_id = object_id('T') AND name='PIdx_T_XmlCol'
+On each xml column, 1 prim and 3 sec xml index can be created . fulltext index can be on xml col.
+Primary XML Index (index all path and value)
+CREATE PRIMARY XML INDEX PIdx_T_XmlCol ON T(XmlCol)
+The primary XML index is clustered on the primary key of the base table and a node identifier . However, it is not a clustered index on the base table . The table must have a clustered index on the primary key to create pri xml index. After that the clustered, primary key of the table cannot be modified. You will have to drop all XML indexes on the table before modifying the primary key. If exist, XML index must be dropped before the column type change between untyped and typed XML
+instead of shredding each XML binary large object instance in the base table, the rows in the index that correspond to each XML binary large object are searched sequentially for the expression specified in the exist() method. If the path is found in the Path column in the index, the <Summary> element together with its subtrees is retrieved from the primary XML index and converted into an XML binary large object as the result of the query() method.
+WITH XMLNAMESPACES ('http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelDescription' AS "PD")
+SELECT CatalogDescription.query(' /PD:ProductDescription/PD:Summary ') as Result FROM Production.ProductModel WHERE CatalogDescription.exist ('/PD:ProductDescription/PD:Features') = 1
+Select <summary> while there is also <feature> defined under <productdescription>,  From execution plan, can see the primary xml index is used as clustered index seek by optimizer
+Note that the primary XML index is not used when retrieving a full XML instance (whole xml type column). Index row contain info:
+•	Tag name such as an element or attribute name.
+•	Node value and Node type such as an element, attribute, or text node.
+•	Path from each node to the root of the XML tree. This column is searched for path expressions in the query.
+•	Primary key of the base table. The primary key of the base table is duplicated in the primary XML index for a back join with the base table, and the maximum number of columns in the primary key of the base table is limited to 15.
+The query processor uses the primary XML index for queries that involve xml data type methods and returns either scalar values or the XML subtrees from the primary index itself. (This index stores all the necessary information to reconstruct the XML instance.) 
+Secondary XML Indexes
+A primary XML index must first exist before you can create secondary indexes which is based on the primary XML index to improve the search performance and assist in 3 types of XQuery processing.
+1. CREATE XML INDEX PIdx_T_XmlCol_PATH ON T(XmlCol) USING XML INDEX PIdx_T_XmlCol FOR PATH
+•	/root/Location which specify only a FULL path
+•	/root/Location/@LocationID[.="10"] where both the FULL path and the node value are specified. 
+SELECT CatalogDescription.query(' /PD:ProductDescription/PD:Summary ') AS Result FROM Production.ProductModel WHERE CatalogDescription.exist ('/PD:ProductDescription/@ProductModelID[.="19"]') = 1
+If it helps, from execution plan, will see the secondary PATH index is used as index seek by optimizer. 
+2. CREATE XML INDEX PIdx_T_XmlCol_VALUE ON T(XmlCol) USING XML INDEX PIdx_T_XmlCol FOR VALUE, for querying values from XML instances without knowing the element location or attribute names
+•	//author[LastName="someName"] where you know the value of the <LastName> element, but the <author> parent can occur anywhere.
+•	/book[@* = "someValue"] where the query looks for the <book> element that has some attribute having the value "someValue".
+WITH XMLNAMESPACES (
+  'http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ContactInfo' AS CI,
+  'http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ContactTypes' AS ACT)
+SELECT ContactID FROM Person.Contact WHERE AdditionalContactInfo.exist('//ACT:telephoneNumber/ACT:number[.="111-111-1111"]') = 1
+the search value for <number> is known, but <number> can appear anywhere in the XML instance
+3. CREATE XML INDEX PIdx_T_XmlCol_PROPERTY ON T(XmlCol) USING XML INDEX PIdx_T_XmlCol FOR PROPERTY
+The PROPERTY index is built on (PK of base table, Path and node value) of the primary XML index, so when you retrieve object properties by using the value() method of the xml type and when the primary key value of the object is known
+SELECT CatalogDescription.value('(/PD:ProductDescription/@ProductModelID)[1]', 'int') as ModelID,         CatalogDescription.value('(/PD:ProductDescription/@ProductModelName)[1]', 'varchar(30)') as ModelName FROM Production.ProductModel WHERE ProductModelID = 19
+create a full-text index on XML columns that indexes the content of the XML values, but ignores the XML markup. Attribute values are not full-text indexed, because they are considered part of the markup.
+SELECT * FROM   Tbl
+WHERE  CONTAINS(xCol,'custom') 
+AND    xCol.exist('/book/title/text()[contains(.,"custom")]') =1
+AdditionalContactInfo.exist('//ACT:StateProvince/.[contains(.,"CA")]') =1 (StateProvince is simpletype <xs:string>) 
+The contains() method uses the full-text index to subset the XML values that contain the word "custom" anywhere in the document. The exist() clause ensures that the word "custom" occurs in the title of a book.
+Select case	when fm.MiscXML.exist ('/Wire/BAIFileHeaderTime') = 1 then  fm.EffectiveDate + MiscXML.value('(/Wire/BAIFileHeaderTime)[1]','varchar(10)')
+Where xcol.exist(‘(/book/title/text())[.=”test”]’)=1 index lookup better than xcol.value(‘(/book/title)[1]’,’varchar[30]’) = ‘test’ 
+Where xcol.exist(‘(//sec/@secid)[.=sql:variable(@num)])’) =1 – from cmd.para.add(“@num”,sqldbtype.int) 
+Where xcol.exist(‘/book/price[.>9 and .<29]’)=1 use the same context node . better than [price>9 and price<29] take 2 elements
+Author /book/title/ better than author // or /*/title, schema maxoccurs=1 help accurate cardinality  
+#ADMIN#
+Upgrade existing SQL Serve DATABASE  through Backup/Restore, Attach/Detach, Copy Database Wizard, in-place install/upgrade 
+After restore, must change the database prop> compatibility level> from 80 (2000) to 90 (2005) or 100 (2008). or EXEC sp_dbcmptlevel 'AdventureWorks', '80'  ref to sp_dbcmptlevel for list of behavioral differences
+Primay File (.mdf) , Secondary File (.ndf) and Log files (.ldf) . .mdf and .ldf are mandatory files. when attaching to .mdf without .ldf, slqserver will display .ldf as not found, remove the .ldf row and attach, a new empty ldf will be created
+Use sp_configure to display or change server-level settings (or via server prop and surface area config). To change database-level settings, use ALTER DATABASE. To change settings that affect only the current user session/batch, use the SET statement. 
+must run  below to view (sp_configure without para) or change any advanced option
+sp_configure 'show advanced option', '1';
+RECONFIGURE  [WITH OVERRIDE]; //apply [skip validation]
+
+Enable encrypt conn to db engine: import cert on server computer\personal> sql config mgr>network config>protocol>|prop: cert= installed cert+ flag: enforce encrypt,  install root cert on client> control panel>sql native client config>|prop:flag force protocol encrypt+trust server cert, con str: encrypt=true, sql mgt studio>conn to db engine>options>connection: encrypt 
+
+sp_configure 'user options', ## // set NOCOUNT, XACT_ABORT… at server level
+If you apply change configured values in any prop, click Running Values to see whether the changes have taken effect (appear in the field as gray read-only). If they have not, the instance of SQL Server must be restarted first.
+
+sp_monitor display  cpu_busy (as 4250(215)-68%, the CPU has been busy 4250 seconds since SQL Server was last started up, 215 seconds since sp_monitor was last run, and 68 percent of the total time since sp_monitor was last run) io_busy idle packets_received  packets_sent  packet_errors  total_read  total_write total_errors connections
+
+Enterprise Database size:400GB (large) 50GB(normal).  If a databse size >1gb, consider using multi file groups cross disks. Put translog (>2-3mb 25% of db) on separate disk drive. 
+2TB with tables having in excess of 500 Mln records process 1000 transactions per seconds
+MYSERVER>| prop>memory: maximum server memory to (30720MB) 90%  of general:memory (32767MB) (64bit server see all memory, AWE allocation only for 32bit) 
+
+you can create a synonym, EmpTable, on Server2 for the Employee table on Server1. Now, the client application accessing server2 only has to use the single-part name, EmpTable, to reference the Server1.AdventureWorks.Person.Employee table. Also, if the location of the Employee table changes, you will only have to drop/recreate (can’t be modified)  the synonym.
+
+Declarative (CHECK for single table and foreign key for cross tables)/programmatic (trigger for cross database) referential integrity enforce the relationships between tables and keep the database as consistent as possible. referential integrity Cascading actions are actions that must be performed on a secondary table to compensate when a primary table is modified.
+Constraints:UNIQUE , PRIMARY KEY ,CHECK ,NOT NULL, foreign key, 
+Check Constraints can be defined using more than one Columns but Rule can not
+A foreign key (FK) is to enforce a data integrity link between the data in two tables column by a column or combination of columns that hold one table's PRIMARY KEY constraint or a UNIQUE constraint/index, to the other table in the same database or within the same table. foreign key must reference a column with a unique index (not necessarily a primary key or without null value), setting an index on FK column for perf but not mandatory.
+A primary key is the "target" which a foreign key can reference. So a table without other table relates to doesn't need a primary key, Creating a PRIMARY KEY on max 16 columns by default creates a unique clustered index, primary key does not have to be a clustered index (default), but must be unique. unlike PRIMARY KEY constraints, UNIQUE constraints allow the value NULL. only one NULL per column. only one PK but multiple UNIQUE constraints can be in one table, query optimizer use constraint info to make decision on exe plan. Both one clustered and multiple nonclustered indexes can be unique. 
+
+pages (data pages and index pages) are the smallest unit of data storage where actual table data is stored. for BLOB data a 16 byte pointer is used to reference the BLOB page. Sql Server 2005 still adheres to the 8K page size.  But now, you are allowed to have rows that exceed that limit (2000 can't).  Individual columns cell still must adhere to 8K limits.  This means you can have a table have 2 columns varchar(5000) and varchar(5000), but you cannot have 1 column as varchar(10000).
+fillfactor is the percentage the data pages in the index that are filled. If a clustered index that has a fillfactor of 100, and it is not based on an increasing key, each time a record is inserted with a key in middle, page splits (counter: Pages Splits/Sec.) will occur because there is no room for the extra data in the existing pages that are fully filled.  SQL Server must allocate new pages elsewhere on the disk, and these new pages are not contiguous with the original physical pages that were contiguous  upon the cluster index was created, so data can NOT be read  sequentially . (it won’t  occur if  the cluster index key is increasing, then the new insert will always append to the last page) 
+•	Low Update Tables (100-1 read to write ratio): 100% fillfactor 
+•	High Update Tables (where writes exceed reads): 50%-70% fillfactor 
+•	Everything In-Between: 80%-90% fillfactor.
+
+All SQL Server indexes are B-Trees. a single root index page branching to the bottom, or leaf level. The index tree is traversed by  pointers from the upper to the lower-level pages.  To enforce an index, Add index hints to your queries to overrule the Query Optimizer that may not choose index seek. .. FROM tblTaskProcesses (INDEX = IX_ProcessID) WHERE.
+
+A clustered index’s the logical order match the physical stored order of the rows on disk. Data and index store in the same place: The leaf nodes of a clustered index contain the data pages. There can only be one clustered index per table, because the data rows themselves can only be sorted in one order = index key order. clustered index column can have duplicates and null. a 4-byte uniqueifier is auto created if not unique  
+
+SQL Server has the ability to sequentially read the data in a clustered index an extent (8 adjacent pages, or 64K) at a time. the data in a heap (a table without a clustered index) is not stored in any particular physical order. even if you add a non-clustered index on an appropriate column or columns, because the data is not physically ordered (unless you are using a covering index), SQL Server has to read the data from disk randomly using 8K pages. a cluster index will insure that the table can be defragmented when indexes are rebuilt. But heaps are not.
+clustered index key are used by each nonclustered index as lookup keys by holding the clustered keys within their B-tree structures.  so define the clustered index key with as few columns/ small data type (not FLOAT or REAL) as possible to reduce nonclustered index size,  a wide clustered index will have more overhead than wide non-clustered index. clustered index should be added to the table before you add any non-clustered indexes. pre-existing non-clustered indexes will have to be rebuilt automatically when the clustered index is built drop or change. Every time a column used for a clustered index is modified (not data update), all of the non-clustered indexes must also be updated, creating additional overhead. recreate a new clustered index need free disk space equivalent to 1.2 times the size of the table
+create a non-unique clustered index, SQL Server will make it unique by adding a 4-byte "uniqueifer" to the index key to guarantee uniqueness. This only serves to increase the size of the key, so try to create a clustered index  as a UNIQUE as possible,
+Clustered indexes are useful for query: 
+•SELECT by a large continuous range of values (because rows with subsequent indexed values are guaranteed to be physically adjacent.) or sort by a particular column often( because the rows is already presorted in the clustered index). BETWEEN, <, >, GROUP BY, ORDER BY, and aggregates such as MAX, MIN, and COUNT in your queries. 
+•select most records based on unique key value (the data is in the index itself)
+• access columns with unique value or limited number of distinct values, such as a columns that holds country or state data. Yes. But not column data has little distinctiveness, such as columns male or female.
+Clustered indexes are not a good choice for Columns that undergo frequent change due to sequential read and page split
+
+A nonclustered index The data is stored in diff place from the index, which has pointers to the storage location of the data. The items in the index are stored in the order of the index key values, but the table data is stored in a different order (which can be dictated by a clustered index). If the underlying table is sorted using a clustered index, the data locator in leaf node is the clustering key value; otherwise, the locator is the row ID (RID) comprised of the file number, page number, and slot number of the row.
+
+Non-clustered vs clustered index  (on WHERE, ORDER BY, GROUP BY, TOP, DISTINCT and  foreign key join):
+•N where the index has good selectivity on Columns that contain a large number of distinct values, (generally above 95%. Lots of distinct values, such as a combination of last name and first name, and a c is already used for other columns.) 
+•N for retrieve small ranges of data/small result sets. C for large range queries  returning large result sets
+•When both the WHERE exact match clause and the ORDER BY clause are both specified for the same column in a query, put N on it, speed up searching (because the index contains  the exact locator to table data values) and sorting (because the returned data is already sorted). 
+•Create multiple N on columns involved in join (FK) and DISTINCT and grouping operations.
+
+A covering index is a composite non-clustered index includes all of the columns referenced in SELECT, JOIN, and WHERE AND clauses of a query. when single clustered index has been used better on another column and that same query frequent on the table. the index contains the data you are looking for and avoid a Bookmark Lookup, reducing logical and/or physical I/O. also having all aggregate columns in the covering index void to go to the actual table to perform the aggregate calculations. "Scanning a non-clustered index entirely or only a range" in exe plan means covering index actually being used by the Query Optimizer
+if already have an index on column c1, instead of creating a new covering index on C1 C2, change the index on c1 to be a composite index on c1 and c2. Anytime you can prevent indexing the same column more than once, the less I/O overhead faster performance 
+the composite index should put the most selective columns at the left of the key because only the first/most left column in a composite index has statistics stored for it for Query Optimizer.
+
+WHERE clause, ordered by their performance (always table scan if without WHERE).
+•= •>, >=, <, <=•LIKE •<> 
+sargable clause compares a column to a constant value. it can take advantage of an index.  avoid  non-sargable WHERE clauses, which  generally prevents  the query optimizer from using an index to search, such as "IS NULL", "<>", "!=", "!>", "!<", "NOT", "NOT EXISTS", "NOT IN", "NOT LIKE", and "LIKE '%500'", expressions that include a function on a column Where Func(a)>b,  have the same column on both sides of the operator, or comparisons against a column/ variable (not a constant) like Where (a+b)=c  WHERE age = @age, because the Query Analyzer does not know the value of the variables when it selects an access method to perform the query, If you cannot avoid using variables, consider using an INDEX query hint.
+WHERE SUBSTRING(firstname,1,1) = 'm' << WHERE firstname like 'm%'
+WHERE DATEDIFF(yy,datofbirth,GETDATE()) > 21 << WHERE dateofbirth < DATEADD(yy,-21,GETDATE())
+WHERE NOT column_name > 5 << WERE column_name <= 5
+in (1000, 1001, 1002, 1003, 1004) << BETWEEN 1000 and 1004 if the column has a useful index, the Query Optimizer can locate a range of numbers much faster (using BETWEEN) than it can find a series of numbers using the IN clause .
+if any column in  OR is not indexed (or no useful index) table scan or a clustered index scan (Query Optimizer converts IN to OR clause on exe) consider using an index hint even when ALL columns are covered by an index  or replace  
+cover index on col1 OR  col2 won’t be used, index on each col will be used independently
+index over col1 and col2 will be used if the first col1 in WHERE, not col2 
+WHERE dept = 'prod' or city = 'Orlando' with SELECT .. WHERE dept = 'prod' UNION ALL SELECT.. WHERE city = 'Orlando' if can not put index on each reference column.
+LIKE 'm%' >>  LIKE '%m',if the leading character in a LIKE clause is a wildcard, the Query Optimizer will not be able to use an index, enable full-text search on column be query often by LIKE % 
+If a WHERE clause includes multiple expressions with AND operators, SQL Server will evaluate them from left to right, put the least likely true / least complex AND expression first, because if the AND expression is false, the clause will end immediately. If at least one col is not highly selective, consider adding indexes to all of the columns. If none of the column is selective, consider creating a covering index.
+Use unique indexes so once the needed record is found, SQL Server doesn't have to look any further
+Put as many as index on readonly table, as less as possible on often updated table 
+
+find out if there are any parent records that don't have a match in the child table: 
+Using a NOT EXISTS(best)
+SELECT a.hdr_key FROM hdr_tbl a 
+WHERE NOT EXISTS (SELECT * FROM dtl_tbl b WHERE a.hdr_key = b.hdr_key)
+Using a LEFT JOIN
+SELECT a.hdr_key FROM hdr_tbl a 
+LEFT JOIN dtl_tbl b ON a.hdr_key = b.hdr_key WHERE b.hdr_key IS NULL
+Using a NOT IN(worst)
+SELECT hdr_key FROM hdr_tbl 
+WHERE hdr_key NOT IN (SELECT hdr_key FROM dtl_tbl)
+
+CHECKSUM function to create a much smaller and mostly unique value that represents data in another column (big value like large varchar), create an index on its CHECKSUM column instead of creating a wide index on large character column to reduce the size of an index. 
+Create a column checksum_title CHECKSUM(title) and index it 
+WHERE title = 'My Best Friend is a Mule from Missouri' <<
+WHERE checksum_title = CHECKSUM('My Best Friend is a Mule from Missouri') 
+because the checksum_title column is highly selective (minimal duplicate values even unique  values are not guaranteed) the Query Optimizer decides to use the index on it.
+
+SQL2K computed columns are virtual, the value must be recalculated every time when it is referenced in a query. SQL Server 2005 introduces persisted computed columns, and the ability to index the computed column, suit for often queried col
+CREATE TABLE [dbo].[Invoice_Table]( 
+     		[Invoice_Amount] [money] NOT NULL, 
+     		[Invoice_Freight] [money] NOT NULL, 
+     		[Invoice_Total] AS ([Invoice_Amount]+[Invoice_Freight]) PERSISTED)
+speed UP CREATE INDEX on large tables by using the SORT_IN_TEMPDB, and tempdb on its own separate disk (I/O)
+don't use LOWER or UPPER to force the case comparison if SQLSever DB is not configured to be case sensitive. 
+use the server's IP address in ADO.NET connection string instead of the server's DNS name to avoid name resolution.
+use the ExecuteNonQuery (most efficient) with output parameters if need to retrieve just a few values.
+
+Index with included columns (nonkey column nonclustered indexes) cover more queried columns.
+•	They can be data types not allowed as index key columns. 
+•	They are not considered by the Database Engine when calculating the number of index key columns or index key size, so You can include nonkey columns in a nonclustered index to avoid exceeding the current index size limitations of a maximum of 16 key columns and a maximum index key size of 900 bytes. For example, assume that you want to index the following columns    Title nvarchar(50)   Revision nchar(5)  FileName nvarchar(400) to cover the query Select title, revision, filename from document where title =…. Because an nvarchar data type requires 2 bytes for each character, an index that contains these three columns would exceed the 900 byte size limitation by 10 bytes (455 * 2). By using the INCLUDE clause of the CREATE INDEX statement, the index key could be defined as (Title, Revision) and FileName defined as a nonkey column. In this way, the index key size would be 110 bytes (55 * 2), and the index would still contain all the required columns. The following statement creates such an index.
+USE AdventureWorks;
+GO
+CREATE INDEX IX_Document_Title       
+ON Production.Document (Title, Revision)       
+INCLUDE (FileName);       
+All data types are allowed except text, ntext, and image.
+•	More disk space will be required to store the index. In particular, adding varchar(max), nvarchar(max), varbinary(max), or xml data types as nonkey index columns may significantly increase disk space requirements. This is because the column values are copied into the index leaf level. Therefore, they reside in both the index and the base table.
+•	 Columns that are of the ntext, text, image, varchar(max), nvarchar(max), and varbinary(max) data types cannot be specified as index key columns. However, varchar(max), nvarchar(max), varbinary(max), and xml data types can participate in a nonclustered index as nonkey index columns. 
+•	An xml data type can only be a key column only in an XML index.
+
+store proc vs sql stmt
+sp reduced network traffic and latency by only pass store proc name instead of long sql stmt
+sp optimal execution plans can be reused
+sp code reuse and encapsulate logic to loose couple from client via interface 
+sp better security to data. Avoid SQL injection, direct access rights to table can be removed from user and force to use stored procedures   
+sp support diff parameter data type values while sql stmt has to convert any input data type to char before sending to SQL Server and it will be convert back to orignial data type after SQL Server receives.   
+all objects that are called within the same stored procedure should all be owned by the same object owner of  stored procedure preferably dbo, if not, SQL Server must check object permissions,  should also be referred to in the format of object_owner.object_name, if not, then SQL Server must perform name resolution on the objects, exec database_name.dbo.myProcedure allows SQL Server to access the stored procedures execution plan more directly, otherwise can not reuse exe plan if the object owner is not used consistently.
+use the sp_executesql (sys store proc) instead of the EXECUTE statement to execute a string of Transact-SQL. Sp_executesql supports parameter substitution which avoid SQL injection, and  creates query execution plans that are more likely to be reused by SQL Server because the TSQL statement remains constant and only the parameter values change.
+
+CREATE PROCEDURE  options: 
+ENCRYPTION indicates that SQL Server encrypts the syscomments table entry containing the text of the CREATE PROCEDURE statement. Using ENCRYPTION prevents the procedure from being published as part of SQL Server replication.
+RECOMPILE indicates that SQL Server does not cache a plan for this procedure and the procedure is recompiled at run time.
+
+SQL Server will automatically recompile a stored procedure if below happen to the table being refered :
+•index is dropped•Auto/manual Update Statistics•adding or dropping rules, defaults, and constraints•major number of INSERTS, UPDATES or DELETES are made• sp act on temporary tables
+manually recompile sp when indexes used by the execution plan of the stored procedure are rebuild.
+to reduce unnecessary recompilations :
+•break down large stored procedure into two or more sub-procedures, and call then from a controlling stored procedure. 
+•If sp is using temporary tables, use the KEEP PLAN query hint to stop recompilations caused by more than six changes in a temporary table
+
+In sql2005 view degree of fragmentation from index prop page or
+SELECT a.index_id, name, avg_fragmentation_in_percent
+FROM sys.dm_db_index_physical_stats (DB_ID(), OBJECT_ID(N'Production.Product'), NULL, NULL, NULL) AS a
+    JOIN sys.indexes AS b ON a.object_id = b.object_id AND a.index_id = b.index_id;
+avg_fragmentation_in_percent value 	Corrective statement 
+> 5% and < = 30% 	                            ALTER INDEX REORGANIZE 
+> 30%	                                                         ALTER INDEX REBUILD WITH (ONLINE = ON)*
+Rebuilding an index can be executed online or offline. Reorganizing (defrayment in sql 2k)an index is always executed online, need to run UPDATE STATISTICS. large table  (>100 data pages) can benefit highly from reindexing
+When you create an index, statistical info are auto created on indexed columns. AUTO_UPDATE_STATISTICS set to ON (the default),updated when approximately 20 percent of the sampled data rows has changed. if Out-of-date or missing statistics are indicated as warnings (table name in red text) in the execution plan> manual UPDATE STATISTICS FULLSCAN |  SAMPLE. 
+AUTO_UPDATE_STATISTICS_ASYNC set ON at the database level provides asynchronous statistics updating where queries do not wait for the statistics to be updated.  CREATE INDEX ONLINE  allows concurrent user access to the underlying table while create, rebuild, or drop indexes.
+	•	Index>stat prop or DBCC SHOW_STATISTICS ('Person.Address', AK_Address_rowguid) to get selectivity on an index in given table;
+	•	Density is higher when  more duplicate data, reflects scale of uniqueness on single or combined cols.
+	•	Density                         length                          columns in index       
+	•	0.00390625                      4                               UsrID                      
+	•	0.0008912656                    8                               UsrID, CompanyID  
+Stringindex: Yes indicates that the statistics contain a string summary helps the query optimizer estimate the selectivity of LIKE query on string column
+_WA_Sys_each unindexed column are auto created Statistics unrelated to any index, normally empty
+run the following code to see which tables used in query are the most resource intensive.
+SET STATISTICS IO ON
+GO
+SET STATISTICS IO ON
+GO
+[Your SELECT statement]
+GO
+SET STATISTICS IO OFF
+GO
+Running STATISTICS IO ON twice ensures that the effect of the SET STATISTICS IO ON command itself is not counted in the logical reads displayed in the results.
+Once you run your code using the SET STATISTICS IO ON commands,  will get some results, such as:
+Table '[table_name1]'. Scan count 32, logical reads 267, physical reads 0, read-ahead reads 0.
+Table '[table_name2]'. Scan count 32, logical reads 101, physical reads 0, read-ahead reads 0.
+logical reads refers to how many data pages SQL Server has to read, fewer the better.
+
+difference between number of rows of a table in a small development database and the full-sized production database lead to different stat and execution plans, transferring statistics from prod to dev database :  
+Create new dev db with Set AUTO_CREATE_STATISTICS and AUTO_UPDATE_STATISTICS off.
+Create users, data types, tables, constraints, clustered indexes (including primary keys) and all other objects except nonclustered indexes.
+Create tables to hold table and user name to object id mappings between the original database and the new database. Populate the table and user name mapping tables.
+Create and populate a table with a copy of the sysindexes tables from the prod database (Optional).
+Execute sp_configure to allow updates to system tables.
+Insert statistics collections not associated with indexes into the sysindexes table of the dev database.
+Create all nonclustered indexes.
+Update the sysindexes entries for statistics related values on all index rows.
+
+sysindexes:
+•	indid: This column indicates the type of index. For example, 1 is for a clustered table, a value greater than 1 is for a non-clustered index, and a 255 indicates that the table has text or image data.
+•	dpages: If the indid value is 0 or 1, then dpages is the count of the data pages used for the index. If the indid is 255, then dpages equals zero. In all other cases, dpages is the count of the non-clustered index pages used in the index.
+•	OrigFillFactor: This is the original fillfactor used when the index was first created, but it is not maintained over time.
+•	statversion: Tracks the number of times that statistics have been updated.
+•	status: 2 = unique index, 16 = clustered index, 64 = index allows duplicate rows, 2048 = the index is used to enforce the Primary Key constraint, 4096 = the index is used to enforce the Unique constraint. These values are additive, and the value you see in this column may be a sum of two or more of these options.
+•	used: If the indid value is 0 or 1, then used is the number of total pages used for all index and table data. If indid is 255, used is the number of pages for text or image data. In all other cases, used is the number of pages in the index.
+
+optimizing indexes
+I. profiler the trace "Identify Scans of Large Tables" (ref: profiler)
+	•	II. analyze major query in Query Analyzer for execution plan. Mouse over steps/nodes a pop-up window showing how many records are being moved between steps. focus on those nodes that have the largest percentage cost/ Estimated Subtree Cost, which represents how much this part costs in regard to resource use, relative to the rest of the execution plan. “object” is the index or table being used. ‘outputlist’ is the select/where col we are searching for .
+	•	uses table variable instead of  temp tables to use the "Display Estimated Execution Plan"  because it is not really run, and temp tables won’t be created. 
+Scan reads thru whole of the index/table page looking for matches, seek  uses the b-tree structure of the index to look, scan faster than seek when the table is very small, or when a large percentage of the records match the predicate.
+	•	•Index or table scans: If most of data of the table to be retrieved (1,000 out of 10,000 ), or if the data is not selective (1,000 in 10,000 duplicate in WHERE column), table scan is chosen over index seek. "Estimated Row Count" in pop-up window is the query optimizer's best guess on how many rows will be retrieved. clustered index scan is like a table scan but generally faster.
+	•	•Bookmark Lookups:when all of the columns in the SELECT, JOIN, and WHERE clauses of a query don't all exist in the non-clustered index used, Optimizer has to do extra look up at the table or clustered index for all the columns for the rows to be return, which hurts performance. Consider put clustered index on WHERE column, using a covering index, limit the number of columns, NOT use SELECT *. 
+	•	•Filter: Remove any functions in the WHERE clause, don't include Views in your Transact-SQL code, may need additional indexes.
+	•	•Sort: occurs when ORDER BY GROUP BY SELECT DISTINCT UNION, it takes more resource, to reduce the cost, minimize num of row/column and data size to be sorted, sort numeric column instead of varchar column. adding a unique index to sort column if it has unique value.
+	•	•Index Seek: optimizer used a non-clustered index, quick especially when few rows are returned.
+	•	•Clustered Index Seek: optimizer was able to use a clustered index, the fastest lookup
+	•	•JOIN icons will have two arrows pointing to it. The upper represents the outer table, and the lower represent the inner table. If place the cursor over the arrows, popup window that tells how many rows are being sent to the JOIN for processing. The upper arrow should always have fewer rows than the lower arrow. if not, use a JOIN hint to override  JOIN type or JOIN order selected by the query optimizer.JOIN types: nested loop, hash, and merge. Generally, the fastest type is nested loop. When very large tables are JOINed, a merge join is best option,  the upper table should be the smaller of the two tables in join order for a nested loop or hash join.
+	•	•Red  icon text is  missing some statistics. right-click > "Create Missing Statistics." / update missing statistics
+	•	•”Assert” icon means is that the query optimizer is verifying a referential integrity or check constraint .
+	•	•Index/Row Count/Table Spool icon means Optimizer will need to create a temp table in temp DB. hurt performance.
+	•	•Stream Aggregate icon means an aggregation into a single input is being performed when a DISTINCT, AVG, COUNT, MAX, MIN, or SUM.
+	•	
+	•	an Estimated Subtree Cost is the cost indicator, a end node display cost % = ESC in its pop window, a middle or root node display cost %=0, but the ESC = total ESC of its children nodes. The root node’s ESC indicate the cost of whole query, the lower the better. 
+	•	Select * from tblemp where  colname=’**”
+	•	No index on colname: table scan & root ESC = 0.437103
+	•	Noncluster index on colname: Index Seek (1%) and then a RID (row id) Lookup (99%) to get to the actual data pages. Root ESC = 0.263888
+	•	Cluster index on colname: cluster Index Seek only (since the index holds the actual data pages) & root ESC = 0.0044572
+	•	Cluster index on colempid, Noncluster index on colname:  Index Seek(1%)  and cluster Index Seek(99%), use cluster index key seek to get to data pages instead of rid. & root ESC = 0.264017 
+	•	Select colname from tblemp where colname=’**’
+	•	Noncluster index on colnames (covering index for multiple colnames):Index Seek only (since the index holds all the target data only one column and SQL Server does not need to access the actual data pages.) & root ESC = 0.0033766 
+	•	Cluster index on colname: cluster Index Seek only & root ESC =0.0044572, worse than above noncluster.
+	•	ESC >=0.047 causes a time out
+
+	•	an Estimated Subtree Cost is the cost indicator, a end node display cost % = ESC in its pop window, a middle or root node display cost %=0, but the ESC = total ESC of its children nodes. The root node’s ESC indicate the cost of whole query, the lower the better. 
+	•	Select * from tblemp where  colname=’**”
+	•	No index on colname: table scan & root ESC = 0.437103
+	•	Noncluster index on colname: Index Seek (1%) and then a RID (row id) Lookup (99%) to get to the actual data pages. Root ESC = 0.263888
+	•	Cluster index on colname: cluster Index Seek only (since the index holds the actual data pages) & root ESC = 0.0044572
+	•	Cluster index on colempid, Noncluster index on colname:  Index Seek(1%)  and cluster Index Seek(99%), use cluster index key seek to get to data pages instead of rid. & root ESC = 0.264017 
+	•	Select colname from tblemp where colname=’**’
+	•	Noncluster index on colname (covering index for multiple colnames):Index Seek only (since the index holds all the target data only one column and SQL Server does not need to access the actual data pages.) & root ESC = 0.0033766 
+	•	Cluster index on colname: cluster Index Seek only & root ESC =0.0044572, worse than above noncluster.
+	•	ESC >=0.047 causes a time out
+	•	
+	•	Query optimizer decide whether use table scan or index seek based on
+	•	1. query selectivity: percentage of the rows returned the query against total rows  
+	•	<75% cluster index seek faster than table scan
+	•	75-80%  test to determine by index hint
+	•	>80% cluster index seek slower than table scan
+	•	>10% non-cluster index seek slower than table scan
+	•	5-10% test to determine by index hint, query optimizer force table scan when >5%, which is not always correct  
+	•	<5% non-cluster index seek faster than table scan
+	•	2. index selectivity : A table having 100'000 records and one of its indexed column has 88000 distinct values, then the selectivity of this index is 88'000 / 10'0000 = 0.88.
+	•	selectivity<90%-95% for non-clustered indexes, query optimizer choose table scan, even if > that, but the records are not that many (small table), index scan will be choosed over index seek. (regardless,  a merge join using index is generally much faster than a normal join without index).
+	•	If indexed col is very wide,  index seek NOT choosed .
+	•	III. Database Engine Tuning Advisor (Index Tuning wizard  SQL2K)provides recommendations on clustered indexes, nonclustered indexes, indexed views, and partitioning, by running A workload consists of a Transact-SQL script or a SQL Server Profiler trace saved to a file or table.  identify existing indexes that aren’t being used, along with recommending new indexes.
+TA impersonates the LoginName (must have SHOWPLAN permission) in trace and submits Showplan requests. if no LoginName, impersonating the user who started the tuning session like sysadmin. Actions menu>Apply Recommendations after tuning complete.
+Don't run Profiler or Tuning Wizard directly on Server. instead, run them on a workstation connected to the server
+
+SQL 2005 system objects, such as sys.objects, are physically persisted in the Resource database MSSQL.1\MSSQL\Data\Mssqlsystemresource.mdf, but they logically appear in the sys schema of every database.
+All system tables of 2k ( like sysdatabases in master and sysobjects,sysindexes in every database) are mapped to (Compatibility Views) in 2k5 (like sys.database and sys.objects in every database), which can be readonly access by query from every database. ( Mapping SQL Server 2000 System Tables to SQL Server 2005 System Views)
+Catalog views return all catalog (database) metadata used by 2005 Database Engine, recommended to be used better than compat view, and server-level info reflect to every database.  information schema view provides view of the SQL Server metadata independent from system table INFORMATION_SCHEMA.COLUMNS return more meaningful info like catalog (database)/schema/table/name… while sys.columns return more abstract and comprehensive. dynamic management views to monitor the performance state info of a server instance(requires VIEW SERVER/DATABASE STATE perm) sys.dm.broker(service broker: message, active tasks, queue..) clr(CLR: loaded assemblies)/db(database: space usage, partition, mirror connection)/exec(execution; queryplan, connection..)/fts(full text: active catalog, crawls)/io(I/O)/index (usage..)/qn(query notification)/tran(transaction: active trans, locks…)/os(operation system: thread, memory, cluster…)/repl (replication)
+Usage of index on all user tables ( these counters get reset each time you restart SQL Server)
+SELECT   OBJECT_NAME(S.[OBJECT_ID]) AS [OBJECT NAME], 
+         I.[NAME] AS [INDEX NAME], 
+         USER_SEEKS, 
+         USER_SCANS, 
+         USER_LOOKUPS, 
+         USER_UPDATES 
+FROM     SYS.DM_DB_INDEX_USAGE_STATS AS S 
+         INNER JOIN SYS.INDEXES AS I 
+           ON I.[OBJECT_ID] = S.[OBJECT_ID] 
+              AND I.INDEX_ID = S.INDEX_ID 
+WHERE    OBJECTPROPERTY(S.[OBJECT_ID],'IsUserTable') = 1
+
+Normalization is the process of removing redundant data by related tables. Denormalization is the process of attempting to optimize the performance of a database by adding redundant data
+First normal form (1NF) sets the very basic rules for an organized database: 
+•	Eliminate duplicative columns from the same table. 
+•	Create separate tables for each group of related data and identify each row with a unique column or set of columns (the primary key). 
+Second normal form (2NF) further addresses the concept of removing duplicative data: 
+•	Remove subsets of data that apply to multiple rows of a table and place them in separate tables. 
+•	Create relationships between these new tables and their predecessors through the use of foreign keys. 
+2NF attempts to reduce the amount of redundant data in a table by extracting it, placing it in new table(s) and creating relationships between those tables.
+Third normal form (3NF) goes one large step further: 
+•	Remove columns that are not dependent upon the primary key. 
+•	most database designers do not attempt to implement anything higher than Third Normal
+
+A database snapshot is a read-only, static view of a database. If the source database still have open transactions When you create a database snapshot. Before the snapshot becomes available, the open transactions are rolled back to make the database snapshot transactionally consistent.  it useful for reports based on the data at the time of snapshot creation. Also, if the source database later becomes damaged, you can revert the source database. Only can use statements for creating, reverting to, and deleting a database snapshot. However, you can use SQL Server Management Studio to view existing database snapshots: under databases \ database snapshot folder (auto read from MSSQL\Data\ *.ss), Drop any other snapshots for the database before reverting from this one. Reverting to a snapshot drops all the full-text catalogs, breaks the log backup chain by rebuilding log.
+CREATE DATABASE AdventureWorks_dbss121607 ON
+( NAME = AdventureWorks_Data, FILENAME = 
+'C:\DATA\DB\PRMY\SNAPSHOT\AdventureWorks_data_121607.ss' ),
+( NAME = AWWorkOrders, FILENAME = 'C:\DATA\DB\PRMY\SNAPSHOT\AWWorkOrders_121607.ss' )
+AS SNAPSHOT OF AdventureWorks;
+//CREATE  A SNAPSHOT FILE FOR EACH DATAFILE  (IN DIFF FILEGROUP) 
+USE AdventureWorks_dbss121607
+SELECT * FROM Production.ProductCategory
+USE master; 
+RESTORE DATABASE AdventureWorks from DATABASE_SNAPSHOT = 'AdventureWorks_ dbss121607';
+
+Choosing a transaction isolation level does not affect the locks acquired to protect data writes. A transaction always gets an exclusive lock on any data it modifies, and holds that lock until the transaction completes, regardless of the isolation level set for that transaction. For read operations, transaction isolation levels primarily define the level of protection from the effects of modifications made by other transactions.
+Isolation level 	         Dirty read 	Nonrepeatable read 	Phantom 
+Read uncommitted 	Yes	Yes	                                Yes
+Read committed 	No	Yes	                                Yes
+Repeatable read 	No	No	                                Yes
+Snapshot 		No	No                                         No
+Serializable 		No	No                                         No     
+
+phantom
+when an insert or delete row is performed by write transaction against rows set being read by a read transaction for several times , rows returned in initial read are different from subsequent read  
+nonrepeatable read
+a read transaction accesses the same row several times and each time reads different data being updated (committed) by write transaction.
+dirty Reads 
+a read transaction selects a row that is being updated by write transaction. The read transaction is reading updates that has not been committed yet and may be changed again by the write transaction.
+ 
+READ_COMMITTED_SNAPSHOT all queries in the transaction see the same version, or snapshot, of the database. The transaction uses the data row versions  that exist when the transaction begins. updated row versions for each transaction are maintained in tempdb .No locks are placed on the data when it is read, so SNAPSHOT transactions do not block other transactions from writing data. Transactions that write data do not block snapshot transactions from reading data. Snapshot isolation uses an optimistic concurrency model. If a snapshot transaction attempts to commit modifications to data that has changed since the transaction began, the transaction will roll back and an error will be raised. 
+ALTER DATABASE MyDatabase
+SET ALLOW_SNAPSHOT_ISOLATION ON
+ALTER DATABASE MyDatabase
+SET READ_COMMITTED_SNAPSHOT ON
+Snapshot isolation is supported in ADO.NET by the SqlTransaction class. If a database has been enabled for snapshot isolation but is not configured for READ_COMMITTED_SNAPSHOT ON, you must initiate a SqlTransaction using the IsolationLevel.Snapshot enumeration value when calling the BeginTransaction method. 
+SqlTransaction sqlTran = connection.BeginTransaction(IsolationLevel.Snapshot);
+
+Requested mode 	S 	U 	X 
+Shared (S) 		Yes	Yes	No	
+Update (U) 		Yes	No	No	
+Exclusive (X) 		No	No	No
+A shared lock allow concurrent transactions to read (SELECT) a resource under pessimistic concurrency multiple shared locks can co exist on the same row, page, or table. A shared lock prevents the locked resource from receiving an exclusive lock from another tran, 
+In a repeatable read or serializable transaction, the transaction reads data, acquiring a shared (S) lock on the resource (page or row), and then modifies the data, which requires lock conversion to an exclusive (X) lock. If two transactions read a resource the same time  both with share lock on it,  and then attempt to update data concurrently, both transaction attempts for lock conversion are waiting for each other ‘s share lock---deadlock. Data modification statements, such as INSERT, UPDATE, and DELETE combine both modification and read operations. request both shared locks and exclusive locks 
+After a deadlock is auto detected, SQL Server rolls back the least expensive thread (the deadlock victim) that can break the deadlock. notifies the thread's application (by returning error message number 1205), Typically, SQL Server chooses the thread running the transaction that is least expensive to undo as the deadlock victim. Alternatively, using the SET DEADLOCK_PRIORITY to LOW/HIGH..option controls how sessions are weighed. using the UPDLOCK hint help to minimize deadlocks. Use an update lock whenever you need to escalate a read lock to a write lock during a transaction.
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
+SELECT au_lname FROM authors WITH (NOLOCK)— A table hint always affects one table only even in joining other tables, only one hint allowed.
+
+Granularity hints: 
+ROWLOCK	finer-grained row-level locks.
+PAGLOCK	Use where a single table lock would usually be taken.
+TABLOCK	coarser-grained table-level locks. 
+TABLOCKX	Use an exclusive lock on a table. This lock prevents others from reading or updating the table and is held until the end of the statement or transaction.
+
+UPDLOCK	use to SELECT, Only one process can have an update lock, but other processes can take shared locks while an update lock is held. If the process holding the update lock wants to write, it is, and only it can be, upgraded to an exclusive lock. So no deadlocking, while other processes can read those rows until the UPDATE (upgraded to an exclusive lock ).
+BEGIN TRAN
+SELECT   @value = Col1 FROM Tbl (UPDLOCK)
+WHERE   RowID = @rowID
+UPDATE Tbl SET Col1 = @newValue WHERE RowID = @rowID
+-- Note, should check @@ERROR and ROLLBACK TRANif the update failed
+COMMIT TRAN
+XLOCK	    Use hint to take an exclusive lock, that will be held until the end of the transaction on all data processed by the statement, instead of a default shared lock when SELECT, This avoid the deadlock, but  preventing other reading-only trans unless NOLOCK hint or read uncommitted isolation level. SQL Server (default concurrency level: Pessimistic Concurrency) check whether the data has changed since the oldest open transaction. If not, then an xlock is ignored.This makes xlock hints basically useless and should be avoided. This lock can be specified with either PAGLOCK or TABLOCK, in which case the exclusive lock applies to the appropriate level of granularity. 
+
+Isolation level hints:
+READUNCOMMITTED	Equivalent to NOLOCK.
+READCOMMITTED default isolation level.
+REPEATABLEREAD	
+SERIALIZABLE Equivalent to HOLDLOCK.
+HOLDLOCK   Hold a shared lock until completion of the transaction instead of releasing the lock as soon as the required table, row, or data page is no longer required. HOLDLOCK is equivalent to SERIALIZABLE.
+NOLOCK	Do not issue shared locks and do not honor exclusive locks. When this option is in effect, it is possible to read an uncommitted transaction or a set of pages that are rolled back in the middle of a read. Dirty reads are possible. Only applies to the SELECT statement. NOLOCK hint to prevent locking if the data being locked is not modified often 
+READPAST	if the locked rows does not have to be returned,   This option causes a transaction to skip rows locked by other transactions that would ordinarily appear in the result set, rather than block the transaction waiting for the other transactions to release their locks on these rows. The READPAST lock hint applies only to transactions operating at READ COMMITTED isolation and will read only past row-level locks. Applies only to the SELECT statement.
+run SQL Server Profiler Trace Wizard  "Identify The Cause of a Deadlock"
+Eventclass [SQL:Batch|Stmtstarting|Completed, Exception, Lock:Deadlock Chain, Lock:Deadlock, Deadlock graph] Column[ EventSubClass] on
+(a deadlock-prone stmt: select(Rlock)then escalate up to update(Xlock)
+if not exists(select * from CoreBalance where AccountNumber=@Acct and EffectiveDate=@Date)
+insert into CoreBalance(AccountNumber,EffectiveDate,Balance) values (@Acct,@Date,0);
+update CoreBalance set Balance = @Balance where AccountNumber=@Acct)
+The deadlock victim (54) will have a stmtstarting but not stmtcompleted >multiple Lock:Deadlock Chain before final Lock:Deadlock> exception (1205) is thrown> right after sql auto killed the victim (SQLTRANSACTION\EVENTSUBCLASS show ‘RollBack’)> the other sp (53) will stmtcomplete with probably a long duration (this case:24)> But both have batchcompleted
+
+Lock:Deadlock Chain: Produced for each of the events(SP) leading up to the deadlock, normally spid display 4 (system lock monitor) and textdate display spid involved in the deadlock, but some time testdate is empty. 
+Lock:Deadlock: two concurrent transactions have deadlocked each other by trying to obtain incompatible locks on resources the other transaction owns. If deadlock that was not resolved by SQL Server, display 2 rows each has a spid involved in the lock. Other wise, display 1 row having spid that was chose by SQL Server as victim to resolve the deadlock (which result in another following row rpc/sql:complete for that spid with long duration), in this case, look around to find another row rpc/sql:complete spid has same level of duration, it is probably the other spid in the deadlock.    
+include the 'Deadlock graph' event in trace, after lock:deadlock row, a graph row will display a grah showing spids involved in the dead lock, Type of Lock escalated(like RID Lock), Locks requested and granted (Like SPID *, had "X[lusive] or S[hare]" lock and requested "U[pdate]" locks) event extraction tab will display after that event is selected, where xml deadlock event file is created and  saved for each deadlock.
+turning on SQL Server deadlock tracing  DBCC TRACEON (3605,1204,-1)  to log all deadlocking activity in the SQL Server log file.
+either use activity monitor or run below procs manually “sp_lock” shows which stored procedures have put locks and “sp_who”  and sp_who2 (with more detail) shows resources that have locked and to identify which processes may be blocking other processes. 
+1.Sp_who2 active
+Spid each representing an active connection Status: sleeping (available for assignment)/background/awaiting (waiting for further order-probably initializing block /suspended (probably being blocked)/runable login hostname :the app server where conn is from like APP0RM  blk :( blocking spid if any) db command :do not use this, use below buffer cmd cputime
+Can figure out blocking chain based on active spid (blocked spid) and blk (blocking spid)
+Activity monitor is equivalent, but process id is numbered differently, and have opentransactions :2/application :netsqlclientdataprovider /waittime/waittype/resource/blockedby/blocking  also can objects blocked by certain selected process or verse versa.master system view: sys.dm_exec_requests where session_id=spid
+--deadlock
+SELECT session_id, blocking_session_id, text
+FROM sys.dm_exec_requests
+CROSS APPLY sys.dm_exec_sql_text(sql_handle)
+WHERE session_id > 50
+2.Use dbcc inputbuffer (spid) to get command that the spid is executing, 
+eventinfo : command with parameter in front (@BeginEffectiveDate datetime,@EndEffectiveDate datetime,@Direction int)      select        fm.*,  ….
+Parameters : number of para
+
+Sp_lock to view all lock (TAB:table/PAG:page/KEY:row)list on objectid (table), use select objectid(‘tablename’)  
+3.Kill the the root spid of the blocking chain to resolve block.   
+SELECT spid, cmd, status, loginame, open_tran, datediff(s, last_batch, getdate ()) AS [WaitTime(s)]
+FROM master..sysprocesses p
+WHERE open_tran > 0
+AND spid > 50
+AND datediff (s, last_batch, getdate ()) > 30
+ANd EXISTS (SELECT * FROM master..syslockinfo l 
+identify processes that have blocking locks that occur longer than a time you specify.
+SELECT spid, waittime, lastwaittype, waitresource
+FROM master..sysprocesses
+WHERE waittime > 10000 -- The wait time is measured in milliseconds
+AND spid > 50 -- Use > 50 for SQL Server 2000, use > 12 for SQL Server 7.0 
+To avoid deadlock:
+If all concurrent transactions access objects (table) in the same order, deadlocks are less likely to occur
+Avoid User Interaction in Transactions such as waiting for user input
+Avoid cursors
+using stored procedures Encapsulate all transactions ,including both the BEGIN TRANSACTION and COMMIT TRANSACTION statements in the procedure.  or keeping transactions with a single batch. 
+cache instead of re-reading from DB, keep transaction/lock as short as possible.
+First, it limits the client application and SQL Server to communications before and after the transaction, thus forcing any messages between the client and the server to occur at a time other than when the transaction is running (reducing transaction time).  
+Second, It prevents the user from leaving an open transaction (holding locks open) 
+Using a lower isolation level, such as read committed, holds shared locks for a shorter duration than a higher isolation level such as serializable, thereby reducing locking contention.
+try to do all your reads first with UPDLOCK, then perform all of the database changes (UPDATES, INSERTS, DELETES) near the end of the transaction. This helps to minimize the amount of time that exclusive locks are held.
+turning off page locking for table under lot of contention , requiring SQL Server to use row level locking instead. reduce the contention for rows located on the same page but also cause SQL Server overhead to track all of the row locks. 
+altering the default row lock level for the lookup table that change little to table lock. Reduce Overhead in keeping track of many individual row locks use up memory and CPU time that does not happen in page or table locks. 
+if there are many rows/records to lock, SQL Server auto escalates locking FROM default individual rows, to locking multiple pages, then to an entire table. While lock escalation reduce overhead but hurt concurrency.
+you can specify page/table locks are allowed on a particular table if a specific index is being used to access data in that table. rather than having SQL Server waste's its time going through lock escalation.  
+If table scans always happens to a table (probably without proper index)  that is mostly for read, consider force table locking by turning off both row locking and page locking for that table. 
+SP_INDEXOPTION 'table_name', 'AllowRowLocks', FALSE
+GO
+SP_INDEXOPTION 'table_name', 'AllowPageLocks', FALSE
+GO
+This code turns off both row and page locking for the table, thus only table locking is available.
+SP_INDEXOPTION 'INDEX_NAME', 'ALLOWPAGELOCKS', FALSE, page locks are not used. Access to the specified indexes is obtained using row- and table-level locks only. 
+SP_INDEXOPTION 'INDEX_NAME', 'ALLOWROWLOCKS', FALSESQL2000
+SP_INDEXOPTION 'INDEX_NAME', 'DISALLOWPAGELOCKS', TRUE 
+When TRUE, page locks are not used. Access to the specified indexes is obtained using row- and table-level locks, only.
+SP_INDEXOPTION 'INDEX_NAME', 'DISALLOWROWLOCKS', TRUE 
+When TRUE, row locks are not used. Access to the specified indexes is obtained using page- and table-level locks, only.
+By default in SQL Server, a transaction will wait indefinitely for a lock to be removed.When a statement has waited longer than the LOCK_TIMEOUT setting, the blocked statement is canceled automatically, and error message 1222 "Lock request time-out period exceeded" is returned to the application.However, any transaction containing the statement is not rolled back or canceled by SQL Server. Therefore, the application must have an error handler that can trap error message 1222. If an application does not trap the error, it can proceed unaware that an individual statement within a transaction has been canceled. 
+SET LOCK_TIMEOUT 1800
+SELECT @Timeout = @@lock_timeout    
+
+Import wizard>browser to flat txt file (use ‘|’ as delimiter) created by export wizard>advanced tab: MUST sync data type for each col (numeric for int, datetimestamp for datetime, textstream for text, string outputcolwidth must= varchar size)> must reselect destination table with upper case (default table with lower case will create new table)>edit: enable identity insert
+also table> keys>FK>modify>enforce FK contraint : NO 
+behind the scenes wiz creates a SSIS package which is executed and discarded. by default, imp wiz import null value in int nullable col  (empty value in exp flatfile) as 0 into dest table, to change that, when running a imp wiz, save the task  as .dtsx pkg in file sys instead of exe it immediately, open the .dtsx with vs2005 BI, go to data flow tab>src .txt >prop: retainnull =true, or src.txt>edit>check box retains null> preview NULL will display instead of empty> then run the pkg. (sql2005 sp2 must be installed) if src table have notnull string col empty value ‘’, it will be exported as empty value in exp flatfile too, but if  retainnull =true, imp wiz will try to convert empty value to null that is not allowed by notnull and will fail, solution will be exp/imp the col separately or set the col to nullable>imp>manully update null to ‘’ >reset to not null.
+
+BCP utility (\Program Files\Microsoft SQL Server\100\Tools\Binn) native format >  character format, to use fast mode:
+•	The "select into/bulkcopy" database option must be set to "true". 
+•	The target table should not have any indexes or be published for replication. faster to drop the indices and recreate them after the bulk insert operation.
+•	Use the TABLOCK to lock the target table. 
+exec master..xp_cmdshell  //export queried data  with character format
+'bcp "select au_id, au_lname from pubs..Workaround order by au_id" queryout "C:\text.txt" -c –T’
+
+Bcp do not write to transaction log faster than insert
+BULK INSERT > BCP for import data
+BULK INSERT [Production].[TransactionHistory] FROM 'f:\orders\TransactionHistory.csv'
+WITH (
+   CODEPAGE='ACP',
+   DATAFILETYPE = 'char',
+   FIELDTERMINATOR= '\t',
+   ROWTERMINATOR = '\n' ,
+   KEEPIDENTITY,
+   TABLOCK //TABLOCK hint prevent running out of locks and reduction of lock contention.  
+)
+1	722	8	8	0	2001-07-04 00:00:00.000
+
+A linked server enables SQL Server to execute distributed queries, updates, commands, and transactions against remote OLE DB heterogeneous data sources (oracle,access…) across the enterprise. click Server Objects, select New, and select Linked Server, then specify OLE DB provider for the OLE DB data source.  create a login mapping between a local acct l1/pwd and remote acct r1 on the linked server, while l1 exec a dist query, r1 is used to connect to linked server.  If select impersonate, then l1 should be a domain acct that is accept on the linked server. default mapping for is to emulate the current security credentials of the login( self-mapping). When a linked server is added by using sp_addlinkedserver, a default self-mapping is added for all local logins. 
+Made without Using a security context :block any login not specified in mapping
+Made using current security context : login that is not specified in mapping will be delegated to linked server
+Made using this security context: use fixed login/pwd 
+If security account delegation is available and the linked server supports Windows Authentication, self-mapping for the Windows authenticated logins is supported. 
+Under delegation, client connect to the instance of SQL Server1  by using Windows Authentication,  SQL Server1  impersonates that user windows acct  by forwarding the credentials of that authenticated Windows user when communicating with another instance SQL Server2  (double hop) Client – the same Windows authenticated login ->SQLSERVER1—linked server with self-mapping -- the same Windows authenticated login -> SQLSERVER2
+Client: The Windows authenticated login of the user must have access permissions to SQLSERVER1 and SQLSERVER2, but SQL Server does not perform any permission validation at compile time.
+The user acct Active Directory property, unselect Account is sensitive and cannot be delegated.
+SQLSERVER1:
+The account under which SQL Server is running must be trusted for delegation
+Add SQLSERVER2 as link server, manually enable self-mapping if need:
+ EXEC sp_addlinkedsrvlogin 'SQLSERVER2', 'true'
+Both server must have an SPN registered by the domain administrator and support Windows Authentication
+If delegation or Windows Authentication is not supported in SQLSERVER2, self-mapping will not work for Windows Authentication login, only for sql server auth login. Then Map a Windows Authentication login in SQLSERVER1 to a sql server auth login in SQLSERVER2.
+ When you execute a distributed query against a linked server, include a fully qualified, four-part table name for each data source to query. This four-part name should be in the form linked_server_name.catalog.schema.object_name
+By default, when you run a distributed query using a linked server, the query is processed locally. When too much data must be sent from the remote server it is more efficient to pass through the query so that it is run on the remote server. and only return to the local server the results of the query. Query exe plan to find out which parts are performing on the remote server or the local server. The OPENQUERY function is used to specify that a distributed query be processed on the remote server instead of the local server. 
+SELECT * FROM OPENQUERY(OracleSvr, 'SELECT name, id FROM joe.titles')
+UPDATE OPENQUERY (OracleSvr, 'SELECT name FROM joe.titles WHERE id = 101') SET name = 'ADifferentName';
+INSERT OPENQUERY (OracleSvr, 'SELECT name FROM joe.titles') VALUES ('NewTitle');
+DELETE OPENQUERY (OracleSvr, 'SELECT name FROM joe.titles WHERE name = ''NewTitle''');
+locally performed operations include: 
+•	Data conversion operations 
+•	Queries that use the bit, timestamp, or uniqueidentifier data types 
+•	Queries that use the TOP clause 
+•	INSERTS, UPDATES, or DELETES
+
+FULLTEXT INDEX (MSFTESQL svc)
+Using colid, uniquerowid, positioned  to index every key word in the fultxt col,  like ‘prod doc for MOD 3’ in col proddesc> MOD(4,3,4) 3(4,3,5) proddesc’s colid =4, this row has unique ix col prodid=3   
+Stored in the file system not database, Only one full-text index allowed per table.
+Create storage>fulltext catalog (database) with location, filegroup,accent-insensitive
+Right click Table/view>fulltext index> define >select  the smallest exising unique ix (required, int (4bytes) & clustered is optimal, do not use large primary key (over 100 bytes)>select one/more character (xml,varchar,text) col or image (varbinary(max),image) col into fulltext index  Specify type_column (char, nchar, varchar, or nvarchar ) only if the fulltexted column is varbinary(max) or image, type column defines binary data file extension (doc,xls,csv..) of the fulltexted image col > auto/manul/not tracking change on the table/view (auto/manual: will incur a initial full population of the index  after wizard; to avoid that: not+uncheck pop index)> select/create a fulltxt cat  that index is on (one cat can have multiple index)>schedule incremental population on table (1 fultxtix) and catalog (multiple fultxtix) 
+•	Full population (index entries are re/built for all the rows of indexed col)
+•	Update (Change tracking-based ) population requires an initial population, and has small overhead associated, disable it and use scheduled incremental repop if instant update is not necessary. auto>change (update/insert/delete) made in source table is are propagated to index instantly;  Manual>won’t be reflected until click apply tracked changes or schedule update pop
+•	Incremental (timestamp-based) population updates the full-text index for rows added, deleted, or modified after the last population, indexed table must have a column of the timestamp data type, if not, a full population is made instead. if any metadata that impacts the full-text index for the table has changed since the last population. This includes altering any column, index, or full-text index definitions, a full population is made instead.
+timestamp is a data type automatically generated, unique 8 bytes binary numbers within a database for version-stamping table rows. A new timestamp value is generated when a row with a timestamp column is inserted or updated. used to determine whether any value in the row has changed since the last time it was read. Nonnullable binary(8) nullable: varbinary(8) SELECT @@DBTS returns the last-used timestamp value of the current database
+Right click Table/view>fulltext index> define, enable/disable, delete start full/incremental population, stop population track change auto/manu, disable track change, apply tracked changes 
+prop> general colums schedule
+Tables with the same update characteristics (such as small number of changes versus large number of changes) should be grouped into the same full-text catalog and population schedules
+If indexing a table that has millions of rows, or total number of rows being changed is large> assign the table to its own full-text catalog.
+SELECT DocumentSummary FROM Production.Document WHERE [Status=1 AND] CONTAINS|FREETEXT (DocumentSummary[,Title], @srchString, LANGUAGE @language, @topNbyRank)
+CONTAINS can search for: 
+Word/phrase "computer failure" matches ‘my computer had a failure’
+prefix '"fail*"', not 'fail*' in which casefail* considered as a phrase 
+near ‘computer NEAR failure’ 
+inflection ' FORMSOF (INFLECTIONAL, ride) '
+synonym ‘FORMSOF (THESAURUS, kill)’
+weight 'ISABOUT (performance weight (.8), comfortable weight (.4))' it (0.1-1.0) does not affect the results of CONTAINS queries, but impacts rank in CONTAINSTABLE queries
+Multiple term can be combined with AND (&), AND NOT (&!), OR(|)
+less precise than CONTAINS, FREETEXT match the meaning instead of exact wording, full-text query engine internally divide FREETEXT search string into individual words by space comma etc.(word-breaking) and generate inflectional forms (lubricating, lubricated, lubrication for lubricate) of the words (stemming) to find matches. WEIGHT, FORMSOF, wildcards, NEAR, AND, OR are not allowed in FREETEXT
+SELECT [KEY], RANK FROM CONTAINSTABLE (Production.Document, DocumentSummary,@srchString, LANGUAGE @language, @topN) ORDER BY RANK DESC;
+While CONTAINS|FREETEXT return a TRUE or FALSE, CONTAINSTABLE|FREETEXTTABLE Returns a table having two cols for each matching row
+[RANK] is a value (0 - 1000) for each matching row indicating how well a row matched the selection criteria
+[KEY] is the value in unique index col (DocumentID) of the row whose fultxt index col (DocumentSummary) match the search string.
+it can be treated as a table and joined with src table on the key to display  fultxt index col
+SELECT SRC_TBL.DocumentSummary, KEY_TBL.RANK 
+FROM Production.Document AS SRC_TBL
+INNER JOIN CONTAINSTABLE (Production.Document, DocumentSummary, @srchString, LANGUAGE @language, @topN) AS KEY_TBL
+ON SRC_TBL.DocumentID = KEY_TBL.[KEY]
+ORDER BY KEY_TBL.RANK DESC
+EXEC [dbo].[sp_configure] 'transform noise words', 1 ;
+EXEC [dbo].[sp_configure] 'precompute rank', 1 ;
+RECONFIGURE ;
+noise words such as "a", "and” are ignored in  the full-text search. transform noise words is set to 0 and noise words are not transformed. Thus, when noise words in the full-text query cause the operation to fail, Microsoft SQL Server returns an error.When the transform noise words option is set to 1, SQL Server replaces noise words with the asterisk (*) in phrase queries.
+Enable FREETEXTTABLE queries specified with top_n_by_rank use precomputed rank data stored in the full-text catalogs instead of computes rank at query time
+ALTER INDEX REORGANIZE  and ALTER FULLTEXT CATALOG REORGANIZE for Defragment the index
+
+Before bring a database online, DBCC CHECKDB need to be run to check integrity underneath: 
+•	Runs DBCC CHECKALLOC consistency of disk space allocation on the database
+•	Runs DBCC CHECKTABLE all the pages on every table and view in the database
+•	Validates the Service Broker data in the database
+•	Runs DBCC CHECKCATALOG on the database
+•	Validates the contents of every indexed view in the database
+With options REPAIR_ALLOW_DATA_LOSS | REPAIR_FAST | REPAIR_REBUILD repair the found errors. The specified database must be in single-user mode, only one user/connection allowed useful for performing emergency maintenance, reset instance>prop>cons>max concur cons from 0(unlimited) to 1, restart engine or  cd\Program Files\Microsoft SQL Server\MSSQL.1\MSSQL\Binn sqlservr.exe -s <instancename>
+Option TABLOCK Causes DBCC CHECKDB to obtain locks instead of using an internal database snapshot. This includes a short-term database exclusive lock. TABLOCK will cause DBCC CHECKDB to run faster on a database under heavy load, but decreases the concurrency available on the database while DBCC CHECKDB is running.
+When you execute one of these DBCC commands, the Database Engine creates a database snapshot and brings it to a transactionally consistent state. The DBCC command then runs the checks against this snapshot. After the DBCC command is completed, this snapshot is dropped. Snapshot can not be created for tempdb.
+If the database is online, and a snapshot cannot be created, or WITH TABLOCK is specified, the DBCC command executes against the actual database.In this case, an exclusive database lock is required to perform the allocation checks, and shared table locks are required to perform the table checks.
+Othercheck: CHECKCONSTRAINTS CHECKFILEGROUP (allocation and structural integrity of all tables) CHECKIDENT (current identity value for the specified table)
+
+For restoring the master db after Server crashed : stop the SQL Server first and then from command line we can type SQLSERVER –m which will basically bring it into the maintenance mode after which we can restore the master db. 
+sql server connection :
+check historical  sqllog  or eventview >application MSSQL$INSTANCE ‘Server is listening on [ 10.124.133.66 <ipv4> 1433 ]‘ 1433/1434  for database engineer (3822 for DTS intergration svc) in default  instance 3141/1921,1033/1034 are for named instance.. Make sure those ports are open in fire wall, if many instances listening to many ports, a range of ports should be open in fire wall. 
+Also check Sql server: config manager> sqlserver2005 networkconfig\protocol for instance>tcp/ip >prop>ipaddress>ip1/2../all(one ip for each netcard)  port:1433, dynamic port:0 (enabled) blank(disabled) , for named instance ipall dynamic port may be auto set to 1033 which can be manually reset otherwise as port, Restart instance after changing. that port  will being listened and logged in eventview as above, use sever\instance,port in connection string. 
+App server (client)   config manager> sql native client config\clientprotocol>tcp/ip >prop>protocol>default port:1433 
+(1434,1034 is dedicated admin con, can be found in eventlog, only members of the SQL Server sysadmin role  to connect to server, only one per instance,  to execute diagnostic functions or Transact-SQL statements( can not RESTORE or BACKUP via dac), when database engine is not responding to a  regular con, By default, this feature is only enabled for a local connection., for remote con  must enable DAC in surface area config first =sp_configure using the remote admin connections, to use dac: mgmt studio>new query>admin:SERVER\INSTANCE with sa./pwd = sqlcmd -S SERVER\INSTANCE -U sa -P xxx –A, connect to master db by default (‘use <database>’ to switch), select * from sys.dm_exec_sessions to view all current spid=sessionid, select * from sys.dm_os_tasks where sessionid=<spid> If a task is associated with the session, most likely your session is currently being killed, other wise KILL <spid> 
+sqlcmd  -U login_id  -P password  | –E trusted conn -S server_name  \ instance_name -d database -q "SELECT…” -i input_file.sql
+installorderingservice.cmd (text file can be runned, OrderingServiceScripts is subfolder under the folder where  this file is )
+sqlcmd -E -i OrderingServiceScripts\Setup.sql
+sqlcmd -E -i OrderingServiceScripts\SetupOrderingServiceProgram.sql
+only one instance of SQL Server can use one port or pipe, By default, default instance use 1433, named instances are configured to use dynamic ports The SQL Server Browser service lets client connect to named instances of the Database Engine that are not listening on port 1433, without knowing the port numbers the instances are listening  to, users can connect to named instances by providing the computer name and instance name, instead of the computer name and port number, but those ports/range need to be opened via fire wall, but do not need to reconfig client to use those ports. To use SQL Server Browser, you must open UDP port 1434. To promote the most secure environment, leave the SQL Server Browser service stopped, must assign port explicitly to each instance instead of using dynamic port,  and configure clients to connect using the specific port number. SQL Server 2005 no longer automatically listens on port 1434 like sql 2000, instead, On startup, SQL Server Browser starts and claims UDP port 1434. SQL Server Browser reads the registry, identifies all SQL Server instances on the computer, and notes the ports and named pipes that they use. When a server has two or more network cards, SQL Server Browser will return all ports enabled for SQL Server. SQL Server 2005 and SQL Server Browser support ipv6 and ipv4.
+When SQL Server 2000 and SQL Server 2005 clients request SQL Server resources, the client network library sends a UDP message to the server using port 1434. SQL Server Browser responds with the TCP/IP port or named pipe of the requested instance. The network library on the client application then completes the connection by sending a request to the server using the port or named pipe of the desired instance returned from SQL Server Browser.
+1.	Network Connections >active connection Properties >Advanced tab> Windows Firewall Settings> Exceptions tab> Add Port> Name text box:SQL Server <instance name>; Port number text box: the port number (1433 for default instance) ;select TCP  change scope to further define which computer(all/default, my network subnet, ip list )
+2.	to expose the SQL Server Browser service> Add Port> Name text box: SQL Server Browser; Port Number text box:1434; select UDP.
+As an alternative to configuring SQL Server to listen on a fixed port and opening the port, you can list the SQL Server executable (Sqlservr.exe) as an exception to the blocked programs. Use this method when you want to continue to use dynamic ports. Only one instance of SQL Server can be accessed in this way.
+1. Exceptions tab>Add Program> Browse> C:\Program Files\Microsoft SQL Server\MSSQL.1\MSSQL\Binn\Sqlservr.exe.
+Most host use centralized firewall build in switch (router) instead of on each server, so each request will go through firewall.
+Hidden instances are SQL Server instances that support only shared memory connections. For SQL Server 2005, the HideInstance registry key indicates that SQL Server Browser should not respond with information about this server instance
+1. SQL Server 2005 Network Configuration> Protocols for <server instance> Properties>Flags tab> HideInstance box, select Yes,
+Test conn use ODBC: admintool>odbc>user dsn (accessible only to creater after creation)  or sys dsn. (accessible to all users) >add> server (serverVIP\instance), existing system dsn will auto displayed in the dropdown list for selection> winnt or sql logon +client config to define protocol(tcp/ip pipline…) and specific port > database >finish >test datasource  
+Go to config manager to enable both tcp/ip and named pipe (default) in sqlserver2005 networkconfig\protocol for instance and sql native client config\clientprotocol 
+& surface area config change computer > remote computer: DBSV01A (default named instance DBSV01A[\MSSQLSERVER] and secondary named instance DBSV501\CBBSPRS is the name displayed in instance prop\general in studio, the default instance is displayed as servername or ip(cluster virtual ip)in server explorer . DBSV01A and DBSV501 are virtual server name in a cluster group, DB server> cluster administrator>browser to existing cluster>under groups there is a default group named SQL Server group that has network name DBSV01A, new group can be added  with SQL network name  DBSV501, a default SQL Server instance added to anyone of above groups will displayed as “SQL Server”, while named instance will displayed as “SQL Server(CBBSPRS)”,  SQL IP address show the IP for the group (diff IP for diff group). In SQL Server config mgr> network config> protocols for  each  MSSQLSERVER (default instance) and  CBBSPRS (named instance)>tcp/ip prop to set ip and port  for each instance (diff port for diff instance, Default port 1433 is auto set in TCP port num, to change that set TCP dynamic port num of “ip all” to 3144 with TCP dynamic port num for each ip to 0, it will cover all ip address on that server.). Use only virtul server name like DBSV01A to connect to default instance under it, use virtul server name\namedinstance [,portnum] like DBSV501\CBBSPRS[,3141] to named instance, specify port num if it is not the default 1433.
+                                                                             >localcomputer display all instances but can’t change config in cluster, must connect to remote computer    
+Config service and connection >remote connection> use both tcp/ip and named pipe (default) 
+Test Client server having SQL Server 2005 client tools installed >Management Studio> Database Engine in the Server type> tcp:<computer_name>[,1433] in Server name, 
+
+REF: Deigning partitions to manage subsets of data (WINDOW SLIDING) and C:\Program Files\MicrosoftSQLServer\90\Samples \Engine\Administration\Partitioning\Scripts PartitionAW.sql sliding.sql
+placing  partitions on separate filegroups is to perform backups on individual filegroups.
+Create multiple file groups (test1-5fg for transhist table, test-1,0fg for transarch table, each have one file mapping to individual dir) via db prop
+Export data to* .csv or txt file via db>task prior to Drop the table TransactionHistory 
+Select a column TransactionDate (int or datetime or char) as partition column, Create partition func and schema based on its datatype: each range map to a file group, the optional last extra file group is marked for the next used: If partition function TransactionsPF1 is changed to add a partition, filegroup test5fg receives the newly created partition.
+CREATE PARTITION FUNCTION TransactionsPF1 (DATETIME)
+AS RANGE RIGHT FOR VALUES ('10/01/2003', '11/01/2003', '12/01/2003');
+[<10/1] [10/1<=  <11/1 ][11/1<= <12/1][12/1<=]
+part1      part2                  part3                 part4
+CREATE PARTITION SCHEME TransactionsPS1
+AS PARTITION TransactionsPF1
+TO (test1fg, test2fg, test3fg, test4fg[, test5fg])
+
+re CREATE TABLE [Production].[TransactionHistory](…) 
+ON [TransactionsPS1] (TransactionDate)
+
+BULK INSERT [Production].[TransactionHistory] FROM *.CVS 
+> test*fg.ndf 8mb
+ADD PRIMARY KEY CLUSTERED ([TransactionDate],[TransactionID] )ON [TransactionsPS1] (TransactionDate) 
+When partitioning a clustered index or unique noncluster index, the index must contain the partitioning column. 
+> test*fg.ndf 14mb
+CREATE INDEX (NON CLUSTER)ON [TransactionsPS1] (TransactionDate)
+> test*fg.ndf datasize won’t change 
+
+view partitions (4 parts without the last empty one, part id goes by ranges from right to left, number of rows in each part, multiple indexid (3)in each part) 
+SELECT OBJECT_NAME([object_id]), * FROM [sys].[partitions]
+WHERE [object_id] = OBJECT_ID('[Production].[TransactionHistory]') 
+ORDER BY [partition_number], [index_id];
+
+Also create partition for archieve table 
+CREATE PARTITION FUNCTION [TransactionArchivePF2] (datetime) 
+AS RANGE RIGHT FOR VALUES ('9/01/2003');
+[<9/1] [9/1<=] 
+part1   part2
+CREATE PARTITION SCHEME [TransactionArchivePS2]
+AS PARTITION [TransactionArchivePF2]
+TO ([test-1fg], [test0fg]);
+Move clustered pk and nonclustered IX ON [TransactionArchivePS2]
+At this point Tranarch table only have data <9/1, data [<=9/1 <10/1] is in part 1 of above Tranhist table, so this part2 is empty and for sliding window.
+Sliding window: only 1.add a new part to the right most part of tranhist, and 2.move left most part to transarch, no change on those parts in between. 
+1.
+ALTER PARTITION SCHEME TransactionsPS1 
+NEXT USED test5fg;
+1.If filegroup_name is specified and there currently is no filegroup marked NEXT USED, filegroup_name is marked NEXT USED.2. If filegroup_name is specified, and a filegroup with the NEXT USED property already exists, the NEXT USED property transfers from the existing filegroup to filegroup_name.3. If filegroup_name is not specified and a filegroup with the NEXT USED property already exists, that filegroup loses its NEXT USED state so that there are no NEXT USED filegroups in partition_scheme_name. 4.If filegroup_name is not specified, and there are no filegroups marked NEXT USED, ALTER PARTITION SCHEME returns a warning. 
+
+In this case existing test5fg has been marked as next used, so above stmt is optional, but if use that stmt the test5fg has to be specified (3)
+ALTER PARTITION FUNCTION TransactionRangePF1() 
+SPLIT RANGE ('1/01/2004');
+[12/1/03<= <1/1/04] [1/1/04<]
+part4                           part5 (next used)
+After this part5 will displayed in the part list with some rows moved from part4 into it, newly inserted row will go to diff part according to its transdate
+Next time creat a new file froup test6fg and repeat the proc 1.
+2.
+ALTER PARTITION SCHEME TransactionArchivePS2 
+NEXT USED [test-2fg];
+test0fg can be repeatedly used for slid  
+ALTER PARTITION FUNCTION TransactionArchivePF2() 
+SPLIT RANGE ('10/01/2003');
+[9/1<= <10/1] [10/1<=]
+part2(test0fg) part3(test-2fg keep empty til next time slid window)    
+ALTER TABLE [Production].[TransactionHistory] 
+ADD CONSTRAINT [CK_TransactionHistory_DateRange] 
+CHECK ([TransactionDate] >= '9/01/2003' AND [TransactionDate] < '10/01/2003');
+MUST add check the RANGE of source part 1 in transhist equal to target part2 in trans arch When switching a partition, you are not physically moving the data. You are only changing metadata about where the data is stored. 
+ALTER TABLE [Production].[TransactionHistory] 
+SWITCH PARTITION 1 
+TO [Production].[TransactionHistoryArchive] PARTITION 2;
+Make sure part id is correct and Both the source and the target part of the ALTER TABLE...SWITCH statement must reside in the same filegroup,
+If not, A staging table need to be created with same definition as target transarch  instead of source tranhist which are the same in most case( constraint/key will be checked when switch stage to target, not  switch stage from source), 
+ALTER TABLE [Production].[TransactionHistoryStage] WITH CHECK ADD 
+    CONSTRAINT [PK_TransactionHistoryStage_TransactionID] PRIMARY KEY CLUSTERED 
+    (   [TransactionDate], 
+        [TransactionID]
+    )  ON [test1fg]
+add the same clustered pk and move to the same file group as the source partition (tranhist.part1)
+
+ALTER TABLE [Production].[TransactionHistory] 
+SWITCH PARTITION 1 
+TO [Production].[TransactionHistoryStage]
+TransactionHistoryStage must be empty before switch, after this, the rows count in transstage is what was in part 1 and part1 become 0
+
+ALTER TABLE [Production].[TransactionHistoryStage] DROP CONSTRAINT [PK_TransactionHistoryStage_TransactionID];
+ALTER TABLE [Production].[TransactionHistoryStage] WITH CHECK ADD 
+    CONSTRAINT [PK_TransactionHistoryStage_TransactionID] PRIMARY KEY CLUSTERED 
+    (   [TransactionDate], 
+        [TransactionID]
+    )  ON [test0fg]
+move transstage clustered pk to the same file group as the target partition (transarch.part2)
+
+move trans stage noncluster index’s file froup to test0fg via sql or prop dialog, without being partitioned on [TransactionArchivePS2] as IX in transarch
+CREATE INDEX [IX_TransactionHistoryStage_ProductID] ON [Production].[TransactionHistoryStage]([ProductID]) ON [test0fg];
+
+ALTER TABLE [Production].[TransactionHistoryStage] 
+ADD CONSTRAINT [CK_TransactionHistory_DateRange] 
+CHECK ([TransactionDate] >= '9/01/2003' AND [TransactionDate] < '10/01/2003');
+Must add source Range = target range check other wise switch will fail
+ALTER TABLE [Production].[TransactionHistoryStage] 
+SWITCH  
+TO [Production].[TransactionHistoryArchive] PARTITION 2
+after this, the rows count in transstage is 0 and part1 become what was in transstage
+
+ALTER PARTITION FUNCTION TransactionRangePF1() 
+MERGE RANGE ('10/01/2003');
+Merge transhist part 1 (empty newly swithed out) with part 2 into one part part1, the rest part id slide accordingly. 
+ALTER PARTITION FUNCTION TransactionArchivePF2() 
+MERGE RANGE ('9/01/2003');
+Merge transarch part 1  with part 2 (newly swithed in) into one part1
+Merge makes Right side (to the boundry)  part go into left side filegroup, the right side filegroup is removed from part schema 
+
+Using files and filegroups improves database performance, because it lets a database be created across multiple disks, 
+The following rules pertain to files and filegroups:
+•	A file or filegroup cannot be used by more than one database. file sales.mdf (mdf file in primary file group)and sales.ndf  (ndf in other file group) can only be used by sales database.
+•	A file can be a member of only one filegroup.
+•	Data and transaction log information cannot be both in the same file or filegroup, Transaction log files are never part of any filegroups, do not put the transaction log file or files on the same physical disk that has the other files and filegroups.
+Following are some general recommendations when you are working with files and filegroups: 
+•	If you use multiple files, create a second filegroup for the additional file and make that filegroup the default filegroup. In this way, the primary file will contain only system tables and objects.
+•	Put heavily accessed tables and the nonclustered indexes that belong to those tables on one file in one different filegroups located on one disk, and the other less heavily accessed tables in the database can be put on the other files in another filegroup, located on a second disk. 
+•	Put different tables used in the same join queries in different filegroups. This will improve performance. if your computer has four disks, you can create a database that is made up of three data files and one log file, with one file on each disk, each joined table on one disk. This will improve performance, because of parallel I/O searching for joined data if the files are located on different physical disks. As data is accessed, four read/write heads can access the data in parallel at the same time. 
+MOVE A TABLE =MOVE (DROP AND ADD) ITS CLUSTER INDEX TO NEW FILE GROUP, BECAUSE CLUSTER INDEX HOLD THE DATA, only via t-sql  (SAMP:CreateFileGroups.sql)
+ALTER TABLE [Production].[WorkOrder] WITH CHECK ADD 
+	CONSTRAINT [PK_WorkOrder_WorkOrderID] PRIMARY KEY CLUSTERED 
+	([WorkOrderID]) ON [WorkOrderGroup];
+optionally move non_clusterindex also (data size won’t chang on ndf file) by index prop>storage or 
+CREATE INDEX [IX_TransactionHistory_ProductID] ON [Production].[TransactionHistory]([ProductID]) 
+WITH (DROP_EXISTING = ON) ON [TransactionHistoryGroup];
+
+set up reporting service  ref paper:
+SQL reporting service config mgr: 
+window service identity /service account=windows account= the same  domain service account  (or default local system)
+web server install both rptmgr and rptsvr, and both share a app pool with id svc_cbbs_sqlrm, app server install only rptsvr run a app pool with id svc_cbbs_sqlrs
+No need for rptmgr (web site) dir if only install rptsvr in app server
+In Websvc identity, set reportserver [and reportmgr] to the app pool, the asp.net svc account will be auto populated with the identity 
+Database\credential type=service credential so above the asp.net svc account svc_cbbs_sqlrs/m will be used to connect database
+IIS:
+the app pool uncheck recycle work process, uncheck shut down process after idle.
+The  domain service account  (UAT\svc_cbbs_sqlrm belongs to UAT\cbbs_web_sysadmin domain group that  is set to local administrators group in the UAT server’s local users & group. 
+IIS/ virtualdir reports /security=basic auth, in reportmanager page/properties /new role assignment  set window user/group to roles like browser or contentmagr 
+Delet encrypt key will delete the sym key in keys table for the application (rptsvr instance)
+If have more than one rptsvr share a same rptsvr database, the rest one’s initialization MUST be done in the first (act as master) instance’s initialization tab. initialization  basically create sym key for the rptsvr in keys table for encrypt.
+Add svc_cbbsdotnet as browser to enable aspnet app running under that id to access report.
+There are two config files for SQLSERVER REPORTING SERVICE: 
+D:\Program Files (x86)\Microsoft SQL Server\MSSQL.1\Reporting Services\ReportServer\reportserver.config 
+D:\Program Files (x86)\Microsoft SQL Server\MSSQL.1\Reporting Services\ReportManager\RSWebApplication.config 
+In the reportserver.config, the follwing element needs to be changed: 
+<UrlRoot>http://backoffice.commercial.uat.hostingtest.wamu.net/ReportServer</UrlRoot> 
+In the RSWebApplication.config, the following element needs to be changes: 
+<ReportServerUrl>http://backoffice.commercial.uat.hostingtest.wamu.net/ReportServer</ReportServerUrl>
+
+In SQL Server 2005 Integration Services, the connection information is stored Microsoft.SqlServer.Dts.Runtime.ConnectionManager
+late validation SSIS:Validate() called by Execute method ,makesSureThat nothingObvious that would causeTo fail execution
+Data Sources define how to connect to an OLEDB or ADO.NET database with  the connection string.
+Data Source Views to define a small subset (of tables) within a large schema from the data source; Data Source View to be defined for a star schema and used consistently by every package which loads that star schema.
+Data Sources and Data Source Views are  design-time objects, separated from  DTS package, saved in a Data Transformation Project in BID. so they can be shared between DTS Packages At design-time,  at runtime a deployed DTS Package will not have access to these design-time objects, instead . DTS Packages use DTS Connection under connection manager.
+If a DTS Connection references a Data Source, then DTS Package using the DTS Connection can use any Data Source View using that Data Source. In this way, a DTS Package can easily refer to only a small subset of a large schema.
+ DTS Connections are more generic than Data Sources–they can connect to text files, HTTP connections, FTP connections and many other scenarios where a connection string is needed–not just to OLEDB and ADO.NET managed providers like Data Sources.
+
+SQL Server 2005 includes the Data Flow task in place of these two SQL 2000 tasks Data Transformation Task and the Data Driven Query Task. The Data Flow task places no limits on the number of sources, destinations and transforms,
+SQL 2005 DTS adds many new Log Provider Types include Text Files, SQL Server, Windows Event Log, and so on. Within your package you can add the log providers by going to the DTS menu and choosing Logging.
+The DTS service is disabled by default.  Services- DTS Server- Start. Running Packages can not be seen Under My DTS Server in Mgt Studio
+DTS runtime uses multiple threads for execution ,In order to avoid having more than one thread attempt to access the same variable at the same time, all access to variables must be made "safe" by locking them for your operation;
+Copy Database Wizard is specialized for copy database objects, DTS Import / Export wizard loading data from diverse sources. It does not support database copy anymore.
+Data source for Excel and Access are not supported, they can be imported using OLEDB Connection Manager built by DTS Import / Export Wizard. Database-tasks- Copy Database/ Import / Export Wizard
+
+user Variables store values that package can use at run time, system variables that store information about the running package(Machine/userName ) and its containers, tasks (TaskName/TransactionOption), event handlers (ErrorCode/ ErrorDescription/ SourceName). A variable is created within the scope of a package or a container, task, or event handler, (add new variable> container (scope): package/executables/container/task ), var in parent scope is global to all sub scopes. value of a user variable can be a literal or an expression (using system variables) that is evaluated At run time
+
+Support more granular tasks: 
+ExeSql: sqltype:file ->fileconnection(.sql)| directinput->stmt or storeproc (isquerystreproc:true) | variable?->resultset:none | singlerow | dataset | xml -> add result-variable       para mapping->
+
+WMI Data Tasks to  check system data  like whether SQL Server is running, whether there is a C: drive on the machine or if there is enough disk space available before running an ETL (extraction, transformation, and load) flow. 
+WMI event task to handle system events for taking real-time actions within a DTS control flow. Like only run the ETL flow when memory usage drops below 50% or only start a data flow after a new source file is available on the file system.
+File System Task and the FTP Task
+
+A control flow consists of tasks and containers that execute when the package runs. use precedence constraints? to define the conditions for running the next task, In Control flow panel add dataflow task> enable dataflow panel, a typical dataflow comprise src->transform->dest, green arrow from output port of previous op to input port of next op in successful case (red arrow  is error output) each src and dest is associated with a  connection (oledb,file,ado.net) created and displayed in conn mgr, transform op such as data convertion convert and remap data fields between src and dest  in advanced edit panel.
+
+Save Copy of mpkg.dtsx as > sqlserver server:PROD\PRMY  pkg path>ssis pkgs (mapping to MSDB) 
+                                   > ssis pkg store sever:PROD  pkg path> ssis pkgs\filesystem(mapping to ..\packages)
+import and export packages between SSIS Package Store two default folders :File System and MSDB or SQL Server msdb database that are specified in the configuration file for the Integration Services service 
+C:\Program Files\Microsoft SQL Server\90\DTS\Binn\ MsDtsSrvr.ini.xml.
+<TopLevelFolders>
+    <Folder xsi:type="SqlServerFolder">
+      <Name>MSDB</Name>
+      <ServerName>.</ServerName> change to PROD\PRMY &restart the service
+    </Folder>
+    <Folder xsi:type="FileSystemFolder">
+      <Name>File System</Name>
+      <StorePath>..\Packages</StorePath>
+    </Folder>
+  </TopLevelFolders>  
+New agent job>add step> type: SSIS package >PKG source: sqlserver server:PROD\PRMY (msdb)/ssis pkg store server: PROD (..\packages) > choose the pkg from that location 
+
+If a package is configured to use checkpoints, ssis can restart failed packages from the point of failure based on checkpoint file that captures the failure point. Control flow panel>prop> checkpointfilename browser |checkpointusage if exists | save checkpoints true
+The msdb database is used by SQL Server Agent for scheduling alerts and jobs, DTS package and by other features such as Service Broker and Database Mail.
+Service Broker ref paper
+SQL Server performance - First check the processor and memory usage to see that processor is not above 80% utilization and memory not above 40-45% utilization then check the disk utilization using Performance Monitor, Secondly, use SQL Profiler to check for the users and current SQL activities and jobs running which might be a problem. Third would be to run UPDATE_STATISTICS command to update the indexes.  http://www.sql-server-performance.com 
+SQL Profiler utility allows trace SQL Server activities.
+1.capture a Profiler trace, which can be configured to identify which queries run the most often, and to identify which queries use the most resources. to determine the batches that take the longest time to execute, set the trace event criteria to monitor only those batches that take longer than 30 or 5 seconds to execute (a CPU minimum value of 30,000 milliseconds) on filter Duration data column.
+Data Columns filter
+StartTime/Duration/TextData(general/additional info depends on event) /CPU/Reads/Writes /ApplicationName of the client application that created the connection / ClientProcessID/
+DatabaseID(=) name (like)/ DBUserName/ ObjectID name Type( the type of the object involved in the event = type column in the sysobjects table / LoginName (either SQL Server security login or the Microsoft Windows login credentials in the form of DOMAIN\username)/ if you connect to SQL Server using Login1 and execute a statement as Login2, SessionLoginName shows Login1 and LoginName shows Login2. / NTUserName(Windows user name)/RoleName/ Server process IdSPID/ TransactionID/ Permissions 1 = SELECT ALL 2 = UPDATE ALL4 = REFERENCES ALL8 = INSERT16 = DELETE32 = EXECUTE (procedures only) / Success (0 succeed 1 failure)/ EventSubClass (varies upon diff  event class)/ Error
+Click column header or click column filters to pop filter window.
+Typical scenarios for using SQL Server Profiler include 
+	•	Find the worst-performing queries. 1000 or 5 milliseconds,  captures events RPC:Completed and SQL:BatchCompleted) to the TSQL and Stored Procedure, Include all data columns group by Duration >=  10000 to monitor only one database specify Database ID. 
+cmd.CommandText = @"select … where AccountNumber=@Acct";
+cmd.Parameters.Add("@Acct", SqlDbType.VarChar).Value = strAccountNum;        cmd.ExecuteNonQuery(); also show as RPC as same as real store proc
+cmd.CommandText = @"select … where AccountNumber=” + “123”;
+cmd.ExecuteNonQuery(); show as SQL:BatchComplete, without compiled binary data
+	•	Identify the cause of a deadlock.  captures events (RPC:Starting and SQL:BatchStarting) that relate to TSQL and Stored Procedure event classes  and Locks event classes (Deadlock graph, Lock:Deadlock or Lock:Deadlock Chain),or Blocked Process Report. Include all data columns group by Event Class. specify the Deadlock graph event class to produces a graphical representation of the deadlock. This event class populates the TextData data column in the trace with XML data about the process and objects that are involved in the deadlock. deadlock wait-for graph to describe a deadlock contains process nodes ( thread that performs a task; for example, INSERT, UPDATE, or DELETE), resource nodes (database object; for example, a table, index, or row), and edges representing the relationships between the processes and the resources (A request edge occurs when a process waits for a resource. An owner edge occurs when a resource waits for a process. The lock mode Shared (S) Update (U) Exclusive (X). Profiler can extract the XML document to a deadlock XML (.xdl) file which you can view later in SQL Server Management Studio. using the Events Extraction Settings tab at trace configuration to extract Deadlock graph events to a single file / Extract SQL Server Events option on the File menu / right-clicking a specific event and choosing Extract Event Data.  To view the connections involved in a deadlock, do one of the following:
+	•	Open the trace containing the captured data, group the data by ClientProcessID, and expand both connections involved in the deadlock.
+	•	Save the captured data to a trace file, and open the trace file twice to make the file visible in two separate SQL Server Profiler windows. Group the captured data by ClientProcessID and then expand the client process ID involved in the deadlock; each deadlocked connection is in a separate window. Tile the windows to view the events that are causing the deadlock. If you wish to save specific deadlock graph data to a file, right-click the deadlock event and select Extract Event Data.
+	•	Monitor stored procedure performance.  captures events that relate to Stored Procedure event classes (SP/RPC:Completed, SP/RPC:Starting, SP:StmtCompleted and SP:StmtStarting for each sql stmt, including set, within the store proc ), and TSQL event classes (SQL:BatchStarting and SQL:BatchCompleted). Include all necessary data columns in the trace and group by ClientProcessID. to monitor only one stored procedure Object ID also can add Showplan (all/text/xml)event classes to gather and display query exe plan information in the trace. And can extract Showplan events to save in a separate XML file like above.
+	•	Audit SQL Server activity. Create a trace, selecting the Audit Login event. specify the following data columns: EventClass (selected by default), EventSubClass, LoginSID, LoginName.
+	•	Monitoring Transact-SQL activity per user.   captures events relating to the Sessions, ExistingConnection, and TSQL event classes. Include all data columns in the trace, do not specify any event criteria, and group the captured events by DBUserName. 
+	•	Collect a representative sample of events for stress testing. SQL Server Profiler provides a predefined TSQL_Replay template that can be used for iterative tuning, such as benchmark testing.
+Build-in template:
+STANDARD (Audit login, ExistingConnection, RPC:Completed and SQL:BatchCompleted SQL:BatchStarting)
+TSQL(Audit login, ExistingConnection, RPC:Starting and SQL:BatchStarting)
+TSQL_SPS (TSQL+ SP:Completed, SP:Starting, SP:StmtStarting)
+TSQL_Duration (RPC:Completed and SQL:BatchCompleted)
+TSQL_Replay
+Tuning (RPC:Completed SP:StmtCompleted and SQL:BatchCompleted) Completed versions of these trace events include the Duration column, which allows Database Engine Tuning Advisor to more effectively tune the workload.
+(sql server event class reference)
+Stored Procedures event class:
+RPC:Starting/completed a remote procedure call has started/end
+SP:Starting/completed a stored procedure is begin/end execution
+SP:StmtStarting/completed a Transact-SQL statement within a stored procedure has started.
+
+TSQL event class:
+SQL:BatchStarting/completed a Transact-SQL batch has started/end
+SQL:StmtStarting/completed a Transact-SQL statement has started/end
+XQuery Static Type SQL Server 2005 executes an XQuery expression.
+
+Transactions event classes:
+DTCTransaction Tracks DTC transactions involving two or more databases in the same instance of the Database Engine, or distributed transactions involving two or more instances of the Database Engine.
+(EventSubClass 6/7=Creating /Enlisting in a DTC transaction 16/17=Transaction is aborting/ committing)
+SQLTransaction  Tracks Transact-SQL transactions (EventSubClass 0=Begin 1=Commit 2=Rollback 3=Savepoint)
+EVENT prefixed with TM: to track the transaction-related operations sent through the transaction management interface. 
+
+Session event classes:
+ExistingConnection the properties of existing user connections when the trace was started
+
+Security Audit event classes:
+Audit Add login/login[failed][ Change Password ] [Change Property (ALTER LOGIN)] /Add Role (database role)/ Audit Add DB User / Add Login to Server Role/ Add Member to DB Role/ 
+Audit Database Management (when a database is created, altered, or dropped)/ Change Database Owner
+Audit Database| Schema| Server Object Access/ Management (when a CREATE, ALTER, or DROP statement is executed on objects)/Take Ownership event class occurs when a change of owner for objects (ALTER AUTHORIZATION)/ GDR occurs when a GRANT, REVOKE, or DENY has been issued for objects
+Audit Database| Server Principal Impersonation (when an impersonation occurs such as EXECUTE AS)/ Principal
+Management occurs when principals, such as DB users, are created, altered, or dropped from a database. EventSubClass (1=Create2=Alter3=Drop4=Dump11=Load)
+
+Objects event
+Object:Created/Altered/Deleted on index,table,database
+
+locks event category
+Lock:Acquired /Released/ Escalation/ Timeout request for a lock timed out because another transaction is holding a blocking lock on the resource/ Timeout (timeout > 0) actual time-outs excluding events with time-out values = zero/Deadlock & Deadlock Graph/ Deadlock Chain produced for each participant in a deadlock to monitor which objects are involved.
+Mode 3=Shared Lock (LCK_M_S)4=Update Lock (LCK_M_U) 5=Exclusive Lock (LCK_M_X)OwnerID 1=TRANSACTION2=CURSOR3=SESSION Type 5=OBJECT(table) 6=PAGE 9=RID (row)
+
+OLEDB event 
+OLEDB Call event class occurs when Microsoft SQL Server calls an OLE DB provider for distributed queries and remote stored procedures in linked server.
+OLEDB Errors event class occurs in Microsoft SQL Server when a linked server call to an OLE DB provider returns an error.
+
+Performance event. when included in a trace, the amount of overhead will significantly impede performance.
+Auto Stats indicates that an automatic updating of index and column statistics has occurred.
+Showplan All/Text/ XML [Statistics Profile]  [For Query Compile] event class occurs when Microsoft SQL Server executes [compile] an SQL statement, gather and display query exe plan information the BinaryData data column must be selected for All/text.   XML (2005) l stores each event as a well-defined XML document associated with a schema. C:\Program Files\Microsoft SQL Server\90\Tools\Binn\schemas\sqlserver\2003\03\showplan. The Acct must have SHOWPLAN permission on the databases. GRANT SHOWPLAN TO <database_principal>
+Performance Statistics to monitor the performance of queries 
+EventSubClass 0 = New SQL text that is not currently present in the cache.1 = Queries within a stored procedure have been compiled.2 = Queries within an ad hoc SQL statement have been compiled 3 = A cached query has been destroyed and the historical performance data associated with the plan is about to be destroyed. 
+For stored procedures/batch with n number of queries, below is recorded in query:
+	•	1 of type 0
+	•	n number of type 1
+	•	1 of type 3 when the query is flushed from the cache
+SQL:FullTextQuery event class occurs when SQL Server executes a full text query
+
+Query Notifications event
+QN:Subscription event reports information on notification subscriptions 
+EventSubClass: Subscription registered, Subscription fired, Firing failed with | without broker error, Subscription destroyed
+
+Errors and Warnings event:
+Blocked Process Report event class indicates that a task has been blocked for more than a specified duration. With lock mode it received or requesting. 
+Attention event class indicates that an attention event, such as cancel, client-interrupt requests, or broken client connections, has occurred
+ErrorLog/ EventLog / Exception event class indicates that messages have been logged in the SQL Server error log/ Windows event log/ exception thrown in sqlserver.
+User Error Message event class displays the error message as seen by the user in the case of an error or exception. The error message text appears in the TextData field
+Full Text event
+FT:Crawl Started/Aborted/Stoped indicates that a full-text crawl (population) occurs
+Replay saved trace to reproduce activity (load)captured in a trace with simulate user connections and SQL Server Authentication. It can be replayed on a different server with same login and database setting.   to troubleshoot an application or process problem. When you identify the problem and implement corrections, run the trace that found the potential problem against the corrected application or process. Then, replay the original trace and compare results. Use the trace template TSQL_Replay  capture all required data for traces to be replayable
+Cursor event
+CursorOpen/Close/Prepare/Execute (populates a cursor from the execution plan created by a cursor prepare event)
+
+CLR event
+Assembly Load event when a managed assembly is loaded by CLR.  
+Database event
+Database Mirroring State Change event (State 2/4 = Synchronized Principal/mirror  without Witness 5/6 = Connection with Principal/mirror Lost 7/8 = Manual/auto Failover 11 = Synchronizing Mirror)
+Data/log File Auto Grow/shrink event
+
+Broker event
+Broker:Activation event when a queue monitor starts an activation stored procedure, sends a QUEUE_ACTIVATION notification or when an activation stored procedure exits. 
+EventSubClass: start started an activation stored proc ended/aborted The activation stored proc exited normally/error
+Broker:Conversation event to report the progress of a Service Broker conversation
+TextData  S/DO/I. Started/disconn outbound/inbound CO/D. Conversing/Closed ER. Error
+subclass values for this event class.
+ID 
+Subclass 
+Description 
+1
+SEND Message
+SQL Server generates a SEND Message event when the Database Engine executes a SEND statement.
+2
+END CONVERSATION
+SQL Server generates an END CONVERSATION event when the Database Engine executes an END CONVERSATION statement that does not include the WITH ERROR clause.
+3
+END CONVERSATION WITH ERROR
+SQL Server generates an END CONVERSATION WITH ERROR event when the Database Engine executes an END CONVERSATION statement that includes the WITH ERROR clause.
+4
+Broker Initiated Error
+SQL Server generates a Broker Initiated Error event whenever Service Broker creates an error message. For example, when Service Broker cannot successfully route a message for a dialog, the broker creates an error message for the dialog and generates this event. SQL Server does not generate this event when an application program ends a conversation with an error.
+5
+Terminate Dialog
+Service Broker terminated the dialog. Service Broker terminates dialogs in response to conditions that prevent the dialog from continuing, but which are not errors or the normal end of a conversation. For example, dropping a service causes Service Broker to terminate all dialogs for that service.
+6
+Received Sequenced Message
+SQL Server generates a Received Sequenced Message event class when SQL Server receives a message that contains a message sequence number. All user-defined message types are sequenced messages. Service Broker generates an unsequenced message in two cases:
+	•	Error messages generated by Service Broker are unsequenced.
+	•	Message acknowledgements may be unsequenced. For efficiency, Service Broker includes message acknowledgements as part of a sequenced message wherever possible. However, if an application does not send a sequenced message to the remote endpoint within a certain period of time, Service Broker creates an unsequenced message for the message acknowledgement.
+7
+Received END CONVERSATION
+SQL Server generates a Received END CONVERSATION event when SQL Server receives an End Dialog message from the other side of the conversation.
+8
+Received END CONVERSATION WITH ERROR
+SQL Server generates a Received END CONVERSATION WITH ERROR event when SQL Server receives a user-defined error from the other side of the conversation. Notice that SQL Server does not generate this event when SQL Server receives a broker-defined error.
+9
+Received Broker Error Message
+SQL Server generates a Received Broker Error Message event when Service Broker receives a broker-defined error message from the other side of the conversation. SQL Server does not generate this event when Service Broker receives an error message generated by an application.
+For example, if the current database contains a default route to a forwarding database, Service Broker routes a message with an unknown service name to the forwarding database. If that database cannot route the message, the broker in that database creates an error message and returns that error message to the current database. When the current database receives the broker-generated error from the forwarding database, the current database generates a Received Broker Error Message event.
+10
+Received END CONVERSATION Ack
+SQL Server generates a Received END CONVERSATION Ack event class when the other side of a conversation acknowledges an End Dialog or Error message sent by this side of the conversation.
+11
+BEGIN DIALOG
+SQL Server generates a BEGIN DIALOG event when the Database Engine executes a BEGIN DIALOG command.
+12
+Dialog Created
+SQL Server generates a Dialog Created event when Service Broker creates an endpoint for a dialog. Notice that Service Broker creates an endpoint whenever a new dialog is established, regardless of whether the current database is the initiator or the target of the dialog.
+13
+END CONVERSATION WITH CLEANUP
+SQL Server generates an END CONVERSATION WITH CLEANUP event when the Database Engine executes an END CONVERSATION statement that includes the WITH CLEANUP clause.
+
+Broker:Connection event to report the status of a transport connection managed by Service Broker. EventSubClass Connecting SQL Server is initiating a transport connection./ed/failed Accept. SQL Server has accepted a transport connection from another instance Closing/ed Send/receive IO Error encountered a transport error while sending/receiving a message
+Broker:Corrupted Message event when Service Broker receives a corrupted message TextData describes the problem with the message
+Replay events in the order they were traced 
+Allows you to use debugging methods such as stepping through each trace. 
+Replay events using multiple threads 
+Optimizes performance and disables debugging. Events are replayed in the order they were recorded for a particular server process ID (SPID), but ordering of SPIDs is not guaranteed.
+transactional replication and other transaction log activity. operations on text, ntext, and image columns involving the bcp utility, the BULK INSERT, READTEXT, WRITETEXT, and UPDATETEXT statements, and full-text operations These events are skipped
+	•	Collect a sample of events for tuning the physical database design by using Database Engine Tuning Advisor (index tuning wizard in2000). SQL Server Profiler provides a predefined Tuning template (must contain Transact-SQL batch or remote procedure call (RPC) event and Text data columns) that gathers the appropriate Transact-SQL events in the trace output so it can be used as a workload for Database Engine Tuning Advisor.
+Possible bottleneck area 
+Effects on the server 
+Memory usage
+Insufficient memory allocated or available to Microsoft SQL Server degrades performance. Data must be read from the disk rather than directly from the data cache. Microsoft Windows operating systems perform excessive paging by swapping data to and from the disk as the pages are needed.
+CPU utilization
+A chronically high CPU utilization rate may indicate that Transact-SQL queries need to be tuned or that a CPU upgrade is needed.
+Disk input/output (I/O)
+Transact-SQL queries can be tuned to reduce unnecessary I/O; for example, by employing indexes.
+User connections
+Too many users may be accessing the server simultaneously causing performance degradation.
+Blocking locks
+Incorrectly designed applications can cause locks and hamper concurrency, thus causing longer response times and lower transaction throughput rates.
+
+Uncover Hidden Data to Optimize Application Performance (mag 1/08)
+CPU
+select   scheduler_id,    current_tasks_count,     runnable_tasks_count from  sys.dm_os_schedulers where  scheduler_id < 255
+A nonzero value indicates that tasks have to wait for their time slice to run; high values for this counter are a symptom of a CPU bottleneck.
+Costly query by cpu
+select top 50  sum(qs.total_worker_time) as total_cpu_time,    sum(qs.execution_count) as total_execution_count, 
+    count(*) as  number_of_statements,    qs.plan_handle  from  sys.dm_exec_query_stats qs 
+    group by qs.plan_handle  order by sum(qs.total_worker_time) desc 
+which currently cached batches or procedures are using the most CPU, same plan__handle meaning that they are part of the same batch or procedure. If a given plan_handle has more than one statement, that query cost a lot CPU.
+Costly query by i/o
+sum the number of reads and writes by database
+SELECT TOP 10 [Total Reads] = SUM(total_logical_reads) ,[Execution count] = SUM(qs.execution_count) ,
+DatabaseName = DB_NAME(qt.dbid) FROM sys.dm_exec_query_stats qs CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) as qt
+GROUP BY DB_NAME(qt.dbid) ORDER BY [Total Reads] DESC;
+
+SELECT TOP 10 [Total Writes] = SUM(total_logical_writes) ,[Execution count] = SUM(qs.execution_count) ,
+DatabaseName = DB_NAME(qt.dbid) FROM sys.dm_exec_query_stats qs CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) as qt
+GROUP BY DB_NAME(qt.dbid) ORDER BY [Total Writes] DESC;
+Query being blocked often
+SELECT TOP 10 
+ [Average Time Blocked] = (total_elapsed_time - total_worker_time) / qs.execution_count
+,[Total Time Blocked] = total_elapsed_time - total_worker_time 
+,[Execution count] = qs.execution_count
+,[Individual Query] = SUBSTRING (qt.text,qs.statement_start_offset/2, 
+         (CASE WHEN qs.statement_end_offset = -1 
+            THEN LEN(CONVERT(NVARCHAR(MAX), qt.text)) * 2 
+          ELSE qs.statement_end_offset END - qs.statement_start_offset)/2) 
+,[Parent Query] = qt.text
+,DatabaseName = DB_NAME(qt.dbid)
+FROM sys.dm_exec_query_stats qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) as qt
+ORDER BY [Average Time Blocked] DESC;
+Tempdb
+should have one physical file per CPU core to optimize parallel I/O
+Select 
+    SUM (user_object_reserved_page_count)*8 as user_objects_kb,  --local and global temp tables
+    SUM (internal_object_reserved_page_count)*8 as internal_objects_kb,  -- Work file (hash join), Work table (cursor, spool for the lifetime of the query, insert/deleted)
+    SUM (version_store_reserved_page_count)*8  as version_store_kb, -- row versions for MARS, online index, triggers and snapshot-based isolation levels
+    SUM (unallocated_extent_page_count)*8 as freespace_kb 
+From sys.dm_db_file_space_usage  Where database_id = 2
+Slow-runing query (blocking and index)
+Blocking (basically waits for incompatible logical lock)
+Execute Sp_configure ‘blocked process threshold’, 200  //reset serve-wide block threshold to 200sec
+SQL Server Profiler, events select error & warning\Blocked Process report  and locks\deadlock graph 
+(a single lock that is blocked for 600 seconds results in 3 trace events listed as expando xml <blocked/ing proc>)
+Waits 
+select * from sys.dm_os_waiting_tasks where session_id=56 (session specific) and sys.dm_tran_locks they are equal to act monitor
+occurs when sql waiting on another resource,
+SELECT TOP 10  [Wait type] = wait_type, [Wait time (s)] = wait_time_ms / 1000, 
+[% waiting] = CONVERT(DECIMAL(12,2), wait_time_ms * 100.0 / SUM(wait_time_ms) OVER())
+FROM sys.dm_os_wait_stats -- overall cumulative WHERE wait_type NOT LIKE '%SLEEP%'  ORDER BY wait_time_ms DESC;
+Missing index  the indexes optimizer attempts to use to satisfy the query. but not found
+SELECT  DatabaseName = DB_NAME(database_id)  ,[Number Indexes Missing] = count(*) 
+FROM sys.dm_db_missing_index_details GROUP BY DB_NAME(database_id) ORDER BY 2 DESC;
+Most costly missing indexes
+SELECT  TOP 10  [Total Cost]  = ROUND(avg_total_user_cost * avg_user_impact * (user_seeks + user_scans),0) 
+        , avg_user_impact , TableName = statement , [EqualityUsage] = equality_columns   , [InequalityUsage] = inequality_columns
+        , [Include Cloumns] = included_columns FROM        sys.dm_db_missing_index_groups g 
+INNER JOIN    sys.dm_db_missing_index_group_stats s    ON s.group_handle = g.index_group_handle 
+INNER JOIN    sys.dm_db_missing_index_details d        ON d.index_handle = g.index_handle ORDER BY [Total Cost] DESC;
+
+Most costly unused indexes
+sys.dm_db_index_usage_stats (ref:SQLCOncept)
+sys.dm_db_index_operational_stats provides comprehensive index usage statistics, including blocks, a history of accesses, locks (row_lock_count), blocks (row_lock_wait_count), and waits (row_lock_wait_in_ms) for a given index or table. 
+DMV information is cumulative from instance startup and  not retained across instance restarts, should be  periodically collected and save in a table that can be queried further. 
+1.	Initialize the indexstats table by using init_index_operational_stats (ref:SQLCOncept). 
+2.	Capture a baseline with insert_indexstats. 
+3.	Run the workload.
+4.	Capture the final snapshot of index statistics by using insert_indexstats. 
+5.	To analyze the collected index statistics, run the stored procedure get_indexstats 
