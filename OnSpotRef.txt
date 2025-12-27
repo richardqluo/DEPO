@@ -979,6 +979,9 @@ https://github.com/stripe/example-ios-backendgit remote -v origin	https://githu
 
 iosupgrade in xcod 15 > project:min ios = 12.0, podfile: ios platform 12.0, rerun pod install, follow err instruction to install dependency , "can not load ffi_c" > sudo gem uninstall ffi & sudo gem install ffi, multi-select targets under pods project in xcode > set ios deployment target to 12.0 (will be overiden by pod installl each time) , follow suggested fix or  delete the pod proj folder and rerun pod update <proj> or  comment out src code causing build err . select any ios simulator to build avoid "FirbaseCore.h not found" when build on a specific simulator, change main target and pods target exclude arch + any ios simulator : arm64 to avoid "build for ios simulator but link to object built for ios on arch arm64"
 if xcode build err from Pods keeps disappear, select the project Pods and under targets choose the compponent where the err from and build
+pod install error:
+uninitialized constant ActiveSupport::LoggerThreadSafeLevel::Logger (NameError) : + require "logger" after require "active_support/concern" into sudo vim /Library/Ruby/Gems/2.6.0/gems/activesupport-6.1.7.10/lib/active_support/logger_thread_safe_level.rb
+LoadError - cannot load such file -- ffi_c : brew install cocoapods after sudo gem uninstall cocoapods
 
 upgrade SPM  https://firebase.google.com/docs/ios/installation-methods#swift-package-manager
 
