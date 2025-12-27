@@ -9,7 +9,7 @@ https://stripe.com/docs/api
 compile 'com.stripe:stripe-android:3|4.1.0' //with compileSdkVersion 25, 5.1.0 with 26
 compile 'com.stripe:stripe-java:4.1.0' //import com.stripe.model.Charge
 https://stripe.com/docs/testing //test card
-https://dashboard.stripe.com Hanger99! usox-amei-dyte-bsvh-ixww  sk+live+51BSR9eExa6seRj7jp6UGm0QLI7cliNDOrEFKXyT9pkmPGrU8gG6vWf02HwISbto6NXs9CNhZmrn7IZzYYx3MwhiH00NO61iY4z //open new safari only with richcluo and stripe to reveal only once before auto update oct 10 25
+https://dashboard.stripe.com Hanger99! usox-amei-dyte-bsvh-ixww  51BSR9eExa6seRj7jp6UGm0QLI7cliNDOrEFKXyT9pkmPGrU8gG6vWf02HwISbto6NXs9CNhZmrn7IZzYYx3MwhiH00NO61iY4z //open new safari only with richcluo and stripe to reveal sec key only once before auto update oct 10 25
 https://www.raywenderlich.com/179260/accept-credit-cards-ios-apps-using-stripe //ios
 https://www.appcoda.com/ios-stripe-payment-integration/
 
@@ -984,7 +984,8 @@ uninitialized constant ActiveSupport::LoggerThreadSafeLevel::Logger (NameError) 
 LoadError - cannot load such file -- ffi_c : brew install cocoapods or sudo gem uninstall ffi & sudo gem install ffi,
 upgrade SPM  https://firebase.google.com/docs/ios/installation-methods#swift-package-manager
 
-web.rb in https://dashboard.render.com/ bostmedios@gmail Hanger99    node.js (firebase cloud func)    https://github.com/mohaumpoti/stripe-connect-nodejs-app    index.js    https://medium.com/@mohau/stripe-api-authentication-swift-3-node-js-xcode-tutorial-f4ace28e1e5a
+web.rb in https://dashboard.render.com/ bostmedios@gmail Hanger99  https://github.com/richardqluo/app/blob/main/README.md
+node.js (firebase cloud func)    https://github.com/mohaumpoti/stripe-connect-nodejs-app    index.js    https://medium.com/@mohau/stripe-api-authentication-swift-3-node-js-xcode-tutorial-f4ace28e1e5a
     https://www.bigscal.com/blogs/backend-technology/how-to-integrate-stripe-payment-apis-using-node-js/    https://www.geeksforgeeks.org/how-to-integrate-stripe-payment-gateway-in-node-js/ 
 
 windows task schduler > create a basic task> general: run only when user logged on | action : browse to "C:\Program Files\Python38\python.exe"  arg= instagramBot.py  startin= C:\Depo\App\bot\InstagramBot |  condition: wake up computer to run this task Control Panel -> Power Options -> Edit Plan Settings" for the power plan u are using. Then select "Change advanced power settings". Next go to "Sleep -> Allow wake timers" enable auto wake up
