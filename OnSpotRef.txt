@@ -10,7 +10,7 @@ compile 'com.stripe:stripe-android:3|4.1.0' //with compileSdkVersion 25, 5.1.0 w
 compile 'com.stripe:stripe-java:4.1.0' //import com.stripe.model.Charge
 https://stripe.com/docs/testing //test card
 https://dashboard.stripe.com Hanger99! usox-amei-dyte-bsvh-ixww  
-open new safari only with richcluo and stripe to reveal sec key only once before auto update oct 10 25
+open new safari only with email and stripe to reveal sec key only once before auto update oct 10 25
 https://www.raywenderlich.com/179260/accept-credit-cards-ios-apps-using-stripe //ios
 https://www.appcoda.com/ios-stripe-payment-integration/
 
