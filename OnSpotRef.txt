@@ -985,7 +985,11 @@ uninitialized constant ActiveSupport::LoggerThreadSafeLevel::Logger (NameError) 
 LoadError - cannot load such file -- ffi_c : brew install cocoapods or sudo gem uninstall ffi & sudo gem install ffi,
 upgrade SPM  https://firebase.google.com/docs/ios/installation-methods#swift-package-manager
 
-androoid 15 upgrade > proj struct : AGP v8.13.2 gradle v8.13 , SDK mgr : android 15 platform 35,  build.gradle of project boropost : targetSdkVersion 35, build.gradle of moduel app : remove jcenter() 
+androoid 15 upgrade > proj struct : AGP v8.13.2 gradle v8.13 , SDK mgr : android 15 platform 35,  
+build.gradle of project boropost :  - jcenter() //mvnrepository.com central jcenter 
+build.gradle of moduel app : targetSdkVersion 35, + namespace("com.boropost.application") , androidx.test.ext:junit:1.1.5
+select app > build > compile boropost app > run app
+"cannot resolve symbol R" : File> invalidate cache , "constant expression required " : replace switch (R,id) with if // Android Gradle Plugin 8.0.0 resources (e.g. R.id. ...) are no longer declared final 
 
 web.rb in https://dashboard.render.com/ bostmedios@gmail Hanger99  https://github.com/richardqluo/app/blob/main/README.md
 node.js (firebase cloud func)    https://github.com/mohaumpoti/stripe-connect-nodejs-app    index.js    https://medium.com/@mohau/stripe-api-authentication-swift-3-node-js-xcode-tutorial-f4ace28e1e5a
