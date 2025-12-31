@@ -988,8 +988,9 @@ upgrade SPM  https://firebase.google.com/docs/ios/installation-methods#swift-pac
 androoid 15 upgrade > proj struct : AGP v8.13.2 gradle v8.13 , SDK mgr : android 15 platform 35,  
 build.gradle of project boropost :  - jcenter() //mvnrepository.com central jcenter 
 build.gradle of moduel app : targetSdkVersion 35, + namespace("com.boropost.application") ,  sourceCompatibility JavaVersion.VERSION_1_8 , firebase-ui-database:7.1.1 , androidx.test.ext:junit:1.1.5
+after update build.gradle must (lower left bar > build >  sync gradle project before run app
 lower left bar : problems > project error : inspect code 
-select app in files > build > compile boropost app > select app on toolbar instead of boropost to  display device next run button
+select app in upper left project | packages  view  > build > compile boropost app > select app on toolbar instead of boropost to  display device next run button
 "cannot resolve symbol R" : File> invalidate cache , "constant expression required " : replace switch (R,id) with if // Android Gradle Plugin 8.0.0 resources (e.g. R.id. ...) are no longer declared final 
 
 web.rb in https://dashboard.render.com/ bostmedios@gmail Hanger99  https://github.com/richardqluo/app/blob/main/README.md
