@@ -959,7 +959,7 @@ keys + > APN > download (Authkey_<KeyId>.p8 (never expire) and upload to firebas
 
 xcode > capabilities > push notification > on, if err "add push note to app id" > del all at ~/Library/MobileDevice/Provisioning\ Profiles/ and re import profile https://help.apple.com/developer-account/#/devf822fb8fc
  
-firebase > cloud func > 
+firebase > cloud func > sendMessageNotification (code in index.js listen on /new-messages/) uses private key .json generated from service accout > firebase admin sdk
 reg domain : use windows command to create a folder .well-known (not allowed by UI) to put download .txt  then firebase deploy reg email :noreply@boropost-ea8ed..firebaseapp.com or templated noreply@boropost.comfirebase console enable apple signin, leave svcid empty if only use for ios appapple cert & profile > ids > + cap = apple signin (invalid old profile of the id) > profiles > re+ 
                               > keys > edit > check apple signin > save xcode project | signing: + cap = apple signin <return>, debug/release : 
 
