@@ -269,11 +269,12 @@ https://codebeautify.org/htmlviewer
 zoho.com mail bostmedios@gmail.com Hanger99! https://mail.zoho.com/zm/#mail/folder/inbox
 vmare fusion bostmedios Hanger99!
 
-Cloud functions
-https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  C:\Depo\App\Android\CloudFunc\Bost>firebase init, selcet functions, pick boropost project : install all lib \functions\node_modules\ and  firebase.json 
-run below under functions> to upgreade after install the newer node.js v12, update package.json "node":"12"
-npm install firebase-functions@latest firebase-admin@latest --save
-npm install -g firebase-tools
+Cloud functions 
+https://firebase.google.com/docs/functions/get-started //npm install -g firebase-tools, firebase login,  
+C:\Depo\App\Android\CloudFunc\Bost>firebase init, selcet cloud functions, pick boropost project : install all lib \functions\node_modules\ and  firebase.json 
+run below under functions> to upgreade after install the newer node.js v20, update package.json "node":"20" //-20 supported by old Google Cloud Functions (GCF) Generation 1 (Gen1) : const functions = require('firebase-functions/v1');
+npm install firebase-functions@latest firebase-admin@latest --save //auto update package.json dependency 
+//uninstall old and install new node.js  Bost> rename functions dir to functions1, npm install -g firebase-tools , firebase init functions to recreate functions dir with \node_modules and  firebase.json  package.json  
 functions\index.js:
 const functions = require('firebase-functions'); //$ npm install -g firebase-tools
 const {Storage} = require('@google-cloud/storage'); //npm install --save @google-cloud/storage
@@ -351,7 +352,7 @@ ref.orderByKey().endAt(exp).once('value').then(topSnap => {
 });
 run from local: uncomment local version instead of expirePostDaily def, debug > start without debug, click stop button
 functions>firebase login --reauth
-functions>firebase deploy --only functions //deploy or update (auto version++) 
+functions>firebase deploy --only functions //deploy or update (auto version++) all functions in the dir index.js exports.expirePostDaily
 return url: https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily exe by browser (curl/webget not in windows), and listed on firebase console [...]function and log, gcloud beta functions delete expirePostDaily
 
 
@@ -954,14 +955,14 @@ IMP
 login https://developer.apple.com > admin@boropost.com 7139 account > 
 cert & profile > add app ID > explicit bundle ID must match Firebase com.boropost.app, create a dev/prod cert on cert sign req (by mac > finder >  search "keychain access" > top menu > cert assist > req cert > email =admin@boropost .com ,name = boropost cert dev , save to disk ) download .cer (+cert ios distribution using the same req) > double click to install the cert on login keychain (restart pc) BEFORE get profile + dev push svc]add prov profile > select app ID > select installed cert on device for dev profile (+MAC provisinal UUID from system report) > download > import from XCODE by unsel auto mgr profilearchve > distribute app> select lastest IOS dist cert and download the dist profile that includes the cert
 
-IDs > boropost > enable push notification [generate APN ssl cert like by certs +] | sign in with apple
+IDs > boropost > enable push notification [or generate APN ssl cert like by certs +] | sign in with apple
 keys + > APN > download (Authkey_<KeyId>.p8 (never expire) and upload to firebase > proj setting > cloud msg > APN key [or upload APN cert created bt certs + > APN ssl (Sandbox & Production) ]
 
 xcode > capabilities > push notification > on, if err "add push note to app id" > del all at ~/Library/MobileDevice/Provisioning\ Profiles/ and re import profile https://help.apple.com/developer-account/#/devf822fb8fc
  
-firebase > cloud func > sendMessageNotification (code in index.js listen on /new-messages/) uses private key .json generated from service accout > firebase admin sdk
+firebase > cloud func > sendMessageNotification (code in index.js listen on /new-messages/${userId}) uses firebase admin sdk to send notifcation by /users/${userId}/tkn,  with private key .json generated from service accout > firebase admin sdk
 reg domain : use windows command to create a folder .well-known (not allowed by UI) to put download .txt  then firebase deploy reg email :noreply@boropost-ea8ed..firebaseapp.com or templated noreply@boropost.comfirebase console enable apple signin, leave svcid empty if only use for ios appapple cert & profile > ids > + cap = apple signin (invalid old profile of the id) > profiles > re+ 
-                              > keys > edit > check apple signin > save xcode project | signing: + cap = apple signin <return>, debug/release : 
+> keys > edit > check apple signin > save xcode project | signing: + cap = apple signin <return>, debug/release : 
 
 clear disk Finder > Go (in the top menu). paste in: ~/Library/Caches, Library/Application Support/Users/hollykaldrovics/Library/Logs/PT |  webexmtaUI del pods [ & /Users/hollykaldrovics/Library/Developer/Xcode/DerivedData (keep 3 dir boropost sendhub cachecmoduel = pods) |iOS Device Log (20GB) | iOS Device Supports (keep latest iphone vesrion dir) ]pod update //to update firebase
 Apple give user's email only if user choose share email upon login, otherwise hc36empuea@privaterelay.appleid.com, give name only on first login, to clean > setting > appleID > sec & pwd > apps using appleID > swipe to del if err Please register custom URL scheme 'com.googleusercontent.apps.1012799131250-5msr0ifenos71fkjm2gifljtc06v2a9a' in the app's Info.plist file : xcode > info (info.plist) > url type + <REVERSED_CLIENT_ID in googleservice-info.plist> if err blocked all req from device : add test phone number to firebase > auth > sign-in method > phone
