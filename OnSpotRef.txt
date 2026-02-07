@@ -962,6 +962,9 @@ xcode > capabilities > push notification > on, if err "add push note to app id" 
  
 firebase > cloud func > sendMessageNotification (code in index.js listen on /new-messages/${userId}) uses firebase admin sdk to send notifcation by /users/${userId}/tkn,  with private key .json generated from service accout > firebase admin sdk
 app get token from the device and save to /users/${userId}/tkn if empty upon user sign in, old invalid token is removed by cloud func when send failed
+https://firebase.google.com/docs/cloud-messaging/send/admin-sdk
+https://firebase.google.com/docs/reference/admin/node/firebase-admin.messaging.messaging //send options
+https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages //msg schema
 
 reg domain : use windows command to create a folder .well-known (not allowed by UI) to put download .txt  then firebase deploy reg email :noreply@boropost-ea8ed..firebaseapp.com or templated noreply@boropost.comfirebase console enable apple signin, leave svcid empty if only use for ios appapple cert & profile > ids > + cap = apple signin (invalid old profile of the id) > profiles > re+ 
 > keys > edit > check apple signin > save xcode project | signing: + cap = apple signin <return>, debug/release : 
