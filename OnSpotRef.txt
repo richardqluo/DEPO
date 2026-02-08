@@ -352,7 +352,7 @@ ref.orderByKey().endAt(exp).once('value').then(topSnap => {
 });
 run from local: uncomment local version instead of expirePostDaily def, debug > start without debug, click stop button
 functions>firebase login --reauth
-functions>firebase deploy --only functions //deploy or update (auto version++) all functions in the dir index.js exports.expirePostDaily
+functions>firebase deploy --only functions //deploy or update (auto version++) all functions in the dir index.js exports.expirePostDaily, if "User code failed to load" > firebase login > redo
 return url: https://us-central1-boropost-ea8ed.cloudfunctions.net/expirePostDaily exe by browser (curl/webget not in windows), and listed on firebase console [...]function and log, gcloud beta functions delete expirePostDaily
 
 
