@@ -743,7 +743,8 @@ tabBar > id (attr | size) inspector > + runtime att >
 
 add img set : 24 48 72 | 96 120
 
-select element[s by cmd key] and click|shift(on baseline item or superview in tree) |-o-| [|=] to define relative|align position top|bottom|lef|right to containing view or sibling in drop down, add constraint btn to list in constraints, old contraint need to be del explicitly to eliminate conflict, heigth|width  =|>= override auto(orange)|fill rest, menu edit > open Assistant > select a scene on left will auto map to the custom class swift file defined in source code view > hold down CTRL and click element on the storyboard and drag from structure/view to code panel (switch btw mannual to auto list full classs not interface file), select outlet|action from dropdown, and value changed|touch on from action dropdown 
+select element[s by cmd key] and click|shift(on baseline item or superview in tree) |-o-| [|=] to define relative|align position top|bottom|lef|right to containing view or sibling in drop down, add constraint btn to list in constraints, old contraint need to be del explicitly to eliminate conflict, heigth|width  =|>= override auto(orange)|fill rest, 
+menu editor > open Assistant > select a scene on left will auto map to the custom class swift file defined in source code view and file/id/conn inspectors on right > r-click element on the storyboard > menu segue|event|outlet > drag from structure/view to code panel (switch btw mannual to auto list full classs not interface file) 
 interfacebuilder to staticly add default UITableViewCell to UITableView, or create a custom viewcell for repeating display by
 add a empty view template, drag a UITableViewCell in it, drag label ... in it map to PostTableViewCell.xib id inspector set custome class to PostTableViewCell.swift, drag element in xib to swift to create referencing, set to tableview in program by 
     let nib = UINib(nibName: "PostTableViewCell", bundle: nil)
